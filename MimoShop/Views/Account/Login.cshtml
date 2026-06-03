@@ -1,0 +1,39 @@
+@model LoginViewModel
+
+@{
+    ViewData["Title"] = "تسجيل الدخول";
+    Layout = "_AuthLayout";
+}
+
+<section class="auth-panel" aria-labelledby="login-title">
+    <div class="auth-brand">
+        <span class="brand-mark">M</span>
+        <div>
+            <p class="eyebrow">MimoShop</p>
+            <h1 id="login-title">دخول الموظفين</h1>
+        </div>
+    </div>
+
+    <form asp-action="Login" method="post" class="auth-form">
+        <input asp-for="ReturnUrl" type="hidden" />
+        <div asp-validation-summary="ModelOnly" class="text-danger validation-summary"></div>
+
+        <div class="mb-3">
+            <label asp-for="Username" class="form-label"></label>
+            <input asp-for="Username" class="form-control" autocomplete="username" autofocus />
+            <span asp-validation-for="Username" class="text-danger"></span>
+        </div>
+
+        <div class="mb-4">
+            <label asp-for="Password" class="form-label"></label>
+            <input asp-for="Password" class="form-control" autocomplete="current-password" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">تسجيل الدخول</button>
+    </form>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

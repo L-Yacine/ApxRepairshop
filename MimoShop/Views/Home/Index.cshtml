@@ -1,0 +1,27 @@
+﻿@{
+    ViewData["Title"] = "الرئيسية";
+}
+
+<section class="page-header">
+    <p class="eyebrow">نظام إدارة محل الصيانة</p>
+    <h1>مرحباً، @User.Identity?.Name</h1>
+    <p>هذه الواجهة مخصصة لموظفي المحل فقط. سيتم ربط استقبال الصيانة، الحالات، المخزون، والمدفوعات عبر الشرائح القادمة.</p>
+</section>
+
+<div class="module-grid">
+    <article class="module-card">
+        <span class="module-status">الشريحة 2</span>
+        <h2>استقبال جهاز جديد</h2>
+        <p>بحث بالهاتف، إنشاء بطاقة صيانة، وطباعة وصل برمز الطلب.</p>
+    </article>
+    <article class="module-card">
+        <span class="module-status">الشريحة 3</span>
+        <h2>متابعة حالات الصيانة</h2>
+        <p>تتبع الطلبات من جديد إلى تم التسليم مع إبراز الطلبات المنتظرة للقطع.</p>
+    </article>
+    <article class="module-card">
+        <span class="module-status">الشريحة 4</span>
+        <h2>المخزون</h2>
+        <p>إدارة قطع الغيار حسب العلامة، الموديل، النوع، والنسخة.</p>
+    </article>
+</div>
