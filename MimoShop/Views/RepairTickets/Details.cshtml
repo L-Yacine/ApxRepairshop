@@ -1,0 +1,243 @@
+@model RepairTicketDetailsViewModel
+
+@{
+    ViewData["Title"] = $"بطاقة {Model.JobCode}";
+}
+
+<div class="status-page-actions">
+    <a asp-action="Index" class="btn btn-outline-secondary">كل البطاقات</a>
+    <a asp-action="Receipt" asp-route-jobCode="@Model.JobCode" class="btn btn-outline-primary">عرض الوصل</a>
+</div>
+
+@if (TempData["RepairMessage"] is string message)
+{
+    <div class="alert alert-info">@message</div>
+}
+
+<section class="ticket-detail-header">
+    <div>
+        <p class="eyebrow">بطاقة صيانة</p>
+        <h1>@Model.JobCode</h1>
+        <p>@Model.DeviceName - @Model.CustomerName</p>
+    </div>
+    <span class="status-badge status-large @(Model.Status == RepairJobStatuses.WaitingForPart ? "status-waiting" : "")">@Model.StatusLabel</span>
+</section>
+
+<div class="ticket-detail-grid">
+    <section class="form-section" aria-labelledby="ticket-details">
+        <div class="section-heading">
+            <h2 id="ticket-details">تفاصيل الطلب</h2>
+        </div>
+        <dl class="detail-list">
+            <div>
+                <dt>تاريخ الاستقبال</dt>
+                <dd>@Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")</dd>
+            </div>
+            <div>
+                <dt>العميل</dt>
+                <dd>@Model.CustomerName</dd>
+            </div>
+            <div>
+                <dt>الهاتف</dt>
+                <dd>@Model.CustomerPhone</dd>
+            </div>
+            <div>
+                <dt>الجهاز</dt>
+                <dd>@Model.DeviceName</dd>
+            </div>
+            <div>
+                <dt>العامل المسؤول</dt>
+                <dd>@Model.AssignedWorkerName</dd>
+            </div>
+            <div>
+                <dt>السعر المتفق عليه</dt>
+                <dd>@Model.EstimatedPrice.ToString("N0") دج</dd>
+            </div>
+            <div>
+                <dt>المدفوع</dt>
+                <dd>@Model.AmountPaid.ToString("N0") دج</dd>
+            </div>
+            <div>
+                <dt>الباقي</dt>
+                <dd>@Model.BalanceOwed.ToString("N0") دج</dd>
+            </div>
+            <div>
+                <dt>حالة الدفع</dt>
+                <dd>@Model.PaymentStatusLabel</dd>
+            </div>
+        </dl>
+        <section class="detail-block">
+            <h2>وصف المشكل</h2>
+            <p>@Model.ProblemDescription</p>
+        </section>
+        @if (!string.IsNullOrWhiteSpace(Model.Notes))
+        {
+            <section class="detail-block">
+                <h2>ملاحظات</h2>
+                <p>@Model.Notes</p>
+            </section>
+        }
+    </section>
+
+    <aside class="form-section" aria-labelledby="status-update">
+        <div class="section-heading">
+            <h2 id="status-update">تحديث الحالة</h2>
+        </div>
+        <form asp-action="UpdateStatus" method="post" class="status-update-form">
+            <input type="hidden" name="jobCode" value="@Model.JobCode" />
+            <label for="status" class="form-label">الحالة الجديدة</label>
+            <select id="status" name="status" class="form-select">
+                @foreach (RepairStatusOptionViewModel option in Model.StatusOptions)
+                {
+                    <option value="@option.Value" selected="@(option.Value == Model.Status)">@option.Label</option>
+                }
+            </select>
+            <button type="submit" class="btn btn-primary">حفظ الحالة</button>
+        </form>
+        @if (Model.Status == RepairJobStatuses.WaitingForPart)
+        {
+            <form asp-action="UpdateStatus" method="post" class="mt-3">
+                <input type="hidden" name="jobCode" value="@Model.JobCode" />
+                <input type="hidden" name="status" value="@RepairJobStatuses.InProgress" />
+                <button type="submit" class="btn btn-outline-success w-100">وصلت القطعة، استئناف العمل</button>
+            </form>
+        }
+    </aside>
+</div>
+
+<div class="ticket-detail-grid mt-3">
+    <section class="form-section" aria-labelledby="payment-update">
+        <div class="section-heading">
+            <h2 id="payment-update">الدفع والرصيد</h2>
+            <span class="status-badge">@Model.PaymentStatusLabel</span>
+        </div>
+        <form asp-action="UpdatePayment" method="post" class="form-grid">
+            <input type="hidden" name="jobCode" value="@Model.JobCode" />
+            <div>
+                <label for="EstimatedPrice" class="form-label">السعر المتفق عليه (دج)</label>
+                <input id="EstimatedPrice" name="EstimatedPrice" value="@Model.EstimatedPrice" class="form-control" inputmode="decimal" readonly="@(Model.Status == RepairJobStatuses.Collected)" />
+                @if (Model.Status == RepairJobStatuses.Collected)
+                {
+                    <span class="form-text">لا يتم تعديل السعر بعد التسليم.</span>
+                }
+            </div>
+            <div>
+                <label for="AmountPaid" class="form-label">المبلغ المدفوع (دج)</label>
+                <input id="AmountPaid" name="AmountPaid" value="@Model.AmountPaid" class="form-control" inputmode="decimal" />
+            </div>
+            <div class="form-submit-cell">
+                <button type="submit" class="btn btn-primary w-100">حفظ الدفع</button>
+            </div>
+        </form>
+    </section>
+
+    <aside class="form-section" aria-labelledby="part-actions">
+        <div class="section-heading">
+            <h2 id="part-actions">قطع الغيار</h2>
+        </div>
+
+        <form asp-action="ConsumeStockedPart" method="post" class="part-action-form">
+            <input type="hidden" name="jobCode" value="@Model.JobCode" />
+            <label for="stockedPartId" class="form-label">استهلاك قطعة مخزنة</label>
+            <select id="stockedPartId" name="InventoryPartId" class="form-select">
+                <option value="">اختر قطعة</option>
+                @foreach (RepairPartOptionViewModel part in Model.StockedPartOptions)
+                {
+                    <option value="@part.Id">@part.DisplayName - @part.UnitSalePrice.ToString("N0") دج - الكمية @part.Quantity</option>
+                }
+            </select>
+            <div class="part-action-row">
+                <input name="Quantity" value="1" class="form-control" inputmode="numeric" aria-label="الكمية" />
+                <button type="submit" class="btn btn-outline-primary">استهلاك</button>
+            </div>
+        </form>
+
+        <form asp-action="RequestOnDemandPart" method="post" class="part-action-form">
+            <input type="hidden" name="jobCode" value="@Model.JobCode" />
+            <label for="onDemandPartId" class="form-label">طلب قطعة عند الحاجة</label>
+            <select id="onDemandPartId" name="InventoryPartId" class="form-select">
+                <option value="">اختر قطعة</option>
+                @foreach (RepairPartOptionViewModel part in Model.OnDemandPartOptions)
+                {
+                    <option value="@part.Id">@part.DisplayName - @part.UnitSalePrice.ToString("N0") دج</option>
+                }
+            </select>
+            <div class="part-action-row">
+                <input name="Quantity" value="1" class="form-control" inputmode="numeric" aria-label="الكمية" />
+                <button type="submit" class="btn btn-outline-warning">طلب القطعة</button>
+            </div>
+        </form>
+    </aside>
+</div>
+
+<section class="job-section" aria-labelledby="parts-history">
+    <div class="section-heading">
+        <h2 id="parts-history">قطع مستخدمة في الصيانة</h2>
+        <span class="job-count">@Model.PartUsages.Count</span>
+    </div>
+    @if (Model.PartUsages.Count == 0)
+    {
+        <p class="empty-state">لم يتم تسجيل قطع لهذه البطاقة بعد.</p>
+    }
+    else
+    {
+        <div class="job-table-wrap">
+            <table class="table job-table">
+                <thead>
+                    <tr>
+                        <th>القطعة</th>
+                        <th>الكمية</th>
+                        <th>سعر البيع</th>
+                        <th>الحالة</th>
+                        <th>التاريخ</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (RepairPartUsageViewModel usage in Model.PartUsages)
+                    {
+                        bool isPending = usage.IsOnDemand && !usage.ConsumedAt.HasValue;
+                        <tr>
+                            <td>@usage.DisplayName</td>
+                            <td>@usage.Quantity</td>
+                            <td>@usage.UnitSalePrice.ToString("N0") دج</td>
+                            <td>
+                                <span class="status-badge @(isPending ? "status-waiting" : "")">
+                                    @(usage.IsOnDemand ? (isPending ? "مطلوبة" : "استلمت واستهلكت") : "استهلكت من المخزون")
+                                </span>
+                            </td>
+                            <td>@usage.RequestedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                            <td>
+                                @if (isPending)
+                                {
+                                    <form asp-action="ReceiveOnDemandPart" method="post">
+                                        <input type="hidden" name="jobCode" value="@Model.JobCode" />
+                                        <input type="hidden" name="partUsageId" value="@usage.Id" />
+                                        <button type="submit" class="btn btn-outline-success btn-sm">استلام واستهلاك</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+<section class="job-section" aria-labelledby="status-history">
+    <div class="section-heading">
+        <h2 id="status-history">سجل الحالات</h2>
+        <span class="job-count">@Model.StatusHistory.Count</span>
+    </div>
+    <ol class="status-timeline">
+        @foreach (RepairStatusHistoryViewModel history in Model.StatusHistory)
+        {
+            <li>
+                <span class="status-badge @(history.Status == RepairJobStatuses.WaitingForPart ? "status-waiting" : "")">@history.StatusLabel</span>
+                <span>@history.ChangedAt.ToString("yyyy/MM/dd HH:mm")</span>
+                <span>بواسطة @history.ChangedByUsername</span>
+            </li>
+        }
+    </ol>
+</section>

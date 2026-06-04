@@ -5,7 +5,7 @@
 <section class="page-header">
     <p class="eyebrow">نظام إدارة محل الصيانة</p>
     <h1>مرحباً، @User.Identity?.Name</h1>
-    <p>هذه الواجهة مخصصة لموظفي المحل فقط. سيتم ربط استقبال الصيانة، الحالات، المخزون، والمدفوعات عبر الشرائح القادمة.</p>
+    <p>هذه الواجهة مخصصة لموظفي المحل فقط. استخدمها لاستقبال الصيانة، متابعة الحالات، إدارة المخزون، وتسجيل المدفوعات.</p>
 </section>
 
 <div class="module-grid">
@@ -13,15 +13,24 @@
         <span class="module-status">الشريحة 2</span>
         <h2>استقبال جهاز جديد</h2>
         <p>بحث بالهاتف، إنشاء بطاقة صيانة، وطباعة وصل برمز الطلب.</p>
+        <a asp-controller="RepairTickets" asp-action="Create" class="btn btn-primary mt-3">فتح الاستقبال</a>
     </article>
     <article class="module-card">
         <span class="module-status">الشريحة 3</span>
         <h2>متابعة حالات الصيانة</h2>
         <p>تتبع الطلبات من جديد إلى تم التسليم مع إبراز الطلبات المنتظرة للقطع.</p>
+        <a asp-controller="RepairTickets" asp-action="Index" class="btn btn-primary mt-3">فتح الحالات</a>
     </article>
     <article class="module-card">
         <span class="module-status">الشريحة 4</span>
         <h2>المخزون</h2>
         <p>إدارة قطع الغيار حسب العلامة، الموديل، النوع، والنسخة.</p>
+        <a asp-controller="Inventory" asp-action="Index" class="btn btn-primary mt-3">فتح المخزون</a>
+    </article>
+    <article class="module-card">
+        <span class="module-status">الشريحة 5</span>
+        <h2>الدفع والرصيد</h2>
+        <p>تحديث السعر المتفق عليه، تسجيل المدفوع، ومتابعة الباقي من بطاقة الصيانة.</p>
+        <a asp-controller="RepairTickets" asp-action="Index" class="btn btn-primary mt-3">فتح البطاقات</a>
     </article>
 </div>

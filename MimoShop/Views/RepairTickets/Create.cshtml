@@ -1,0 +1,180 @@
+@model RepairIntakeViewModel
+
+@{
+    ViewData["Title"] = "استقبال صيانة";
+}
+
+<section class="page-header">
+    <p class="eyebrow">استقبال الصيانة</p>
+    <h1>إنشاء بطاقة صيانة جديدة</h1>
+    <p>ابدأ برقم هاتف العميل. إذا كان مسجلاً من قبل سيتم ملء بياناته تلقائياً، وإلا سيتم إنشاء ملف عميل جديد عند حفظ البطاقة.</p>
+</section>
+
+<form asp-action="Create" method="post" class="intake-form">
+    <div asp-validation-summary="ModelOnly" class="text-danger validation-summary"></div>
+
+    <section class="form-section" aria-labelledby="customer-section">
+        <div class="section-heading">
+            <h2 id="customer-section">بيانات العميل</h2>
+            <span id="customerLookupStatus" class="lookup-status">لم يتم البحث بعد</span>
+        </div>
+
+        <div class="form-grid">
+            <div>
+                <label asp-for="CustomerPhone" class="form-label"></label>
+                <input asp-for="CustomerPhone" class="form-control" autocomplete="tel" data-customer-phone autofocus />
+                <span asp-validation-for="CustomerPhone" class="text-danger"></span>
+            </div>
+
+            <div>
+                <label asp-for="CustomerName" class="form-label"></label>
+                <input asp-for="CustomerName" class="form-control" autocomplete="name" data-customer-name />
+                <span asp-validation-for="CustomerName" class="text-danger"></span>
+            </div>
+
+            <div>
+                <label asp-for="CustomerWhatsApp" class="form-label"></label>
+                <input asp-for="CustomerWhatsApp" class="form-control" autocomplete="tel" data-customer-whatsapp />
+                <span asp-validation-for="CustomerWhatsApp" class="text-danger"></span>
+            </div>
+
+            <div>
+                <label asp-for="CustomerTelegram" class="form-label"></label>
+                <input asp-for="CustomerTelegram" class="form-control" placeholder="مثال: @@mimoshop_client" data-customer-telegram />
+                <span asp-validation-for="CustomerTelegram" class="text-danger"></span>
+            </div>
+        </div>
+    </section>
+
+    <section class="form-section" aria-labelledby="device-section">
+        <div class="section-heading">
+            <h2 id="device-section">بيانات الجهاز والصيانة</h2>
+        </div>
+
+        <div class="form-grid">
+            <div>
+                <label asp-for="DeviceBrand" class="form-label"></label>
+                <select asp-for="DeviceBrand" class="form-select" data-device-brand>
+                    <option value="">اختر العلامة</option>
+                    @foreach (DeviceBrandOption option in Model.DeviceOptions)
+                    {
+                        <option value="@option.Brand">@option.Brand</option>
+                    }
+                </select>
+                <span asp-validation-for="DeviceBrand" class="text-danger"></span>
+            </div>
+
+            <div>
+                <label asp-for="DeviceModel" class="form-label"></label>
+                <select asp-for="DeviceModel" class="form-select" data-device-model>
+                    <option value="">اختر الموديل</option>
+                    @foreach (DeviceBrandOption option in Model.DeviceOptions)
+                    {
+                        foreach (string deviceModel in option.Models)
+                        {
+                            <option value="@deviceModel" data-brand="@option.Brand">@deviceModel</option>
+                        }
+                    }
+                </select>
+                <span asp-validation-for="DeviceModel" class="text-danger"></span>
+            </div>
+
+            <div>
+                <label asp-for="AssignedWorkerUsername" class="form-label"></label>
+                <select asp-for="AssignedWorkerUsername" class="form-select">
+                    @foreach (StaffOption staff in Model.StaffOptions)
+                    {
+                        <option value="@staff.Username">@staff.DisplayName</option>
+                    }
+                </select>
+                <span asp-validation-for="AssignedWorkerUsername" class="text-danger"></span>
+            </div>
+
+            <div>
+                <label asp-for="EstimatedPrice" class="form-label"></label>
+                <input asp-for="EstimatedPrice" class="form-control" inputmode="decimal" />
+                <span asp-validation-for="EstimatedPrice" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <label asp-for="ProblemDescription" class="form-label"></label>
+            <textarea asp-for="ProblemDescription" class="form-control" rows="4"></textarea>
+            <span asp-validation-for="ProblemDescription" class="text-danger"></span>
+        </div>
+
+        <div class="mt-3">
+            <label asp-for="Notes" class="form-label"></label>
+            <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+            <span asp-validation-for="Notes" class="text-danger"></span>
+        </div>
+    </section>
+
+    <div class="form-actions">
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">إلغاء</a>
+        <button type="submit" class="btn btn-primary">حفظ البطاقة وإنشاء الوصل</button>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const phoneInput = document.querySelector("[data-customer-phone]");
+            const nameInput = document.querySelector("[data-customer-name]");
+            const whatsAppInput = document.querySelector("[data-customer-whatsapp]");
+            const telegramInput = document.querySelector("[data-customer-telegram]");
+            const status = document.getElementById("customerLookupStatus");
+            const brandSelect = document.querySelector("[data-device-brand]");
+            const modelSelect = document.querySelector("[data-device-model]");
+
+            async function lookupCustomer() {
+                const phone = phoneInput.value.trim();
+                if (!phone) {
+                    status.textContent = "أدخل رقم الهاتف أولاً";
+                    status.className = "lookup-status";
+                    return;
+                }
+
+                const response = await fetch(`@Url.Action("LookupCustomer")?phone=${encodeURIComponent(phone)}`);
+                const customer = await response.json();
+
+                if (!customer.found) {
+                    status.textContent = "عميل جديد";
+                    status.className = "lookup-status lookup-status-new";
+                    return;
+                }
+
+                nameInput.value = customer.name ?? "";
+                whatsAppInput.value = customer.whatsApp ?? "";
+                telegramInput.value = customer.telegram ?? "";
+                status.textContent = "تم العثور على العميل";
+                status.className = "lookup-status lookup-status-found";
+            }
+
+            function filterModels() {
+                const selectedBrand = brandSelect.value;
+                let currentModelIsVisible = false;
+
+                for (const option of modelSelect.options) {
+                    const optionBrand = option.dataset.brand;
+                    const shouldShow = !optionBrand || optionBrand === selectedBrand;
+                    option.hidden = !shouldShow;
+
+                    if (option.value === modelSelect.value && shouldShow) {
+                        currentModelIsVisible = true;
+                    }
+                }
+
+                if (!currentModelIsVisible) {
+                    modelSelect.value = "";
+                }
+            }
+
+            phoneInput.addEventListener("blur", lookupCustomer);
+            phoneInput.addEventListener("change", lookupCustomer);
+            brandSelect.addEventListener("change", filterModels);
+            filterModels();
+        })();
+    </script>
+}

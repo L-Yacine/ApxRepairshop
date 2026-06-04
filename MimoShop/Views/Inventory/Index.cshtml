@@ -1,0 +1,67 @@
+@model InventoryIndexViewModel
+
+@{
+    ViewData["Title"] = "المخزون";
+}
+
+<section class="page-header">
+    <p class="eyebrow">المخزون</p>
+    <h1>كتالوغ قطع الغيار</h1>
+    <p>راجع القطع حسب العلامة والموديل والنوع والنوعية، وحدّث الكمية وأسعار التكلفة والبيع.</p>
+</section>
+
+<div class="status-page-actions">
+    <a asp-action="Create" class="btn btn-primary">إضافة قطعة</a>
+</div>
+
+<section class="form-section" aria-labelledby="inventory-list">
+    <div class="section-heading">
+        <h2 id="inventory-list">كل القطع</h2>
+        <span class="job-count">@Model.Parts.Count</span>
+    </div>
+
+    @if (Model.Parts.Count == 0)
+    {
+        <p class="empty-state">لا توجد قطع مسجلة بعد.</p>
+    }
+    else
+    {
+        <div class="job-table-wrap">
+            <table class="table job-table inventory-table">
+                <thead>
+                    <tr>
+                        <th>العلامة</th>
+                        <th>الموديل</th>
+                        <th>نوع القطعة</th>
+                        <th>النوعية</th>
+                        <th>الكمية</th>
+                        <th>التكلفة</th>
+                        <th>البيع</th>
+                        <th>الحالة</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (InventoryPartListItemViewModel part in Model.Parts)
+                    {
+                        <tr>
+                            <td>@part.Brand</td>
+                            <td>@part.Model</td>
+                            <td>@part.PartType</td>
+                            <td>@part.Variant</td>
+                            <td>@part.Quantity</td>
+                            <td>@part.UnitCostPrice.ToString("N0") دج</td>
+                            <td>@part.UnitSalePrice.ToString("N0") دج</td>
+                            <td>
+                                <span class="status-badge @(part.IsStocked ? "" : "status-waiting")">
+                                    @(part.IsStocked ? "مخزنة" : "عند الطلب")
+                                </span>
+                            </td>
+                            <td><a asp-action="Edit" asp-route-id="@part.Id">تعديل</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

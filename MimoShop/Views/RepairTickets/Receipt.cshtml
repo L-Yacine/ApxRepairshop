@@ -1,0 +1,68 @@
+@model RepairReceiptViewModel
+
+@{
+    ViewData["Title"] = $"وصل {Model.JobCode}";
+}
+
+<div class="receipt-toolbar">
+    <a asp-action="Create" class="btn btn-outline-secondary">بطاقة جديدة</a>
+    <button type="button" class="btn btn-primary" onclick="window.print()">طباعة الوصل</button>
+</div>
+
+<article class="receipt" aria-labelledby="receipt-title">
+    <header class="receipt-header">
+        <div>
+            <p class="eyebrow">@Model.ShopName</p>
+            <h1 id="receipt-title">وصل استلام جهاز</h1>
+            <p>@Model.ShopContact</p>
+        </div>
+        <div class="job-code">
+            <span>رمز الطلب</span>
+            <strong>@Model.JobCode</strong>
+        </div>
+    </header>
+
+    <dl class="receipt-grid">
+        <div>
+            <dt>التاريخ والوقت</dt>
+            <dd>@Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")</dd>
+        </div>
+        <div>
+            <dt>العامل المسؤول</dt>
+            <dd>@Model.AssignedWorkerName</dd>
+        </div>
+        <div>
+            <dt>العميل</dt>
+            <dd>@Model.CustomerName</dd>
+        </div>
+        <div>
+            <dt>الهاتف</dt>
+            <dd>@Model.CustomerPhone</dd>
+        </div>
+        <div>
+            <dt>الجهاز</dt>
+            <dd>@Model.DeviceBrand @Model.DeviceModel</dd>
+        </div>
+        <div>
+            <dt>السعر التقديري</dt>
+            <dd>@Model.EstimatedPrice.ToString("N0") دج</dd>
+        </div>
+    </dl>
+
+    <section class="receipt-block">
+        <h2>وصف المشكل</h2>
+        <p>@Model.ProblemDescription</p>
+    </section>
+
+    @if (!string.IsNullOrWhiteSpace(Model.Notes))
+    {
+        <section class="receipt-block">
+            <h2>ملاحظات</h2>
+            <p>@Model.Notes</p>
+        </section>
+    }
+
+    <footer class="receipt-footer">
+        <p>احتفظ بهذا الرمز للتحقق من حالة الصيانة عبر بوت تيليغرام عند توفره: @Model.JobCode</p>
+    </footer>
+</article>

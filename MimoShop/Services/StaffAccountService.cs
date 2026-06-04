@@ -1,52 +1,75 @@
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
+using MimoShop.Data;
+using MimoShop.Models;
 
 namespace MimoShop.Services;
 
 public sealed class StaffAccountService
 {
-    private readonly IReadOnlyDictionary<string, StaffAccount> accounts =
-        new List<StaffAccount>
-        {
-            CreateAccount("owner", "owner123", "صاحب المحل", StaffRoles.Owner),
-            CreateAccount("worker1", "worker123", "العامل 1", StaffRoles.Worker),
-            CreateAccount("worker2", "worker123", "العامل 2", StaffRoles.Worker)
-        }.ToDictionary(account => account.Username, StringComparer.OrdinalIgnoreCase);
+    private readonly MimoShopDbContext dbContext;
 
-    public StaffAccount? ValidateCredentials(string username, string password)
+    public StaffAccountService(MimoShopDbContext dbContext)
+    {
+        this.dbContext = dbContext;
+    }
+
+    public async Task<StaffAccount?> ValidateCredentialsAsync(string username, string password)
     {
         string normalizedUsername = username?.Trim() ?? string.Empty;
         string candidatePassword = password ?? string.Empty;
 
-        if (!accounts.TryGetValue(normalizedUsername, out StaffAccount? account))
+        StaffMember? staff = await dbContext.StaffMembers
+            .AsNoTracking()
+            .SingleOrDefaultAsync(account => account.Username == normalizedUsername);
+
+        if (staff is null)
         {
             return null;
         }
 
-        string passwordHash = HashPassword(account.Salt, candidatePassword);
+        string passwordHash = StaffMember.HashPassword(staff.Salt, candidatePassword);
         return CryptographicOperations.FixedTimeEquals(
-            Encoding.UTF8.GetBytes(account.PasswordHash),
+            Encoding.UTF8.GetBytes(staff.PasswordHash),
             Encoding.UTF8.GetBytes(passwordHash))
-            ? account
+            ? ToStaffAccount(staff)
             : null;
     }
 
-    private static StaffAccount CreateAccount(string username, string password, string displayName, string role)
+    public async Task<IReadOnlyCollection<StaffAccount>> GetAssignableStaffAsync()
     {
-        string salt = $"mimoshop-v1-{username}";
+        List<StaffMember> accounts = await dbContext.StaffMembers
+            .AsNoTracking()
+            .ToListAsync();
 
-        return new StaffAccount(
-            Username: username,
-            DisplayName: displayName,
-            Role: role,
-            Salt: salt,
-            PasswordHash: HashPassword(salt, password));
+        return accounts
+            .Where(account => account.Role is StaffRoles.Owner or StaffRoles.Worker)
+            .OrderByDescending(account => account.Role == StaffRoles.Owner)
+            .ThenBy(account => account.DisplayName)
+            .Select(ToStaffAccount)
+            .ToList();
     }
 
-    private static string HashPassword(string salt, string password)
+    public async Task<StaffAccount?> FindByUsernameAsync(string username)
     {
-        byte[] bytes = SHA256.HashData(Encoding.UTF8.GetBytes($"{salt}:{password}"));
-        return Convert.ToHexString(bytes);
+        string normalizedUsername = username?.Trim() ?? string.Empty;
+
+        StaffMember? staff = await dbContext.StaffMembers
+            .AsNoTracking()
+            .SingleOrDefaultAsync(account => account.Username == normalizedUsername);
+
+        return staff is null ? null : ToStaffAccount(staff);
+    }
+
+    private static StaffAccount ToStaffAccount(StaffMember staff)
+    {
+        return new StaffAccount(
+            Username: staff.Username,
+            DisplayName: staff.DisplayName,
+            Role: staff.Role,
+            Salt: staff.Salt,
+            PasswordHash: staff.PasswordHash);
     }
 }
 
