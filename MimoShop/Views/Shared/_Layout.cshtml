@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - MimoShop</title>
     <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.rtl.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/MimoShop.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/lib/bootstrap/dist/css/bootstrap.rtl.min.css")" />
+    <link rel="stylesheet" href="@Url.Content("~/css/site.css")" />
+    <link rel="stylesheet" href="@Url.Content("~/MimoShop.styles.css")" />
 </head>
 <body>
     <header>
@@ -29,8 +29,14 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Dashboard" asp-action="Index">لوحة المالك</a>
                             </li>
                         }
-                        <li class="nav-item disabled">
-                            <span class="nav-link text-muted">استقبال الصيانة</span>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="RepairTickets" asp-action="Create">استقبال الصيانة</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="RepairTickets" asp-action="Index">حالات الصيانة</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Inventory" asp-action="Index">المخزون</a>
                         </li>
                     </ul>
                     <div class="staff-menu">
@@ -54,9 +60,9 @@
             &copy; 2026 - MimoShop
         </div>
     </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="@Url.Content("~/lib/jquery/dist/jquery.min.js")"></script>
+    <script src="@Url.Content("~/lib/bootstrap/dist/js/bootstrap.bundle.min.js")"></script>
+    <script src="@Url.Content("~/js/site.js")"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

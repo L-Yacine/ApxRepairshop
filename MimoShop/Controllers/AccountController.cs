@@ -39,7 +39,7 @@ public class AccountController : Controller
             return View(model);
         }
 
-        StaffAccount? account = staffAccountService.ValidateCredentials(model.Username, model.Password);
+        StaffAccount? account = await staffAccountService.ValidateCredentialsAsync(model.Username, model.Password);
         if (account is null)
         {
             ModelState.AddModelError(string.Empty, "اسم المستخدم أو كلمة المرور غير صحيح");

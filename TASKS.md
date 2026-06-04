@@ -23,7 +23,7 @@ This file tracks PRD-driven vertical functional slices. Each slice should produc
 
 ### 1. Staff Sign In and Arabic RTL App Shell
 
-Status: Implemented - Needs Owner Manual Validation  
+Status: Implemented - Owner Validated
 Type: HITL  
 Blocked by: None  
 Business Value: Restricts the web app to shop staff and establishes the Arabic responsive interface required by the PRD.
@@ -36,56 +36,56 @@ Acceptance Criteria:
 
 ### 2. Create Repair Ticket With Customer Lookup and Receipt
 
-Status: Not Started  
-Type: HITL  
-Blocked by: Staff Sign In and Arabic RTL App Shell  
+Status: Implemented - Owner Validated
+Type: HITL
+Blocked by: Staff Sign In and Arabic RTL App Shell
 Business Value: Replaces paper intake with a single flow that creates or links a customer, creates a repair job, and generates the printed job-code receipt.
 
 Acceptance Criteria:
-- [ ] Worker enters customer phone first and existing details auto-fill when found.
-- [ ] New customer records are created during ticket submission when no phone match exists.
-- [ ] Ticket captures device brand, model, problem, assigned worker, estimated price, and notes.
-- [ ] New tickets receive a readable `REP-XXXX` job code.
-- [ ] Receipt shows shop details, job code, date/time, device, problem, estimate, worker, and Telegram status guidance.
+- [x] Worker enters customer phone first and existing details auto-fill when found.
+- [x] New customer records are created during ticket submission when no phone match exists.
+- [x] Ticket captures device brand, model, problem, assigned worker, estimated price, and notes.
+- [x] New tickets receive a readable `REP-XXXX` job code.
+- [x] Receipt shows shop details, job code, date/time, device, problem, estimate, worker, and Telegram status guidance.
 
 ### 3. Manage Repair Status Workflow
 
-Status: Not Started  
+Status: Implemented - Owner Validated
 Type: HITL  
 Blocked by: Create Repair Ticket With Customer Lookup and Receipt  
 Business Value: Lets workers track every job from intake to collection with timestamped status history.
 
 Acceptance Criteria:
-- [ ] Jobs move through `New`, `In progress`, `Waiting for part`, `Done`, and `Collected`.
-- [ ] Each status change is timestamped.
-- [ ] Jobs waiting for parts appear in a distinct section.
-- [ ] Workers can resume a waiting job when the required part arrives.
+- [x] Jobs move through `New`, `In progress`, `Waiting for part`, `Done`, and `Collected`.
+- [x] Each status change is timestamped.
+- [x] Jobs waiting for parts appear in a distinct section.
+- [x] Workers can resume a waiting job when the required part arrives.
 
 ### 4. Manage Inventory Catalog and Stock Consumption
 
-Status: Not Started  
+Status: Implemented - Needs Owner Manual Validation
 Type: HITL  
 Blocked by: Manage Repair Status Workflow  
 Business Value: Gives staff visibility into parts by brand, model, type, and variant, and keeps stock accurate when parts are used on repairs.
 
 Acceptance Criteria:
-- [ ] Staff can manage brand, model, part type, variant, quantity, cost price, sale price, and stocked/on-demand flag.
-- [ ] Workers can attach a stocked part to a repair job.
-- [ ] Stock quantity decrements automatically when a part is consumed.
-- [ ] On-demand parts can move a job to `Waiting for part`, then be received and consumed.
+- [x] Staff can manage brand, model, part type, variant, quantity, cost price, sale price, and stocked/on-demand flag.
+- [x] Workers can attach a stocked part to a repair job.
+- [x] Stock quantity decrements automatically when a part is consumed.
+- [x] On-demand parts can move a job to `Waiting for part`, then be received and consumed.
 
 ### 5. Record Job Payments and Balances
 
-Status: Not Started  
+Status: Implemented - Needs Owner Manual Validation
 Type: AFK  
 Blocked by: Create Repair Ticket With Customer Lookup and Receipt  
 Business Value: Tracks what each client owes and whether each repair is unpaid, partially paid, or fully paid.
 
 Acceptance Criteria:
-- [ ] Quoted price is set at intake and editable before collection.
-- [ ] Amount paid is recorded when the device is collected.
-- [ ] Balance owed is calculated automatically.
-- [ ] Payment status is derived as unpaid, partially paid, or fully paid.
+- [x] Quoted price is set at intake and editable before collection.
+- [x] Amount paid is recorded when the device is collected.
+- [x] Balance owed is calculated automatically.
+- [x] Payment status is derived as unpaid, partially paid, or fully paid.
 
 ### 6. Show Owner Glance Dashboard
 

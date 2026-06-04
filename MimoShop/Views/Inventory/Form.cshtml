@@ -1,0 +1,82 @@
+@model InventoryPartFormViewModel
+
+@{
+    bool isEdit = Model.Id > 0;
+    ViewData["Title"] = isEdit ? "تعديل قطعة" : "إضافة قطعة";
+}
+
+<section class="page-header">
+    <p class="eyebrow">المخزون</p>
+    <h1>@(isEdit ? "تعديل قطعة" : "إضافة قطعة جديدة")</h1>
+    <p>املأ بيانات التسلسل المطلوب للقطعة: العلامة، الموديل، نوع القطعة، والنوعية.</p>
+</section>
+
+<form asp-action="@(isEdit ? "Edit" : "Create")" method="post" class="intake-form">
+    <input asp-for="Id" type="hidden" />
+    <div asp-validation-summary="ModelOnly" class="text-danger validation-summary"></div>
+
+    <section class="form-section" aria-labelledby="part-details">
+        <div class="section-heading">
+            <h2 id="part-details">بيانات القطعة</h2>
+        </div>
+
+        <div class="form-grid">
+            <div>
+                <label asp-for="Brand" class="form-label"></label>
+                <input asp-for="Brand" class="form-control" />
+                <span asp-validation-for="Brand" class="text-danger"></span>
+            </div>
+
+            <div>
+                <label asp-for="Model" class="form-label"></label>
+                <input asp-for="Model" class="form-control" />
+                <span asp-validation-for="Model" class="text-danger"></span>
+            </div>
+
+            <div>
+                <label asp-for="PartType" class="form-label"></label>
+                <input asp-for="PartType" class="form-control" placeholder="مثال: شاشة، بطارية، منفذ شحن" />
+                <span asp-validation-for="PartType" class="text-danger"></span>
+            </div>
+
+            <div>
+                <label asp-for="Variant" class="form-label"></label>
+                <input asp-for="Variant" class="form-control" placeholder="مثال: أصلي، متوافق، مجدد" />
+                <span asp-validation-for="Variant" class="text-danger"></span>
+            </div>
+
+            <div>
+                <label asp-for="Quantity" class="form-label"></label>
+                <input asp-for="Quantity" class="form-control" inputmode="numeric" />
+                <span asp-validation-for="Quantity" class="text-danger"></span>
+            </div>
+
+            <div>
+                <label asp-for="UnitCostPrice" class="form-label"></label>
+                <input asp-for="UnitCostPrice" class="form-control" inputmode="decimal" />
+                <span asp-validation-for="UnitCostPrice" class="text-danger"></span>
+            </div>
+
+            <div>
+                <label asp-for="UnitSalePrice" class="form-label"></label>
+                <input asp-for="UnitSalePrice" class="form-control" inputmode="decimal" />
+                <span asp-validation-for="UnitSalePrice" class="text-danger"></span>
+            </div>
+
+            <div class="form-check inventory-check">
+                <input asp-for="IsStocked" class="form-check-input" />
+                <label asp-for="IsStocked" class="form-check-label"></label>
+                <span class="form-text">ألغِ التحديد للقطع التي تطلب فقط عند الحاجة.</span>
+            </div>
+        </div>
+    </section>
+
+    <div class="form-actions">
+        <a asp-action="Index" class="btn btn-outline-secondary">إلغاء</a>
+        <button type="submit" class="btn btn-primary">حفظ القطعة</button>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

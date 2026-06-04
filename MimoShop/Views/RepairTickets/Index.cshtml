@@ -1,0 +1,138 @@
+@model RepairTicketListViewModel
+
+@{
+    ViewData["Title"] = "حالات الصيانة";
+}
+
+<section class="page-header">
+    <p class="eyebrow">حالات الصيانة</p>
+    <h1>متابعة بطاقات الصيانة</h1>
+    <p>راجع الطلبات المفتوحة، الطلبات المنتظرة لقطع الغيار، وآخر الطلبات التي تم تسليمها.</p>
+</section>
+
+<div class="status-page-actions">
+    <a asp-action="Create" class="btn btn-primary">بطاقة صيانة جديدة</a>
+</div>
+
+<section class="job-section waiting-section" aria-labelledby="waiting-jobs">
+    <div class="section-heading">
+        <h2 id="waiting-jobs">بانتظار قطعة</h2>
+        <span class="job-count">@Model.WaitingForPartJobs.Count</span>
+    </div>
+    @if (Model.WaitingForPartJobs.Count == 0)
+    {
+        <p class="empty-state">لا توجد طلبات منتظرة لقطع الغيار حالياً.</p>
+    }
+    else
+    {
+        <div class="job-card-grid">
+            @foreach (RepairTicketListItemViewModel ticket in Model.WaitingForPartJobs)
+            {
+                <article class="job-card job-card-waiting">
+                    <div class="job-card-header">
+                        <strong>@ticket.JobCode</strong>
+                        <span class="status-badge status-waiting">@ticket.StatusLabel</span>
+                    </div>
+                    <h3>@ticket.DeviceName</h3>
+                    <p>@ticket.ProblemDescription</p>
+                    <dl class="job-meta">
+                        <div>
+                            <dt>العميل</dt>
+                            <dd>@ticket.CustomerName</dd>
+                        </div>
+                        <div>
+                            <dt>العامل</dt>
+                            <dd>@ticket.AssignedWorkerName</dd>
+                        </div>
+                        <div>
+                            <dt>آخر تحديث</dt>
+                            <dd>@(ticket.LastStatusChangedAt?.ToString("yyyy/MM/dd HH:mm") ?? "-")</dd>
+                        </div>
+                    </dl>
+                    <a asp-action="Details" asp-route-jobCode="@ticket.JobCode" class="btn btn-outline-primary btn-sm">فتح البطاقة</a>
+                </article>
+            }
+        </div>
+    }
+</section>
+
+<section class="job-section" aria-labelledby="active-jobs">
+    <div class="section-heading">
+        <h2 id="active-jobs">الطلبات المفتوحة</h2>
+        <span class="job-count">@Model.ActiveJobs.Count</span>
+    </div>
+    @if (Model.ActiveJobs.Count == 0)
+    {
+        <p class="empty-state">لا توجد طلبات مفتوحة حالياً.</p>
+    }
+    else
+    {
+        <div class="job-card-grid">
+            @foreach (RepairTicketListItemViewModel ticket in Model.ActiveJobs)
+            {
+                <article class="job-card">
+                    <div class="job-card-header">
+                        <strong>@ticket.JobCode</strong>
+                        <span class="status-badge">@ticket.StatusLabel</span>
+                    </div>
+                    <h3>@ticket.DeviceName</h3>
+                    <p>@ticket.ProblemDescription</p>
+                    <dl class="job-meta">
+                        <div>
+                            <dt>العميل</dt>
+                            <dd>@ticket.CustomerName</dd>
+                        </div>
+                        <div>
+                            <dt>العامل</dt>
+                            <dd>@ticket.AssignedWorkerName</dd>
+                        </div>
+                        <div>
+                            <dt>آخر تحديث</dt>
+                            <dd>@(ticket.LastStatusChangedAt?.ToString("yyyy/MM/dd HH:mm") ?? "-")</dd>
+                        </div>
+                    </dl>
+                    <a asp-action="Details" asp-route-jobCode="@ticket.JobCode" class="btn btn-outline-primary btn-sm">فتح البطاقة</a>
+                </article>
+            }
+        </div>
+    }
+</section>
+
+<section class="job-section" aria-labelledby="collected-jobs">
+    <div class="section-heading">
+        <h2 id="collected-jobs">آخر الطلبات المسلمة</h2>
+        <span class="job-count">@Model.CollectedJobs.Count</span>
+    </div>
+    @if (Model.CollectedJobs.Count == 0)
+    {
+        <p class="empty-state">لم يتم تسجيل طلبات مسلمة بعد.</p>
+    }
+    else
+    {
+        <div class="job-table-wrap">
+            <table class="table job-table">
+                <thead>
+                    <tr>
+                        <th>الرمز</th>
+                        <th>الجهاز</th>
+                        <th>العميل</th>
+                        <th>آخر تحديث</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (RepairTicketListItemViewModel ticket in Model.CollectedJobs)
+                    {
+                        <tr>
+                            <td>@ticket.JobCode</td>
+                            <td>@ticket.DeviceName</td>
+                            <td>@ticket.CustomerName</td>
+                            <td>@(ticket.LastStatusChangedAt?.ToString("yyyy/MM/dd HH:mm") ?? "-")</td>
+                            <td><a asp-action="Details" asp-route-jobCode="@ticket.JobCode">عرض</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
