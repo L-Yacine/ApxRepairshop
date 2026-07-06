@@ -1,0 +1,118 @@
+@model ImportPreviewViewModel
+@{
+    var totalMissing = Model.Groups.Sum(g => g.Models.Count);
+}
+
+<div class="modal fade" id="categoriesImportModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form asp-action="ImportSelected" method="post" data-modal-form>
+                <div class="modal-header">
+                    <h5 class="modal-title">استيراد من الكتالوج</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger validation-summary"></div>
+                    <p class="text-muted">الجدول أدناه يعرض الموديلات غير المستوردة. اختر ما تريد استيراده لإنشائه مع قطع الغيار المرتبطة به.</p>
+
+                    <div class="import-toolbar">
+                        <label class="import-toggle import-toggle--global">
+                            <input type="checkbox" id="select-all-global" />
+                            <span class="import-toggle__label">تحديد الكل</span>
+                            <span class="import-toggle__count" id="global-count">@totalMissing موديل</span>
+                        </label>
+                    </div>
+
+                    @foreach (var group in Model.Groups)
+                    {
+                        <div class="import-brand-group">
+                            <div class="import-brand-header">
+                                <div class="import-brand-header__info">
+                                    <span class="import-brand-header__name">@group.DisplayNameAr</span>
+                                    <span class="import-brand-header__latin">@group.Brand</span>
+                                </div>
+                                <label class="import-toggle import-toggle--brand">
+                                    <input type="checkbox" class="select-all-brand" data-brand="@group.Brand" />
+                                    <span class="import-toggle__label">تحديد الكل</span>
+                                    <span class="import-toggle__count">@group.Models.Count</span>
+                                </label>
+                            </div>
+
+                            <div class="import-model-list">
+                                @foreach (var model in group.Models)
+                                {
+                                    <label class="import-model-row" data-brand="@group.Brand">
+                                        <input type="checkbox" name="selectedModels" value="@group.Brand||@(model.Name)" class="import-check" />
+                                        <span class="import-model-row__name">@(model.Name)</span>
+                                        <span class="import-model-row__ar">@(model.DisplayNameAr)</span>
+                                    </label>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-success" id="btn-import" style="display: inline-flex; align-items: center; gap: 6px;">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        <span id="btn-import-label">استيراد المحدد</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        var modalEl = document.getElementById("categoriesImportModal");
+        if (!modalEl) return;
+        var globalCheck = modalEl.querySelector("#select-all-global");
+        var brandChecks = modalEl.querySelectorAll(".select-all-brand");
+        var modelChecks = modalEl.querySelectorAll(".import-check");
+        var btnImport = modalEl.querySelector("#btn-import");
+        var btnLabel = modalEl.querySelector("#btn-import-label");
+
+        function updateButtonLabel() {
+            var checked = modalEl.querySelectorAll(".import-check:checked").length;
+            btnLabel.textContent = checked > 0
+                ? "استيراد المحدد (" + checked + ")"
+                : "استيراد المحدد";
+        }
+
+        if (globalCheck) {
+            globalCheck.addEventListener("change", function () {
+                modelChecks.forEach(function (cb) { cb.checked = globalCheck.checked; });
+                brandChecks.forEach(function (cb) { cb.checked = globalCheck.checked; });
+                updateButtonLabel();
+            });
+        }
+
+        brandChecks.forEach(function (brandCb) {
+            brandCb.addEventListener("change", function () {
+                var brand = brandCb.getAttribute("data-brand");
+                modalEl.querySelectorAll('.import-check[data-brand="' + brand + '"]')
+                    .forEach(function (cb) { cb.checked = brandCb.checked; });
+                updateButtonLabel();
+            });
+        });
+
+        modelChecks.forEach(function (cb) {
+            cb.addEventListener("change", function () {
+                var brand = cb.getAttribute("data-brand");
+                var brandModels = modalEl.querySelectorAll('.import-check[data-brand="' + brand + '"]');
+                var brandChecked = modalEl.querySelectorAll('.import-check[data-brand="' + brand + '"]:checked');
+                var brandCb = modalEl.querySelector('.select-all-brand[data-brand="' + brand + '"]');
+                if (brandCb) {
+                    brandCb.checked = brandModels.length > 0 && brandChecked.length === brandModels.length;
+                }
+                var allChecked = modalEl.querySelectorAll(".import-check:checked").length;
+                if (globalCheck) globalCheck.checked = allChecked === modelChecks.length;
+                updateButtonLabel();
+            });
+        });
+
+        updateButtonLabel();
+    })();
+</script>

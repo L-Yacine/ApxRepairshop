@@ -8,23 +8,45 @@ public sealed class RepairIntakeService
 {
     private readonly MimoShopDbContext dbContext;
 
-    private static readonly IReadOnlyList<DeviceBrandOption> deviceOptions =
-    [
-        new("Samsung", ["Galaxy A54", "Galaxy A34", "Galaxy S23", "Galaxy Note 20"]),
-        new("Apple", ["iPhone 14", "iPhone 13", "iPhone 12", "iPhone X"]),
-        new("Xiaomi", ["Redmi Note 12", "Redmi Note 11", "Poco X5", "Mi 11 Lite"]),
-        new("Oppo", ["A57", "A78", "Reno 8", "Reno 10"]),
-        new("Huawei", ["P30 Lite", "Y9 Prime", "Nova 9", "Mate 20"])
-    ];
-
     public RepairIntakeService(MimoShopDbContext dbContext)
     {
         this.dbContext = dbContext;
     }
 
-    public IReadOnlyList<DeviceBrandOption> GetDeviceOptions()
+    public async Task<IReadOnlyList<DeviceBrandOption>> GetDeviceOptionsAsync()
     {
-        return deviceOptions;
+        List<Brand> brands = await dbContext.Brands
+            .AsNoTracking()
+            .Where(brand => brand.IsActive)
+            .OrderBy(brand => brand.SortOrder)
+            .ThenBy(brand => brand.Name)
+            .Include(brand => brand.PhoneModels.Where(model => model.IsActive)
+                .OrderBy(model => model.SortOrder)
+                .ThenBy(model => model.Name))
+            .ToListAsync();
+
+        return brands
+            .Select(brand => new DeviceBrandOption(
+                brand.Name,
+                brand.PhoneModels.Select(model => model.Name).ToList()))
+            .ToList();
+    }
+
+    public async Task<IReadOnlyList<string>> GetModelsForBrandAsync(string brand)
+    {
+        string normalizedBrand = brand?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(normalizedBrand))
+        {
+            return [];
+        }
+
+        return await dbContext.PhoneModels
+            .AsNoTracking()
+            .Where(model => model.IsActive && model.Brand!.Name == normalizedBrand)
+            .OrderBy(model => model.SortOrder)
+            .ThenBy(model => model.Name)
+            .Select(model => model.Name)
+            .ToListAsync();
     }
 
     public async Task<CustomerRecord?> FindCustomerByPhoneAsync(string phone)
@@ -112,11 +134,21 @@ public sealed class RepairIntakeService
         return ToRepairTicketRecord(ticket);
     }
 
-    public bool IsKnownBrandModel(string brand, string model)
+    public async Task<bool> IsKnownBrandModelAsync(string brand, string model)
     {
-        return deviceOptions.Any(option =>
-            string.Equals(option.Brand, brand, StringComparison.OrdinalIgnoreCase)
-            && option.Models.Any(candidate => string.Equals(candidate, model, StringComparison.OrdinalIgnoreCase)));
+        string normalizedBrand = brand?.Trim() ?? string.Empty;
+        string normalizedModel = model?.Trim() ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(normalizedBrand) || string.IsNullOrWhiteSpace(normalizedModel))
+        {
+            return false;
+        }
+
+        return await dbContext.PhoneModels
+            .AsNoTracking()
+            .AnyAsync(model => model.IsActive
+                && model.Brand!.Name == normalizedBrand
+                && model.Name == normalizedModel);
     }
 
     private static string NormalizePhone(string phone)

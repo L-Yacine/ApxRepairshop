@@ -1,0 +1,461 @@
+@model RepairIntakeViewModel
+
+@{
+    int brandCount = Model.DeviceOptions.Count;
+    bool showBrandSearch = brandCount > 8;
+}
+
+<div class="modal fade" id="repairCreateModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form asp-action="Create" method="post" class="intake-sheet" novalidate data-modal-form>
+                <div class="modal-header">
+                    <h5 class="modal-title">بطاقة صيانة جديدة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger validation-summary"></div>
+
+                    <p class="text-muted">ابدأ برقم الهاتف. إذا كان العميل مسجلاً يُملأ تلقائياً، وإلا يُنشأ ملفه عند الحفظ.</p>
+
+                    <section class="field-block" aria-labelledby="block-customer">
+                        <div class="field-block__head">
+                            <h2 class="field-block__title" id="block-customer">العميل</h2>
+                            <span class="status-chip status-chip--idle" data-status-chip role="status" aria-live="polite">
+                                <span class="status-chip__icon" data-chip-icon>
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                </span>
+                                <span class="status-chip__text" data-chip-text>أدخل الهاتف ثم اضغط بحث</span>
+                            </span>
+                        </div>
+
+                        <div class="phone-hero">
+                            <input asp-for="CustomerPhone" class="form-control phone-hero__input" autocomplete="tel" inputmode="tel" dir="ltr" placeholder="رقم الهاتف" data-customer-phone aria-label="رقم هاتف العميل" />
+                            <button type="button" class="btn btn-primary phone-hero__btn" data-lookup-btn>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                بحث
+                            </button>
+                        </div>
+                        <span asp-validation-for="CustomerPhone" class="text-danger"></span>
+
+                        <div class="form-grid">
+                            <div class="form-field form-field--full">
+                                <label asp-for="CustomerName" class="form-label">الاسم</label>
+                                <input asp-for="CustomerName" class="form-control" autocomplete="name" data-customer-name />
+                                <span asp-validation-for="CustomerName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <details class="disclosure disclosure--sm">
+                            <summary class="disclosure__summary">بيانات اتصال إضافية (اختياري)</summary>
+                            <div class="disclosure__body">
+                                <div class="form-grid">
+                                    <div class="form-field">
+                                        <label asp-for="CustomerWhatsApp" class="form-label">واتساب</label>
+                                        <input asp-for="CustomerWhatsApp" class="form-control" autocomplete="tel" inputmode="tel" dir="ltr" data-customer-whatsapp />
+                                        <span asp-validation-for="CustomerWhatsApp" class="text-danger"></span>
+                                    </div>
+                                    <div class="form-field">
+                                        <label asp-for="CustomerTelegram" class="form-label">تيليغرام</label>
+                                        <input asp-for="CustomerTelegram" class="form-control" placeholder="مثال: @@username" data-customer-telegram />
+                                        <span asp-validation-for="CustomerTelegram" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </details>
+                    </section>
+
+                    <section class="field-block" aria-labelledby="block-device">
+                        <div class="field-block__head">
+                            <h2 class="field-block__title" id="block-device">الجهاز</h2>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-field form-field--full">
+                                <label asp-for="DeviceBrand" class="form-label">العلامة</label>
+                                @if (showBrandSearch)
+                                {
+                                    <div class="filter-search filter-search--pill">
+                                        <input type="search" class="form-control" placeholder="ابحث عن علامة..." data-brand-search aria-label="بحث العلامة" />
+                                    </div>
+                                }
+                                <div class="filter-tabs filter-tabs--flush" data-device-brand>
+                                    @foreach (DeviceBrandOption option in Model.DeviceOptions)
+                                    {
+                                        <button type="button" class="filter-tab" data-value="@option.Brand">@option.Brand</button>
+                                    }
+                                </div>
+                                <input asp-for="DeviceBrand" type="hidden" data-brand-input />
+                                <span asp-validation-for="DeviceBrand" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-field form-field--full">
+                                <label asp-for="DeviceModel" class="form-label">الموديل</label>
+                                <select asp-for="DeviceModel" class="form-select model-picker__source" data-device-model disabled tabindex="-1" aria-hidden="true">
+                                    <option value="">اختر العلامة أولاً</option>
+                                    @foreach (DeviceBrandOption option in Model.DeviceOptions)
+                                    {
+                                        foreach (string deviceModel in option.Models)
+                                        {
+                                            <option value="@deviceModel" data-brand="@option.Brand">@deviceModel</option>
+                                        }
+                                    }
+                                </select>
+                                <button type="button" class="model-picker-trigger" data-model-picker-trigger disabled aria-haspopup="dialog" aria-expanded="false">
+                                    <span class="model-picker-trigger__value" data-model-picker-label>اختر العلامة أولاً</span>
+                                    <span class="model-picker-trigger__icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="11" cy="11" r="7"></circle>
+                                            <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+                                        </svg>
+                                    </span>
+                                </button>
+                                <div class="model-picker" data-model-picker hidden role="dialog" aria-modal="true" aria-labelledby="model-picker-title">
+                                    <div class="model-picker__backdrop" data-model-picker-close></div>
+                                    <div class="model-picker__panel" role="document">
+                                        <div class="model-picker__handle" aria-hidden="true"></div>
+                                        <div class="model-picker__header">
+                                            <div>
+                                                <p class="model-picker__eyebrow">الموديل</p>
+                                                <h3 class="model-picker__title" id="model-picker-title">اختر موديل الجهاز</h3>
+                                            </div>
+                                            <button type="button" class="model-picker__close" data-model-picker-close aria-label="إغلاق">
+                                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <div class="model-picker__search">
+                                            <input type="search" class="form-control" placeholder="ابحث عن الموديل..." data-model-picker-search autocomplete="off" aria-label="بحث الموديل" />
+                                        </div>
+                                        <div class="model-picker__meta" data-model-picker-count></div>
+                                        <div class="model-picker__list" data-model-picker-list role="listbox" aria-label="موديلات الجهاز"></div>
+                                        <p class="model-picker__empty" data-model-picker-empty hidden>لا توجد نتائج مطابقة.</p>
+                                    </div>
+                                </div>
+                                <span asp-validation-for="DeviceModel" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="field-block" aria-labelledby="block-problem">
+                        <div class="field-block__head">
+                            <h2 class="field-block__title" id="block-problem">المشكلة</h2>
+                        </div>
+
+                        <div class="quick-tags" data-quick-tags>
+                            <button type="button" class="quick-tag" data-tag="شاشة مكسورة">شاشة مكسورة</button>
+                            <button type="button" class="quick-tag" data-tag="بطارية ضعيفة">بطارية ضعيفة</button>
+                            <button type="button" class="quick-tag" data-tag="مشكلة شحن">مشكلة شحن</button>
+                            <button type="button" class="quick-tag" data-tag="كاميرا لا تعمل">كاميرا لا تعمل</button>
+                            <button type="button" class="quick-tag" data-tag="سقط في الماء">سقط في الماء</button>
+                            <button type="button" class="quick-tag" data-tag="لا يقلع">لا يقلع</button>
+                            <button type="button" class="quick-tag" data-tag="بطء عام">بطء عام</button>
+                            <button type="button" class="quick-tag" data-tag="تحديث النظام">تحديث النظام</button>
+                        </div>
+                        <textarea asp-for="ProblemDescription" class="form-control" rows="3" placeholder="اشرح المشكلة أو اختر من الاقتراحات أعلاه..." data-problem-input></textarea>
+                        <span asp-validation-for="ProblemDescription" class="text-danger"></span>
+                    </section>
+
+                    <section class="field-block" aria-labelledby="block-dispatch">
+                        <div class="field-block__head">
+                            <h2 class="field-block__title" id="block-dispatch">التسليم والتسعير</h2>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <label asp-for="AssignedWorkerUsername" class="form-label">العامل المسؤول</label>
+                                <select asp-for="AssignedWorkerUsername" class="form-select" data-worker-select>
+                                    @foreach (StaffOption staff in Model.StaffOptions)
+                                    {
+                                        <option value="@staff.Username">@staff.DisplayName</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="AssignedWorkerUsername" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-field">
+                                <label asp-for="EstimatedPrice" class="form-label">السعر التقديري</label>
+                                <div class="price-input">
+                                    <input asp-for="EstimatedPrice" class="form-control price-input__field" type="text" inputmode="decimal" dir="ltr" placeholder="مثال: 1500" data-price-input />
+                                    <button type="button" class="price-input__clear" data-price-clear aria-label="مسح السعر" tabindex="-1">✕</button>
+                                    <span class="price-input__unit">دج</span>
+                                </div>
+                                <span asp-validation-for="EstimatedPrice" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-field form-field--full">
+                                <label asp-for="Notes" class="form-label">ملاحظات (اختياري)</label>
+                                <textarea asp-for="Notes" class="form-control" rows="2" placeholder="أي تفاصيل إضافية..."></textarea>
+                                <span asp-validation-for="Notes" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="modal-footer">
+                    <div class="d-flex gap-2 flex-wrap flex-grow-1">
+                        <button type="submit" name="action" value="print" class="btn btn-primary">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                                <path d="M6 14h12v8H6z"/>
+                            </svg>
+                            حفظ وطباعة
+                        </button>
+                        <button type="submit" name="action" value="continue" class="btn btn-outline-primary">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                            حفظ ومتابعة
+                        </button>
+                    </div>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        var modalEl = document.getElementById("repairCreateModal");
+        if (!modalEl) return;
+        var phoneInput = modalEl.querySelector("[data-customer-phone]");
+        var nameInput = modalEl.querySelector("[data-customer-name]");
+        var whatsAppInput = modalEl.querySelector("[data-customer-whatsapp]");
+        var telegramInput = modalEl.querySelector("[data-customer-telegram]");
+        var lookupBtn = modalEl.querySelector("[data-lookup-btn]");
+        var chip = modalEl.querySelector("[data-status-chip]");
+        var chipIcon = chip && chip.querySelector("[data-chip-icon]");
+        var chipText = chip && chip.querySelector("[data-chip-text]");
+        var brandInput = modalEl.querySelector("[data-brand-input]");
+        var brandStrip = modalEl.querySelector("[data-device-brand]");
+        var brandSearch = modalEl.querySelector("[data-brand-search]");
+        var modelSelect = modalEl.querySelector("[data-device-model]");
+        var modelPickerTrigger = modalEl.querySelector("[data-model-picker-trigger]");
+        var modelPickerLabel = modalEl.querySelector("[data-model-picker-label]");
+        var modelPicker = modalEl.querySelector("[data-model-picker]");
+        var modelPickerSearch = modalEl.querySelector("[data-model-picker-search]");
+        var modelPickerList = modalEl.querySelector("[data-model-picker-list]");
+        var modelPickerCount = modalEl.querySelector("[data-model-picker-count]");
+        var modelPickerEmpty = modalEl.querySelector("[data-model-picker-empty]");
+        var workerSelect = modalEl.querySelector("[data-worker-select]");
+        var priceInput = modalEl.querySelector("[data-price-input]");
+        var problemInput = modalEl.querySelector("[data-problem-input]");
+
+        var svgIcons = {
+            idle: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+            loading: '<svg class="spinner" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>',
+            new: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" y1="8" x2="19" y2="14"></line><line x1="16" y1="11" x2="22" y2="11"></line></svg>',
+            found: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>',
+            error: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>'
+        };
+
+        function setChip(state, text) {
+            if (!chip) return;
+            chip.className = "status-chip status-chip--" + (state === "error" ? "idle" : state);
+            if (chipIcon) chipIcon.innerHTML = svgIcons[state] || svgIcons.idle;
+            if (chipText) chipText.textContent = text;
+        }
+
+        async function lookupCustomer() {
+            var phone = phoneInput.value.trim();
+            if (!phone) {
+                setChip("idle", "أدخل الهاتف ثم اضغط بحث");
+                return;
+            }
+            setChip("loading", "جاري البحث...");
+            try {
+                var response = await fetch('@Url.Action("LookupCustomer")?phone=' + encodeURIComponent(phone));
+                if (!response.ok) {
+                    setChip("error", "تعذر البحث. حاول مجدداً.");
+                    return;
+                }
+                var customer = await response.json();
+                if (!customer.found) {
+                    setChip("new", "رقم جديد. أدخل الاسم لإنشاء ملف.");
+                    return;
+                }
+                nameInput.value = customer.name || "";
+                whatsAppInput.value = customer.whatsApp || "";
+                telegramInput.value = customer.telegram || "";
+                setChip("found", "تم العثور على العميل.");
+            } catch (err) {
+                setChip("error", "تعذر البحث. حاول مجدداً.");
+            }
+        }
+
+        function filterModels() {
+            var selectedBrand = brandInput.value;
+            if (!selectedBrand) {
+                modelSelect.disabled = true;
+                modelSelect.options[0].text = "اختر العلامة أولاً";
+                modelSelect.value = "";
+                syncModelPickerTrigger();
+                return;
+            }
+            modelSelect.disabled = false;
+            modelSelect.options[0].text = "اختر الموديل";
+            var currentModelIsVisible = false;
+            for (var i = 0; i < modelSelect.options.length; i++) {
+                var option = modelSelect.options[i];
+                var optionBrand = option.dataset.brand;
+                var shouldShow = !optionBrand || optionBrand === selectedBrand;
+                option.hidden = !shouldShow;
+                if (option.value === modelSelect.value && shouldShow) {
+                    currentModelIsVisible = true;
+                }
+            }
+            if (!currentModelIsVisible) {
+                modelSelect.value = "";
+            }
+            syncModelPickerTrigger();
+        }
+
+        function getAvailableModelOptions() {
+            if (!modelSelect) return [];
+            return Array.from(modelSelect.options).filter(function (o) { return o.value && !o.hidden && !o.disabled; });
+        }
+
+        function syncModelPickerTrigger() {
+            if (!modelPickerTrigger || !modelPickerLabel || !modelSelect) return;
+            var hasBrand = Boolean(brandInput && brandInput.value);
+            var selectedOption = modelSelect.options[modelSelect.selectedIndex];
+            modelPickerTrigger.disabled = !hasBrand;
+            modelPickerTrigger.classList.toggle("is-placeholder", !modelSelect.value);
+            modelPickerLabel.textContent = !hasBrand
+                ? "اختر العلامة أولاً"
+                : (selectedOption && selectedOption.value ? selectedOption.text : "ابحث واختر الموديل");
+        }
+
+        function renderModelPickerOptions() {
+            if (!modelPickerList || !modelPickerEmpty || !modelSelect) return;
+            var term = ((modelPickerSearch && modelPickerSearch.value) || "").trim().toLowerCase();
+            var options = getAvailableModelOptions();
+            var matches = options.filter(function (o) { return o.text.toLowerCase().indexOf(term) !== -1; });
+            modelPickerList.innerHTML = "";
+            matches.forEach(function (option) {
+                var item = document.createElement("button");
+                item.type = "button";
+                item.className = "model-picker__option";
+                item.setAttribute("role", "option");
+                item.setAttribute("aria-selected", option.value === modelSelect.value ? "true" : "false");
+                item.dataset.value = option.value;
+                var label = document.createElement("span");
+                label.textContent = option.text;
+                item.appendChild(label);
+                if (option.value === modelSelect.value) {
+                    var selectedText = document.createElement("strong");
+                    selectedText.textContent = "مختار";
+                    item.appendChild(selectedText);
+                }
+                item.addEventListener("click", function () {
+                    modelSelect.value = option.value;
+                    syncModelPickerTrigger();
+                    closeModelPicker();
+                });
+                modelPickerList.appendChild(item);
+            });
+            modelPickerEmpty.hidden = matches.length > 0;
+            if (modelPickerCount) {
+                modelPickerCount.textContent = matches.length === options.length
+                    ? options.length + " موديل متاح"
+                    : matches.length + " من " + options.length + " موديل";
+            }
+        }
+
+        function openModelPicker() {
+            if (!modelPicker || !modelPickerTrigger || modelPickerTrigger.disabled) return;
+            renderModelPickerOptions();
+            modelPicker.hidden = false;
+            modelPickerTrigger.setAttribute("aria-expanded", "true");
+            document.body.classList.add("is-model-picker-open");
+            requestAnimationFrame(function () {
+                if (modelPickerSearch) modelPickerSearch.focus();
+            });
+        }
+
+        function closeModelPicker() {
+            if (!modelPicker || !modelPickerTrigger) return;
+            modelPicker.hidden = true;
+            modelPickerTrigger.setAttribute("aria-expanded", "false");
+            document.body.classList.remove("is-model-picker-open");
+            if (modelPickerSearch) modelPickerSearch.value = "";
+            modelPickerTrigger.focus();
+        }
+
+        function syncBrandPills() {
+            var currentBrand = brandInput.value;
+            if (!brandStrip) return;
+            brandStrip.querySelectorAll(".filter-tab").forEach(function (p) {
+                p.classList.toggle("is-active", p.getAttribute("data-value") === currentBrand);
+            });
+        }
+
+        function filterBrandsBySearch() {
+            if (!brandSearch) return;
+            var term = brandSearch.value.trim().toLowerCase();
+            if (!brandStrip) return;
+            brandStrip.querySelectorAll(".filter-tab").forEach(function (p) {
+                var value = (p.getAttribute("data-value") || "").toLowerCase();
+                p.hidden = term.length > 0 && value.indexOf(term) === -1;
+            });
+        }
+
+        if (lookupBtn) lookupBtn.addEventListener("click", lookupCustomer);
+        if (phoneInput) {
+            phoneInput.addEventListener("keydown", function (e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    lookupCustomer();
+                }
+            });
+        }
+        if (brandStrip) {
+            brandStrip.querySelectorAll(".filter-tab").forEach(function (pill) {
+                pill.addEventListener("click", function () {
+                    brandStrip.querySelectorAll(".filter-tab").forEach(function (p) { p.classList.remove("is-active"); });
+                    pill.classList.add("is-active");
+                    brandInput.value = pill.getAttribute("data-value") || "";
+                    filterModels();
+                    renderModelPickerOptions();
+                });
+            });
+        }
+        if (brandSearch) brandSearch.addEventListener("input", filterBrandsBySearch);
+        if (modelPickerTrigger) modelPickerTrigger.addEventListener("click", openModelPicker);
+        if (modelPickerSearch) modelPickerSearch.addEventListener("input", renderModelPickerOptions);
+        if (modelPicker) {
+            modelPicker.querySelectorAll("[data-model-picker-close]").forEach(function (el) {
+                el.addEventListener("click", closeModelPicker);
+            });
+        }
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape" && modelPicker && !modelPicker.hidden) {
+                closeModelPicker();
+            }
+        });
+        if (modelSelect) modelSelect.addEventListener("change", syncModelPickerTrigger);
+        if (workerSelect) workerSelect.addEventListener("change", function () {});
+
+        function insertQuickTag(tag) {
+            if (!problemInput || !tag) return;
+            var current = problemInput.value || "";
+            if (current.indexOf(tag) !== -1) return;
+            var needsSeparator = current.length > 0 && !/[\s،]$/.test(current);
+            problemInput.value = current + (needsSeparator ? "، " : current ? " " : "") + tag;
+            problemInput.focus();
+        }
+        if (modalEl) {
+            modalEl.querySelectorAll("[data-quick-tags] .quick-tag").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    insertQuickTag(btn.getAttribute("data-tag") || "");
+                });
+            });
+        }
+
+        syncBrandPills();
+        filterModels();
+        syncModelPickerTrigger();
+    })();
+</script>

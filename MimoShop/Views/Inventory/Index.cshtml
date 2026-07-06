@@ -1,67 +1,414 @@
 @model InventoryIndexViewModel
-
+@using System.Linq
 @{
     ViewData["Title"] = "المخزون";
+    var allBrands = Model.Parts.Select(p => p.Brand).Distinct().OrderBy(b => b).ToList();
+    var allTypes = Model.Parts.Select(p => p.PartType).Distinct().OrderBy(t => t).ToList();
+    var allVariants = Model.Parts.Select(p => p.Variant).Distinct().OrderBy(v => v).ToList();
+    int totalCount = Model.Parts.Count;
+    int stockedCount = Model.Parts.Count(p => p.IsStocked);
+    int onDemandCount = totalCount - stockedCount;
 }
 
 <section class="page-header">
-    <p class="eyebrow">المخزون</p>
-    <h1>كتالوغ قطع الغيار</h1>
-    <p>راجع القطع حسب العلامة والموديل والنوع والنوعية، وحدّث الكمية وأسعار التكلفة والبيع.</p>
+    <p class="page-header__eyebrow">المخزون</p>
+    <h1 class="page-header__title">قطع الغيار</h1>
+    <p class="page-header__lede">تصفح القطع حسب العلامة والموديل والنوع، أو ابحث باسم القطعة.</p>
+    <div class="page-header__actions">
+        <a asp-controller="Categories" asp-action="Index" class="btn btn-outline-secondary">إدارة التصنيفات</a>
+    </div>
 </section>
 
-<div class="status-page-actions">
-    <a asp-action="Create" class="btn btn-primary">إضافة قطعة</a>
-</div>
-
-<section class="form-section" aria-labelledby="inventory-list">
-    <div class="section-heading">
-        <h2 id="inventory-list">كل القطع</h2>
-        <span class="job-count">@Model.Parts.Count</span>
+@if (totalCount == 0)
+{
+    <div class="empty">
+        <span class="empty__icon" aria-hidden="true" style="padding: 12px; display: inline-flex; justify-content: center; align-items: center;">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 8 12 3 3 8v8l9 5 9-5z" />
+                <path d="M3.3 8.5 12 13l8.7-4.5M12 22V13" />
+            </svg>
+        </span>
+        <h2 class="empty__title">لا توجد قطع في المخزون بعد</h2>
+        <p class="empty__msg">ابدأ بإضافة أول قطعة غيار. ستحتاج لإضافة العلامة والموديل والنوع في صفحة التصنيفات أولاً إن لم تكن موجودة.</p>
+        <div class="empty__action">
+            <button type="button" class="btn btn-primary" data-open-modal="inventoryForm">إضافة قطعة</button>
+        </div>
+    </div>
+}
+else
+{
+    <div class="filter-bar inv-filter" data-inv-filter data-active-stock="stocked">
+        <div class="filter-tabs" role="tablist" aria-label="تصفية حسب التوفر">
+            <button type="button" class="filter-tab" data-stock="all" role="tab">الكل <span class="filter-tab__count">@totalCount</span></button>
+            <button type="button" class="filter-tab is-active" data-stock="stocked" role="tab">مخزنة <span class="filter-tab__count">@stockedCount</span></button>
+            <button type="button" class="filter-tab" data-stock="ondemand" role="tab">عند الطلب <span class="filter-tab__count">@onDemandCount</span></button>
+        </div>
+        <div class="cat-toolbar inv-filter__toolbar">
+            <div class="filter-search inv-filter__search">
+                <span class="filter-search__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </span>
+                <input id="filter-search" type="search" placeholder="ابحث في العلامة، الموديل، النوع..." data-filter="search" aria-label="بحث في المخزون" />
+            </div>
+            <button type="button" class="btn btn-primary" data-open-modal="inventoryForm">إضافة قطعة</button>
+        </div>
+        <div class="form-grid form-grid--3 inv-filter__refine">
+            <div class="form-field">
+                <label class="form-label" for="filter-brand">العلامة</label>
+                <select id="filter-brand" class="form-select" data-filter="brand">
+                    <option value="">كل العلامات</option>
+                    @foreach (string brand in allBrands)
+                    {
+                        <option value="@brand">@brand</option>
+                    }
+                </select>
+            </div>
+            <div class="form-field">
+                <label class="form-label" for="filter-type">نوع القطعة</label>
+                <select id="filter-type" class="form-select" data-filter="type">
+                    <option value="">كل الأنواع</option>
+                    @foreach (string type in allTypes)
+                    {
+                        <option value="@type">@type</option>
+                    }
+                </select>
+            </div>
+            <div class="form-field">
+                <label class="form-label" for="filter-variant">النوعية</label>
+                <select id="filter-variant" class="form-select" data-filter="variant">
+                    <option value="">كل النوعية</option>
+                    @foreach (string variant in allVariants)
+                    {
+                        <option value="@variant">@variant</option>
+                    }
+                </select>
+            </div>
+        </div>
     </div>
 
-    @if (Model.Parts.Count == 0)
-    {
-        <p class="empty-state">لا توجد قطع مسجلة بعد.</p>
-    }
-    else
-    {
-        <div class="job-table-wrap">
-            <table class="table job-table inventory-table">
-                <thead>
-                    <tr>
-                        <th>العلامة</th>
-                        <th>الموديل</th>
-                        <th>نوع القطعة</th>
-                        <th>النوعية</th>
-                        <th>الكمية</th>
-                        <th>التكلفة</th>
-                        <th>البيع</th>
-                        <th>الحالة</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (InventoryPartListItemViewModel part in Model.Parts)
+    <div class="inv-grid" data-inv-grid>
+        @foreach (InventoryPartListItemViewModel part in Model.Parts)
+        {
+            string? thumbnail = !string.IsNullOrWhiteSpace(part.ThumbnailUrl)
+                ? part.ThumbnailUrl
+                : !string.IsNullOrWhiteSpace(part.ModelThumbnailUrl)
+                    ? part.ModelThumbnailUrl
+                    : !string.IsNullOrWhiteSpace(part.BrandThumbnailUrl)
+                        ? part.BrandThumbnailUrl
+                        : !string.IsNullOrWhiteSpace(part.PartTypeThumbnailUrl)
+                            ? part.PartTypeThumbnailUrl
+                            : null;
+            <article class="inv-card @(part.Quantity == 0 ? "inv-card--empty" : "")"
+                     data-brand="@part.Brand"
+                     data-type="@part.PartType"
+                     data-variant="@part.Variant"
+                     data-model="@part.Model"
+                     data-stock="@(part.IsStocked ? "stocked" : "ondemand")"
+                     data-search="@($"{part.Brand} {part.Model} {part.PartType} {part.Variant}".ToLowerInvariant())">
+                <div class="inv-card__media">
+                    @if (!string.IsNullOrWhiteSpace(thumbnail))
                     {
-                        <tr>
-                            <td>@part.Brand</td>
-                            <td>@part.Model</td>
-                            <td>@part.PartType</td>
-                            <td>@part.Variant</td>
-                            <td>@part.Quantity</td>
-                            <td>@part.UnitCostPrice.ToString("N0") دج</td>
-                            <td>@part.UnitSalePrice.ToString("N0") دج</td>
-                            <td>
-                                <span class="status-badge @(part.IsStocked ? "" : "status-waiting")">
-                                    @(part.IsStocked ? "مخزنة" : "عند الطلب")
-                                </span>
-                            </td>
-                            <td><a asp-action="Edit" asp-route-id="@part.Id">تعديل</a></td>
-                        </tr>
+                        <img src="@thumbnail" alt="@($"{part.Brand} {part.Model} {part.PartType}")" loading="lazy" />
                     }
-                </tbody>
-            </table>
+                    else
+                    {
+                        <span class="catalog-image-placeholder" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 8 12 3 3 8v8l9 5 9-5z" />
+                                <path d="M3.3 8.5 12 13l8.7-4.5M12 22V13" />
+                            </svg>
+                        </span>
+                    }
+                </div>
+                <div class="inv-card__head">
+                    <span class="pill @(part.IsStocked ? "pill--stocked" : "pill--on-demand")">
+                        @(part.IsStocked ? "مخزنة" : "عند الطلب")
+                    </span>
+                </div>
+                <h3 class="inv-card__part">@part.PartType · @part.Variant</h3>
+                <p class="inv-card__sub">@part.Brand @part.Model</p>
+                <div class="inv-card__qty">
+                    <span class="inv-card__qty-num @(part.Quantity == 0 ? "inv-card__qty--low" : "")">@part.Quantity</span>
+                    <span class="inv-card__qty-label">قطعة متوفرة</span>
+                </div>
+                <div class="inv-card__prices">
+                    <div class="inv-card__price">
+                        <div class="inv-card__price-label">تكلفة</div>
+                        <div class="inv-card__price-value">@part.UnitCostPrice.ToString("N0") دج</div>
+                    </div>
+                    <div class="inv-card__price">
+                        <div class="inv-card__price-label">بيع</div>
+                        <div class="inv-card__price-value">@part.UnitSalePrice.ToString("N0") دج</div>
+                    </div>
+                </div>
+                <div class="inv-card__foot">
+                    <span class="inv-card__date">آخر تحديث: @part.UpdatedAt.ToString("yyyy/MM/dd")</span>
+                    <div class="inv-card__actions">
+                        <button type="button" class="btn btn-ghost btn--sm inv-card__action"
+                                data-part-image-fetch-btn
+                                data-id="@part.Id"
+                                data-brand-name="@part.Brand"
+                                data-model-name="@part.Model"
+                                data-part-type-name="@part.PartType">جلب صورة</button>
+                        <button type="button" class="btn btn-ghost btn--sm inv-card__action inv-card__action--primary"
+                                data-open-modal="inventoryForm" data-modal-arg="@part.Id">تعديل ←</button>
+                    </div>
+                </div>
+            </article>
+        }
+    </div>
+
+    <div class="empty" data-inv-empty hidden>
+        <span class="empty__icon" aria-hidden="true" style="padding: 12px; display: inline-flex; justify-content: center; align-items: center;">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                <line x1="8" y1="11" x2="14" y2="11"></line>
+            </svg>
+        </span>
+        <h2 class="empty__title">لا توجد قطع تطابق البحث</h2>
+        <p class="empty__msg">جرّب فلتراً آخر أو ابحث بكلمة مختلفة.</p>
+    </div>
+}
+
+<div class="image-fetch-modal" data-part-image-fetch-modal hidden>
+    <div class="image-fetch-modal__backdrop" data-part-image-fetch-close></div>
+    <section class="image-fetch-dialog" role="dialog" aria-modal="true" aria-labelledby="part-image-fetch-title">
+        <div class="image-fetch-dialog__header">
+            <div>
+                <p class="image-fetch-dialog__eyebrow">iFixit</p>
+                <h2 id="part-image-fetch-title" class="image-fetch-dialog__title">جلب صورة قطعة</h2>
+            </div>
+            <button type="button" class="btn btn-outline-secondary btn--sm" data-part-image-fetch-close>إغلاق</button>
         </div>
-    }
-</section>
+        <div class="image-fetch-dialog__body">
+            <div class="image-fetch-search">
+                <input type="search" class="form-control" data-part-image-fetch-query aria-label="بحث عن صورة قطعة" />
+                <button type="button" class="btn btn-primary" data-part-image-fetch-search>بحث</button>
+            </div>
+            <p class="form-hint" data-part-image-fetch-status>اختر نتيجة واحدة بعد مراجعة الصورة والاسم.</p>
+            <div class="image-fetch-results" data-part-image-fetch-results></div>
+        </div>
+    </section>
+</div>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script>
+        (() => {
+            const grid = document.querySelector("[data-inv-grid]");
+            if (!grid) return;
+            const root = document.querySelector("[data-inv-filter]");
+            const empty = document.querySelector("[data-inv-empty]");
+            const search = root?.querySelector("[data-filter='search']");
+            const brandSel = root?.querySelector("[data-filter='brand']");
+            const typeSel = root?.querySelector("[data-filter='type']");
+            const variantSel = root?.querySelector("[data-filter='variant']");
+            const stockTabs = root?.querySelectorAll(".filter-tab[data-stock]");
+            const cards = grid.querySelectorAll(".inv-card");
+
+            function apply() {
+                const brand = brandSel?.value || "";
+                const type = typeSel?.value || "";
+                const variant = variantSel?.value || "";
+                const stock = root?.getAttribute("data-active-stock") || "all";
+                const q = (search?.value || "").trim().toLowerCase();
+                let visible = 0;
+
+                cards.forEach(card => {
+                    const cb = brand === "" || card.getAttribute("data-brand") === brand;
+                    const ct = type === "" || card.getAttribute("data-type") === type;
+                    const cv = variant === "" || card.getAttribute("data-variant") === variant;
+                    const cs = stock === "all" || card.getAttribute("data-stock") === stock;
+                    const cq = !q || (card.getAttribute("data-search") || "").includes(q);
+                    const show = cb && ct && cv && cs && cq;
+                    card.hidden = !show;
+                    if (show) visible++;
+                });
+
+                if (empty) empty.hidden = visible > 0;
+            }
+
+            brandSel?.addEventListener("change", apply);
+            typeSel?.addEventListener("change", apply);
+            variantSel?.addEventListener("change", apply);
+            search?.addEventListener("input", apply);
+            stockTabs?.forEach(tab => {
+                tab.addEventListener("click", () => {
+                    stockTabs.forEach(t => t.classList.remove("is-active"));
+                    tab.classList.add("is-active");
+                    root.setAttribute("data-active-stock", tab.getAttribute("data-stock") || "all");
+                    apply();
+                });
+            });
+
+            apply();
+        })();
+
+        (() => {
+            const imageFetchModal = document.querySelector("[data-part-image-fetch-modal]");
+            const imageFetchQuery = document.querySelector("[data-part-image-fetch-query]");
+            const imageFetchStatus = document.querySelector("[data-part-image-fetch-status]");
+            const imageFetchResults = document.querySelector("[data-part-image-fetch-results]");
+            const imageFetchSearch = document.querySelector("[data-part-image-fetch-search]");
+            const imageFetchToken = document.querySelector("input[name='__RequestVerificationToken']")?.value || "";
+            let activePartId = "";
+            let activeCardMedia = null;
+
+            function setImageFetchStatus(message, isError) {
+                if (!imageFetchStatus) return;
+                imageFetchStatus.textContent = message;
+                imageFetchStatus.classList.toggle("image-fetch-dialog__status--error", Boolean(isError));
+            }
+
+            function openImageFetchModal(button) {
+                activePartId = button.getAttribute("data-id") || "";
+                const card = button.closest(".inv-card");
+                activeCardMedia = card ? card.querySelector(".inv-card__media") : null;
+                const brandName = button.getAttribute("data-brand-name") || "";
+                const modelName = button.getAttribute("data-model-name") || "";
+                const partTypeName = button.getAttribute("data-part-type-name") || "";
+                const defaultQuery = `${modelName} ${partTypeName}`.trim();
+
+                imageFetchQuery.value = defaultQuery;
+                imageFetchResults.innerHTML = "";
+                setImageFetchStatus("اختر نتيجة واحدة بعد مراجعة الصورة والاسم.", false);
+                imageFetchModal.hidden = false;
+                document.body.classList.add("modal-open");
+                imageFetchQuery.focus();
+                searchPartImages();
+            }
+
+            function closeImageFetchModal() {
+                imageFetchModal.hidden = true;
+                document.body.classList.remove("modal-open");
+                activePartId = "";
+                activeCardMedia = null;
+            }
+
+            async function searchPartImages() {
+                const query = imageFetchQuery.value.trim();
+                if (!activePartId || !query) {
+                    setImageFetchStatus("أدخل اسم القطعة للبحث.", true);
+                    return;
+                }
+
+                imageFetchSearch.disabled = true;
+                imageFetchResults.innerHTML = "";
+                setImageFetchStatus("جاري البحث...", false);
+
+                try {
+                    const url = `/Inventory/SearchPartImages/${encodeURIComponent(activePartId)}?query=${encodeURIComponent(query)}`;
+                    const response = await fetch(url, { headers: { "Accept": "application/json" } });
+                    if (!response.ok) {
+                        const errData = await response.json().catch(() => ({}));
+                        throw new Error(errData.message || "فشل الاتصال بخادم iFixit.");
+                    }
+
+                    const candidates = await response.json();
+                    renderImageCandidates(candidates);
+                    setImageFetchStatus(candidates.length ? "راجع النتائج واختر الصورة المطابقة." : "لا توجد نتائج لهذا البحث.", !candidates.length);
+                } catch (error) {
+                    setImageFetchStatus(error.message || "تعذر البحث الآن. جرّب مرة أخرى.", true);
+                } finally {
+                    imageFetchSearch.disabled = false;
+                }
+            }
+
+            function renderImageCandidates(candidates) {
+                imageFetchResults.innerHTML = "";
+
+                candidates.forEach(candidate => {
+                    const card = document.createElement("button");
+                    card.type = "button";
+                    card.className = "image-fetch-card";
+
+                    const image = document.createElement("img");
+                    image.src = candidate.imageUrl;
+                    image.alt = candidate.title;
+                    image.loading = "lazy";
+
+                    const title = document.createElement("span");
+                    title.className = "image-fetch-card__title";
+                    title.textContent = candidate.title;
+
+                    const source = document.createElement("span");
+                    source.className = "image-fetch-card__source";
+                    source.textContent = candidate.sourceName;
+
+                    card.append(image, title, source);
+                    card.addEventListener("click", () => applyPartImage(candidate.sourceUrl, card));
+                    imageFetchResults.appendChild(card);
+                });
+            }
+
+            async function applyPartImage(sourceUrl, selectedCard) {
+                if (!activePartId || !sourceUrl) return;
+
+                const cards = imageFetchResults.querySelectorAll(".image-fetch-card");
+                cards.forEach(card => card.disabled = true);
+                selectedCard.classList.add("image-fetch-card--selected");
+                setImageFetchStatus("جاري حفظ الصورة...", false);
+
+                const formData = new FormData();
+                formData.append("__RequestVerificationToken", imageFetchToken);
+                formData.append("id", activePartId);
+                formData.append("sourceUrl", sourceUrl);
+
+                try {
+                    const response = await fetch("/Inventory/ApplyPartImage", {
+                        method: "POST",
+                        body: formData,
+                        headers: { "Accept": "application/json" }
+                    });
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.message || "تعذر حفظ الصورة.");
+                    }
+
+                    if (activeCardMedia && data.thumbnailUrl) {
+                        activeCardMedia.innerHTML = "";
+                        const image = document.createElement("img");
+                        image.src = data.thumbnailUrl;
+                        image.alt = imageFetchQuery.value.trim();
+                        image.loading = "lazy";
+                        activeCardMedia.appendChild(image);
+                    }
+
+                    setImageFetchStatus(data.message || "تم حفظ صورة القطعة.", false);
+                    window.setTimeout(closeImageFetchModal, 700);
+                } catch (error) {
+                    cards.forEach(card => card.disabled = false);
+                    selectedCard.classList.remove("image-fetch-card--selected");
+                    setImageFetchStatus(error.message || "تعذر حفظ الصورة.", true);
+                }
+            }
+
+            document.querySelectorAll("[data-part-image-fetch-btn]").forEach(button => {
+                button.addEventListener("click", () => openImageFetchModal(button));
+            });
+
+            imageFetchSearch?.addEventListener("click", searchPartImages);
+            imageFetchQuery?.addEventListener("keydown", event => {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    searchPartImages();
+                }
+            });
+
+            document.querySelectorAll("[data-part-image-fetch-close]").forEach(button => {
+                button.addEventListener("click", closeImageFetchModal);
+            });
+
+            document.addEventListener("keydown", event => {
+                if (event.key === "Escape" && imageFetchModal && !imageFetchModal.hidden) {
+                    closeImageFetchModal();
+                }
+            });
+        })();
+    </script>
+}

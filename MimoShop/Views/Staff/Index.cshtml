@@ -1,0 +1,94 @@
+@model StaffListViewModel
+@{
+    ViewData["Title"] = "إدارة المستخدمين";
+}
+
+<section class="page-header">
+    <p class="page-header__eyebrow">الإدارة</p>
+    <h1 class="page-header__title">إدارة المستخدمين</h1>
+    <p class="page-header__lede">إضافة وتعديل وتعطيل حسابات الموظفين.</p>
+    <div class="page-header__actions">
+        <button type="button" class="btn btn-primary" data-open-modal="staffCreate">إضافة مستخدم</button>
+    </div>
+</section>
+
+@if (TempData["StaffMessage"] is string okMessage)
+{
+    <div class="alert alert-success">@okMessage</div>
+}
+
+@if (Model.Staff.Count == 0)
+{
+    <div class="empty">
+        <span class="empty__icon" aria-hidden="true" style="padding: 12px; display: inline-flex; justify-content: center; align-items: center;">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+        </span>
+        <h2 class="empty__title">لا يوجد مستخدمون</h2>
+        <p class="empty__msg">لم يتم إضافة أي مستخدم بعد. أضف أول مستخدم للبدء.</p>
+    </div>
+}
+else
+{
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>اسم المستخدم</th>
+                    <th>الاسم المعروض</th>
+                    <th>الصفة</th>
+                    <th>الحالة</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (StaffAccount account in Model.Staff)
+                {
+                    <tr>
+                        <td><strong>@account.Username</strong></td>
+                        <td>@account.DisplayName</td>
+                        <td><span class="pill pill--role">@StaffRoles.ToArabicLabel(account.Role)</span></td>
+                        <td>
+                            @if (account.IsActive)
+                            {
+                                <span class="pill pill--active">نشط</span>
+                            }
+                            else
+                            {
+                                <span class="pill pill--inactive">موقوف</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="cluster cluster--sm" style="justify-content: flex-start;">
+                                <button type="button" class="btn btn-outline-primary btn--sm"
+                                        data-open-modal="staffEdit" data-modal-arg="@account.Username">تعديل</button>
+                                <button type="button" class="btn btn-outline-secondary btn--sm"
+                                        data-open-modal="staffResetPassword" data-modal-arg="@account.Username">إعادة كلمة المرور</button>
+                                @if (account.IsActive)
+                                {
+                                    <form asp-action="Deactivate" asp-route-username="@account.Username" method="post" style="display:inline;"
+                                          data-confirm-modal data-confirm-title="تعطيل المستخدم"
+                                          data-confirm-body="هل تريد تعطيل حساب '@account.Username'؟">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-outline-danger btn--sm">تعطيل</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form asp-action="Activate" asp-route-username="@account.Username" method="post" style="display:inline;"
+                                          data-confirm-modal data-confirm-title="تفعيل المستخدم"
+                                          data-confirm-body="هل تريد تفعيل حساب '@account.Username'؟">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-outline-success btn--sm">تفعيل</button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

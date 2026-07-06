@@ -70,6 +70,10 @@ public sealed class RepairTicketDetailsViewModel
 
     public IReadOnlyList<RepairPartOptionViewModel> OnDemandPartOptions { get; set; } = [];
 
+    public IReadOnlyList<RepairPartTypeTabViewModel> StockedPartTypes { get; set; } = [];
+
+    public IReadOnlyList<RepairPartTypeTabViewModel> OnDemandPartTypes { get; set; } = [];
+
     public IReadOnlyList<RepairPartUsageViewModel> PartUsages { get; set; } = [];
 }
 
@@ -95,13 +99,34 @@ public sealed class RepairPartOptionViewModel
 {
     public int Id { get; set; }
 
+    public int PartTypeId { get; set; }
+
+    public string PartTypeName { get; set; } = string.Empty;
+
+    public string PartVariantName { get; set; } = string.Empty;
+
     public string DisplayName { get; set; } = string.Empty;
+
+    public string ThumbnailUrl { get; set; } = string.Empty;
 
     public int Quantity { get; set; }
 
     public decimal UnitSalePrice { get; set; }
 
     public bool IsStocked { get; set; }
+}
+
+public sealed class RepairPartTypeTabViewModel
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+
+    public string ThumbnailUrl { get; set; } = string.Empty;
+
+    public int VariantCount { get; set; }
+
+    public IReadOnlyList<RepairPartOptionViewModel> Parts { get; set; } = [];
 }
 
 public sealed class RepairPartUsageViewModel

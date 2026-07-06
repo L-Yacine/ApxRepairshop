@@ -1,0 +1,43 @@
+@model StaffAccount
+@{
+    ViewData["Title"] = "الملف الشخصي";
+}
+
+<section class="page-header">
+    <p class="page-header__eyebrow">الحساب</p>
+    <h1 class="page-header__title">الملف الشخصي</h1>
+    <p class="page-header__lede">معلومات حسابك في النظام.</p>
+</section>
+
+@if (TempData["ProfileMessage"] is string okMessage)
+{
+    <div class="alert alert-success">@okMessage</div>
+}
+
+<div class="card">
+    <div class="card__body">
+        <div class="form-grid form-grid--2">
+            <div class="form-field">
+                <label class="form-label">اسم المستخدم</label>
+                <p class="form-value">@Model.Username</p>
+            </div>
+            <div class="form-field">
+                <label class="form-label">الاسم المعروض</label>
+                <p class="form-value">@Model.DisplayName</p>
+            </div>
+            <div class="form-field">
+                <label class="form-label">الصفة</label>
+                <p class="form-value">@StaffRoles.ToArabicLabel(Model.Role)</p>
+            </div>
+            <div class="form-field">
+                <label class="form-label">الحالة</label>
+                <p class="form-value">@(Model.IsActive ? "نشط" : "موقوف")</p>
+            </div>
+        </div>
+    </div>
+    <div class="card__footer">
+        <div class="cluster cluster--between">
+            <button type="button" class="btn btn-primary" data-open-modal="changePassword">تغيير كلمة المرور</button>
+        </div>
+    </div>
+</div>

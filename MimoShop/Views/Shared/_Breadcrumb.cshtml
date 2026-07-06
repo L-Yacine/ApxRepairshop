@@ -1,0 +1,107 @@
+@{
+    if (ViewData["HideBreadcrumb"] as bool? == true) { return; }
+
+    string controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    string action = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
+    string? overrideLabel = ViewData["BreadcrumbLabel"] as string;
+    string? suffix = ViewData["BreadcrumbSuffix"] as string;
+
+    if (string.IsNullOrEmpty(controller)) { return; }
+
+    var controllerLabels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        { "Home", "الرئيسية" },
+        { "RepairTickets", "الحالات" },
+        { "Inventory", "المخزون" },
+        { "Categories", "التصنيفات" },
+        { "ShopSettings", "الإعدادات" },
+        { "Dashboard", "لوحة المالك" },
+        { "Staff", "المستخدمين" },
+        { "Account", "الملف الشخصي" },
+    };
+
+    var trail = new List<(string Label, string? Controller, string? Action)>();
+
+    bool isHomeIndex = string.Equals(controller, "Home", StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(action, "Index", StringComparison.OrdinalIgnoreCase);
+    bool isIndex = string.Equals(action, "Index", StringComparison.OrdinalIgnoreCase);
+    bool isAccountProfile = string.Equals(controller, "Account", StringComparison.OrdinalIgnoreCase)
+                         && string.Equals(action, "Profile", StringComparison.OrdinalIgnoreCase);
+
+    string? controllerLabel = controllerLabels.TryGetValue(controller, out var cl) ? cl : controller;
+
+    string ResolveActionLabel()
+    {
+        if (!string.IsNullOrEmpty(overrideLabel))
+            return overrideLabel;
+
+        if (string.Equals(controller, "RepairTickets", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(action, "Create", StringComparison.OrdinalIgnoreCase))
+            return "استقبال صيانة";
+
+        if (string.Equals(controller, "Inventory", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(action, "Form", StringComparison.OrdinalIgnoreCase))
+        {
+            string? id = ViewContext.HttpContext.Request.Query["id"].FirstOrDefault();
+            return string.IsNullOrEmpty(id) ? "إضافة قطعة" : "تعديل قطعة";
+        }
+
+        return action switch
+        {
+            "Details" => "تفاصيل التذكرة",
+            "Receipt" => "إيصال",
+            "Create" => "إضافة مستخدم",
+            "Edit" => "تعديل مستخدم",
+            "ResetPassword" => "إعادة تعيين كلمة المرور",
+            "ChangePassword" => "تغيير كلمة المرور",
+            "ImportPreview" => "معاينة الاستيراد",
+            "Privacy" => "سياسة الخصوصية",
+            "Form" => "إضافة قطعة",
+            _ => action
+        };
+    }
+
+    if (isHomeIndex)
+    {
+        trail.Add((controllerLabel, null, null));
+    }
+    else
+    {
+        trail.Add(("الرئيسية", "Home", "Index"));
+
+        if (isIndex || isAccountProfile)
+        {
+            trail.Add((controllerLabel, null, null));
+        }
+        else
+        {
+            string indexAction = string.Equals(controller, "Account", StringComparison.OrdinalIgnoreCase) ? "Profile" : "Index";
+            trail.Add((controllerLabel, controller, indexAction));
+
+            string actionLabel = ResolveActionLabel();
+            if (!string.IsNullOrEmpty(suffix))
+                actionLabel = $"{actionLabel} #{suffix}";
+            trail.Add((actionLabel, null, null));
+        }
+    }
+
+    if (trail.Count == 0) { return; }
+}
+<nav class="breadcrumbs" aria-label="مسار التنقل">
+    @for (int i = 0; i < trail.Count; i++)
+    {
+        var (label, linkController, linkAction) = trail[i];
+        if (i > 0)
+        {
+            <span class="breadcrumbs__sep" aria-hidden="true">›</span>
+        }
+        if (linkController is not null && linkAction is not null)
+        {
+            <a class="breadcrumbs__link" asp-controller="@linkController" asp-action="@linkAction">@label</a>
+        }
+        else
+        {
+            <span class="breadcrumbs__current">@label</span>
+        }
+    }
+</nav>

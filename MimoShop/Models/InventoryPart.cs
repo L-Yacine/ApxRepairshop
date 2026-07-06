@@ -8,19 +8,32 @@ public sealed class InventoryPart
 
     [Required(ErrorMessage = "العلامة مطلوبة")]
     [Display(Name = "العلامة")]
-    public string Brand { get; set; } = string.Empty;
+    public int BrandId { get; set; }
+
+    public Brand Brand { get; set; } = null!;
 
     [Required(ErrorMessage = "الموديل مطلوب")]
     [Display(Name = "الموديل")]
-    public string Model { get; set; } = string.Empty;
+    public int PhoneModelId { get; set; }
+
+    public PhoneModel PhoneModel { get; set; } = null!;
 
     [Required(ErrorMessage = "نوع القطعة مطلوب")]
     [Display(Name = "نوع القطعة")]
-    public string PartType { get; set; } = string.Empty;
+    public int PartTypeId { get; set; }
+
+    public PartType PartType { get; set; } = null!;
 
     [Required(ErrorMessage = "النوعية مطلوبة")]
     [Display(Name = "النوعية")]
-    public string Variant { get; set; } = string.Empty;
+    public int PartVariantId { get; set; }
+
+    public PartVariant PartVariant { get; set; } = null!;
+
+    [Display(Name = "صورة القطعة")]
+    public string ImageUrl { get; set; } = string.Empty;
+
+    public string ThumbnailUrl { get; set; } = string.Empty;
 
     [Range(0, 100000, ErrorMessage = "الكمية يجب أن تكون رقماً موجباً")]
     [Display(Name = "الكمية")]

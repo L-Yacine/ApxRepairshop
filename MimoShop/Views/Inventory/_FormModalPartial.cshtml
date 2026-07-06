@@ -1,0 +1,229 @@
+@model InventoryPartFormViewModel
+@{
+    bool isEdit = Model.Id > 0;
+    int selectedBrandId = Model.BrandId;
+    int selectedPhoneModelId = Model.PhoneModelId;
+    var phoneModelSelections = Model.Options.PhoneModels
+        .Where(model => model.ParentId == selectedBrandId || model.Id == selectedPhoneModelId)
+        .ToList();
+}
+
+<div class="modal fade" id="inventoryFormModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form asp-action="@(isEdit ? "Edit" : "Create")" method="post" enctype="multipart/form-data" data-modal-form>
+                <div class="modal-header">
+                    <h5 class="modal-title">@(isEdit ? "تعديل قطعة" : "إضافة قطعة جديدة")</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body">
+                    <input asp-for="Id" type="hidden" />
+                    <input asp-for="ImageUrl" type="hidden" />
+                    <input asp-for="ThumbnailUrl" type="hidden" />
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger validation-summary"></div>
+                    <p class="text-muted">اختر العلامة والموديل ونوع القطعة والنوعية من القوائم، ثم أدخل الكمية والأسعار.</p>
+
+                    <section class="step" aria-labelledby="step-identity">
+                        <div class="step__head">
+                            <span class="step__number" aria-hidden="true"></span>
+                            <h2 class="step__title" id="step-identity">هوية القطعة</h2>
+                        </div>
+
+                        <div class="form-grid form-grid--3">
+                            <div class="form-field">
+                                <label asp-for="BrandId" class="form-label">العلامة</label>
+                                <div class="filter-tabs filter-tabs--flush" data-brand-select>
+                                    @foreach (LookupOptionViewModel brand in Model.Options.Brands)
+                                    {
+                                        <button type="button" class="filter-tab" data-value="@brand.Id">@brand.Name</button>
+                                    }
+                                </div>
+                                <input asp-for="BrandId" type="hidden" data-brand-input />
+                                <span asp-validation-for="BrandId" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-field">
+                                <label asp-for="PhoneModelId" class="form-label">الموديل</label>
+                                <select asp-for="PhoneModelId" class="form-select ts-select" data-model-select data-placeholder="ابحث عن الموديل…">
+                                    <option value="0">اختر الموديل</option>
+                                    @foreach (LookupOptionViewModel phoneModel in phoneModelSelections)
+                                    {
+                                        <option value="@phoneModel.Id" selected="@(phoneModel.Id == Model.PhoneModelId)">@phoneModel.Name</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="PhoneModelId" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-field">
+                                <label asp-for="PartTypeId" class="form-label">نوع القطعة</label>
+                                <select asp-for="PartTypeId" class="form-select">
+                                    <option value="0">اختر نوع القطعة</option>
+                                    @foreach (LookupOptionViewModel type in Model.Options.PartTypes)
+                                    {
+                                        <option value="@type.Id" selected="@(type.Id == Model.PartTypeId)">@type.Name</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="PartTypeId" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-field form-field--full">
+                                <label asp-for="PartVariantId" class="form-label">النوعية</label>
+                                <select asp-for="PartVariantId" class="form-select">
+                                    <option value="0">اختر النوعية</option>
+                                    @foreach (LookupOptionViewModel variant in Model.Options.PartVariants)
+                                    {
+                                        <option value="@variant.Id" selected="@(variant.Id == Model.PartVariantId)">@variant.Name</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="PartVariantId" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="step" aria-labelledby="step-photo">
+                        <div class="step__head">
+                            <span class="step__number" aria-hidden="true"></span>
+                            <h2 class="step__title" id="step-photo">صورة القطعة</h2>
+                        </div>
+
+                        <div class="catalog-photo-field">
+                            <div class="catalog-photo-preview">
+                                @if (!string.IsNullOrWhiteSpace(Model.ThumbnailUrl))
+                                {
+                                    <img src="@Model.ThumbnailUrl" alt="صورة القطعة الحالية" />
+                                }
+                                else
+                                {
+                                    <span aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                            <circle cx="9" cy="9" r="2"></circle>
+                                            <path d="m21 15-3.5-3.5a2 2 0 0 0-2.8 0L8 18"></path>
+                                        </svg>
+                                    </span>
+                                }
+                            </div>
+                            <div class="catalog-photo-field__body">
+                                <label asp-for="ImageFile" class="form-label">رفع صورة محلية</label>
+                                <input asp-for="ImageFile" type="file" class="form-control" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" />
+                                <span asp-validation-for="ImageFile" class="text-danger"></span>
+                                <p class="form-hint">سيتم تحويل الصورة إلى WebP، إزالة بيانات EXIF، وتصغيرها تلقائياً.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="step" aria-labelledby="step-stock">
+                        <div class="step__head">
+                            <span class="step__number" aria-hidden="true"></span>
+                            <h2 class="step__title" id="step-stock">الكمية والأسعار</h2>
+                        </div>
+
+                        <div class="form-grid form-grid--3">
+                            <div class="form-field">
+                                <label asp-for="Quantity" class="form-label">الكمية</label>
+                                <input asp-for="Quantity" class="form-control" inputmode="numeric" dir="ltr" />
+                                <span asp-validation-for="Quantity" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-field">
+                                <label asp-for="UnitCostPrice" class="form-label">سعر التكلفة</label>
+                                <div class="price-input">
+                                    <input asp-for="UnitCostPrice" class="form-control price-input__field" type="text" inputmode="decimal" dir="ltr" placeholder="مثال: 1500" data-price-input />
+                                    <button type="button" class="price-input__clear" data-price-clear aria-label="مسح سعر التكلفة" tabindex="-1">✕</button>
+                                    <span class="price-input__unit">دج</span>
+                                </div>
+                                <span asp-validation-for="UnitCostPrice" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-field">
+                                <label asp-for="UnitSalePrice" class="form-label">سعر البيع</label>
+                                <div class="price-input">
+                                    <input asp-for="UnitSalePrice" class="form-control price-input__field" type="text" inputmode="decimal" dir="ltr" placeholder="مثال: 2500" data-price-input />
+                                    <button type="button" class="price-input__clear" data-price-clear aria-label="مسح سعر البيع" tabindex="-1">✕</button>
+                                    <span class="price-input__unit">دج</span>
+                                </div>
+                                <span asp-validation-for="UnitSalePrice" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-field form-field--full">
+                                <div class="form-check form-check--row" style="gap: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--color-surface-alt); border-radius: var(--radius-md);">
+                                    <input asp-for="IsStocked" class="form-check-input" style="width: 1.2rem; height: 1.2rem;" />
+                                    <label asp-for="IsStocked" class="form-check-label" style="font-weight: 600; margin: 0;">متوفرة في المخزون</label>
+                                    <span class="form-hint" style="margin: 0;">ألغِ التحديد للقطع التي تُطلب فقط عند الحاجة.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">@(isEdit ? "حفظ التعديلات" : "إضافة القطعة")</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        var modalEl = document.getElementById("inventoryFormModal");
+        if (!modalEl) return;
+        var brandInput = modalEl.querySelector("[data-brand-input]");
+        var brandStrip = modalEl.querySelector("[data-brand-select]");
+        var modelSelect = modalEl.querySelector("[data-model-select]");
+        var initialModelId = String(@selectedPhoneModelId);
+
+        async function loadPhoneModels(brandId, preserveSelection) {
+            modelSelect.innerHTML = '<option value="0">اختر الموديل</option>';
+            if (!brandId || brandId === "0") {
+                return;
+            }
+            try {
+                var response = await fetch('@Url.Action("GetPhoneModels", "Inventory")?brandId=' + encodeURIComponent(brandId));
+                if (!response.ok) {
+                    return;
+                }
+                var models = await response.json();
+                for (var i = 0; i < models.length; i++) {
+                    var model = models[i];
+                    var option = document.createElement("option");
+                    option.value = String(model.id);
+                    option.textContent = model.name;
+                    if (preserveSelection && String(model.id) === initialModelId) {
+                        option.selected = true;
+                    }
+                    modelSelect.appendChild(option);
+                }
+            } catch (err) {
+                // network error, keep dropdown at default
+            }
+        }
+
+        var brandPills = brandStrip ? brandStrip.querySelectorAll(".filter-tab") : null;
+        if (brandPills) {
+            brandPills.forEach(function (pill) {
+                pill.addEventListener("click", function () {
+                    brandPills.forEach(function (p) { p.classList.remove("is-active"); });
+                    pill.classList.add("is-active");
+                    brandInput.value = pill.getAttribute("data-value") || "";
+                    loadPhoneModels(brandInput.value, false).then(function () {
+                        if (modelSelect.tomselect) {
+                            modelSelect.tomselect.clear();
+                            modelSelect.tomselect.clearOptions();
+                            modelSelect.tomselect.sync();
+                        }
+                    });
+                });
+            });
+        }
+
+        if (brandInput.value && brandInput.value !== "0" && brandPills) {
+            brandPills.forEach(function (p) {
+                if (p.getAttribute("data-value") === brandInput.value) {
+                    p.classList.add("is-active");
+                }
+            });
+        }
+    })();
+</script>
