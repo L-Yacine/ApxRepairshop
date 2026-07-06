@@ -1,0 +1,51 @@
+@model EditStaffViewModel
+@{
+    var roles = new[] {
+        new { Value = StaffRoles.SuperAdmin, Label = StaffRoles.ToArabicLabel(StaffRoles.SuperAdmin) },
+        new { Value = StaffRoles.Owner, Label = StaffRoles.ToArabicLabel(StaffRoles.Owner) },
+        new { Value = StaffRoles.Worker, Label = StaffRoles.ToArabicLabel(StaffRoles.Worker) }
+    };
+}
+
+<div class="modal fade" id="staffEditModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <form asp-action="Edit" method="post" data-modal-form>
+                <div class="modal-header">
+                    <h5 class="modal-title">تعديل المستخدم</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="Username" type="hidden" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger validation-summary"></div>
+                    <div class="form-grid form-grid--1">
+                        <div class="form-field">
+                            <label class="form-label">اسم المستخدم</label>
+                            <p class="form-value">@Model.Username</p>
+                        </div>
+                        <div class="form-field">
+                            <label asp-for="DisplayName" class="form-label"></label>
+                            <input asp-for="DisplayName" class="form-control" />
+                            <span asp-validation-for="DisplayName" class="text-danger"></span>
+                        </div>
+                        <div class="form-field">
+                            <label asp-for="Role" class="form-label"></label>
+                            <select asp-for="Role" class="form-select">
+                                @foreach (var role in roles)
+                                {
+                                    <option value="@role.Value" selected="@(Model.Role == role.Value)">@role.Label</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Role" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

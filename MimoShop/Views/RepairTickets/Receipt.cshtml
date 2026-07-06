@@ -1,36 +1,61 @@
 @model RepairReceiptViewModel
-
 @{
     ViewData["Title"] = $"وصل {Model.JobCode}";
+    ViewData["BreadcrumbSuffix"] = Model.JobCode;
+    string shopName = Model.ShopName;
+    string shopLatin = Model.ShopLatinName;
+    string shopPhone = Model.ShopPhone;
+    string shopAddress = Model.ShopAddress;
+    string shopTelegram = Model.ShopTelegramHandle ?? "";
+    string? shopLogoUrl = string.IsNullOrWhiteSpace(Model.ShopLogoUrl) ? null : Model.ShopLogoUrl;
+    string jobCode = Model.JobCode;
+    string createdAtDisplay = Model.CreatedAt.ToString("yyyy/MM/dd HH:mm");
+    string brandModel = $"{Model.DeviceBrand} {Model.DeviceModel}".Trim();
+    string priceDisplay = Model.EstimatedPrice.ToString("N0") + " دج";
 }
 
 <div class="receipt-toolbar">
     <a asp-action="Create" class="btn btn-outline-secondary">بطاقة جديدة</a>
+    <a asp-action="Details" asp-route-jobCode="@jobCode" class="btn btn-outline-secondary">تفاصيل البطاقة</a>
     <button type="button" class="btn btn-primary" onclick="window.print()">طباعة الوصل</button>
 </div>
 
 <article class="receipt" aria-labelledby="receipt-title">
-    <header class="receipt-header">
-        <div>
-            <p class="eyebrow">@Model.ShopName</p>
-            <h1 id="receipt-title">وصل استلام جهاز</h1>
-            <p>@Model.ShopContact</p>
-        </div>
-        <div class="job-code">
-            <span>رمز الطلب</span>
-            <strong>@Model.JobCode</strong>
+    <header class="receipt__brand">
+        @if (shopLogoUrl is not null)
+        {
+            <img src="@Url.Content(shopLogoUrl)" alt="@shopName" class="receipt__logo" asp-append-version="true" />
+        }
+        else
+        {
+            <span class="receipt__mark" aria-hidden="true">◆</span>
+        }
+        <div class="receipt__brand-text">
+            <h1 class="receipt__shop-name" id="receipt-title">@shopName</h1>
+            <p class="receipt__shop-info">
+                @if (!string.IsNullOrWhiteSpace(shopAddress))
+                {
+                    <span>@shopAddress</span>
+                }
+                @if (!string.IsNullOrWhiteSpace(shopPhone))
+                {
+                    @if (!string.IsNullOrWhiteSpace(shopAddress))
+                    {
+                        <span> · </span>
+                    }
+                    <span>هاتف: @shopPhone</span>
+                }
+            </p>
         </div>
     </header>
 
-    <dl class="receipt-grid">
-        <div>
-            <dt>التاريخ والوقت</dt>
-            <dd>@Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")</dd>
-        </div>
-        <div>
-            <dt>العامل المسؤول</dt>
-            <dd>@Model.AssignedWorkerName</dd>
-        </div>
+    <div class="receipt__code" aria-labelledby="job-code-label">
+        <p class="receipt__code-label" id="job-code-label">رمز الطلب</p>
+        <p class="receipt__code-value">@jobCode</p>
+        <p class="receipt__datetime">@createdAtDisplay</p>
+    </div>
+
+    <dl class="receipt__grid">
         <div>
             <dt>العميل</dt>
             <dd>@Model.CustomerName</dd>
@@ -41,28 +66,48 @@
         </div>
         <div>
             <dt>الجهاز</dt>
-            <dd>@Model.DeviceBrand @Model.DeviceModel</dd>
+            <dd>@brandModel</dd>
         </div>
         <div>
+            <dt>العامل المسؤول</dt>
+            <dd>@Model.AssignedWorkerName</dd>
+        </div>
+        <div style="grid-column: 1 / -1;">
             <dt>السعر التقديري</dt>
-            <dd>@Model.EstimatedPrice.ToString("N0") دج</dd>
+            <dd><span class="receipt__price">@priceDisplay</span></dd>
         </div>
     </dl>
 
-    <section class="receipt-block">
+    <section class="receipt__block">
         <h2>وصف المشكل</h2>
         <p>@Model.ProblemDescription</p>
     </section>
 
     @if (!string.IsNullOrWhiteSpace(Model.Notes))
     {
-        <section class="receipt-block">
+        <section class="receipt__block">
             <h2>ملاحظات</h2>
             <p>@Model.Notes</p>
         </section>
     }
 
-    <footer class="receipt-footer">
-        <p>احتفظ بهذا الرمز للتحقق من حالة الصيانة عبر بوت تيليغرام عند توفره: @Model.JobCode</p>
+    <footer class="receipt__footer">
+        <p>
+            <strong>للمتابعة:</strong>
+            احتفظ برمز الطلب <strong>@jobCode</strong>
+            @if (!string.IsNullOrWhiteSpace(shopTelegram))
+            {
+                <span> واستخدم بوت التيليغرام <strong>@shopTelegram</strong> للتحقق من حالة الصيانة.</span>
+            }
+            else
+            {
+                <span> واتصل بالمحل للاستفسار عن حالة الصيانة.</span>
+            }
+        </p>
+        @if (!string.IsNullOrWhiteSpace(shopPhone))
+        {
+            <p>للاستفسار: <strong>@shopPhone</strong></p>
+        }
+        <p style="color: var(--color-text-muted); font-size: 0.82rem;">شكراً لثقتكم في @shopLatin.</p>
     </footer>
 </article>

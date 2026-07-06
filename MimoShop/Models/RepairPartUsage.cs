@@ -12,13 +12,13 @@ public sealed class RepairPartUsage
 
     public InventoryPart? InventoryPart { get; set; }
 
-    public string Brand { get; set; } = string.Empty;
+    public string BrandName { get; set; } = string.Empty;
 
-    public string Model { get; set; } = string.Empty;
+    public string PhoneModelName { get; set; } = string.Empty;
 
-    public string PartType { get; set; } = string.Empty;
+    public string PartTypeName { get; set; } = string.Empty;
 
-    public string Variant { get; set; } = string.Empty;
+    public string PartVariantName { get; set; } = string.Empty;
 
     public int Quantity { get; set; }
 

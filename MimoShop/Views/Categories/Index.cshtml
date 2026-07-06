@@ -1,0 +1,826 @@
+@model CategoriesIndexViewModel
+@{
+    ViewData["Title"] = "إدارة التصنيفات";
+}
+
+<section class="page-header">
+    <p class="page-header__eyebrow">المخزون</p>
+    <h1 class="page-header__title">إدارة التصنيفات</h1>
+    <p class="page-header__lede">أضف وعدّل العلامات والموديلات وأنواع القطع والنوعيات. تعطيل التصنيف يخفيه من القوائم دون حذفه.</p>
+    <div class="page-header__actions">
+        <a asp-controller="Inventory" asp-action="Index" class="btn btn-outline-secondary">العودة إلى المخزون</a>
+        @if (User.IsInRole("SuperAdmin") || User.IsInRole("Owner"))
+        {
+            <button type="button" class="btn btn-success" data-open-modal="categoriesImport" style="display: inline-flex; align-items: center; gap: 6px;">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                استيراد من الكتالوج
+            </button>
+        }
+    </div>
+</section>
+
+@if (TempData["CategoriesMessage"] is string okMessage)
+{
+    <div class="alert alert-success">@okMessage</div>
+}
+@if (TempData["CategoriesError"] is string errorMessage)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+<div class="cat-tabs-container">
+    <div class="cat-tabs" role="tablist">
+        <button type="button" class="cat-tab-btn is-active" data-target="brands" role="tab">
+            العلامات <span class="cat-tab-btn__count">@Model.Brands.Count</span>
+        </button>
+        <button type="button" class="cat-tab-btn" data-target="models" role="tab">
+            الموديلات <span class="cat-tab-btn__count">@Model.PhoneModels.Count</span>
+        </button>
+        <button type="button" class="cat-tab-btn" data-target="types" role="tab">
+            أنواع القطع <span class="cat-tab-btn__count">@Model.PartTypes.Count</span>
+        </button>
+        <button type="button" class="cat-tab-btn" data-target="variants" role="tab">
+            النوعيات <span class="cat-tab-btn__count">@Model.PartVariants.Count</span>
+        </button>
+    </div>
+</div>
+
+<div class="cat-tab-contents">
+    <!-- TAB: BRANDS -->
+    <div id="tab-brands" class="cat-tab-content is-active" role="tabpanel">
+        <div class="cat-toolbar">
+            <div class="filter-search" style="position: relative; flex: 1; min-width: 0;">
+                <span style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); pointer-events: none;">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </span>
+                <input type="search" placeholder="ابحث في العلامات..." class="form-control" style="padding-right: 40px;" data-search-input aria-label="بحث في العلامات" />
+            </div>
+            <button type="button" class="btn btn-primary" data-cat-add data-cat-tab="brands">إضافة علامة جديدة</button>
+        </div>
+        <div class="cat-scroll-container">
+                    <ul class="cat-list" data-search-list>
+                        @foreach (Brand brand in Model.Brands)
+                        {
+                            <li class="cat-row @(brand.IsActive ? "" : "cat-row--inactive")" 
+                                data-search-item="@(brand.Name.ToLowerInvariant())">
+                                <div class="cat-row__thumb">
+                                    @if (!string.IsNullOrWhiteSpace(brand.ThumbnailUrl))
+                                    {
+                                        <img src="@brand.ThumbnailUrl" alt="@brand.Name" loading="lazy" />
+                                    }
+                                    else
+                                    {
+                                        <span class="catalog-image-placeholder" aria-hidden="true">@(brand.Name.Length > 0 ? brand.Name[..1] : "?")</span>
+                                    }
+                                </div>
+                                <div class="cat-row__name">
+                                    <span class="cat-row__name-latin">@brand.Name</span>
+                                </div>
+                                <span class="pill @(brand.IsActive ? "pill--paid" : "pill--unpaid")">@(brand.IsActive ? "مفعّلة" : "معطّلة")</span>
+                                <div class="cat-row__actions">
+                                    <button type="button" class="btn btn-outline-primary btn--sm" data-edit-btn data-cat-tab="brands"
+                                            data-id="@brand.Id" data-name="@brand.Name" data-display-ar="@brand.DisplayNameAr" 
+                                            data-sort-order="@brand.SortOrder" data-is-active="@brand.IsActive.ToString().ToLowerInvariant()">تعديل</button>
+                                    <form asp-action="SetBrandActive" asp-route-id="@brand.Id" method="post" class="cat-toggle-form"
+                                          data-confirm-modal data-confirm-title="@(brand.IsActive ? "تعطيل العلامة" : "تفعيل العلامة")"
+                                          data-confirm-body="هل تريد @(brand.IsActive ? "تعطيل" : "تفعيل") '@brand.Name'؟">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="isActive" value="@(brand.IsActive ? "false" : "true")" />
+                                        <button type="submit" class="btn @(brand.IsActive ? "btn-outline-secondary" : "btn-outline-primary") btn--sm">@(brand.IsActive ? "تعطيل" : "تفعيل")</button>
+                                    </form>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                    <div class="empty cat-empty-state" style="display: none; padding: var(--space-5);">
+                        <span class="empty__icon" aria-hidden="true" style="font-size: 1.25rem;">
+                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </span>
+                        <p class="empty__msg">لا توجد نتائج تطابق البحث</p>
+                    </div>
+        </div>
+    </div>
+
+    <!-- TAB: MODELS -->
+    <div id="tab-models" class="cat-tab-content" role="tabpanel" style="display: none;">
+        <div class="cat-toolbar">
+            <div class="filter-search" style="position: relative; flex: 1; min-width: 0;">
+                <span style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); pointer-events: none;">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </span>
+                <input type="search" placeholder="ابحث في الموديلات..." class="form-control" style="padding-right: 40px;" data-search-input aria-label="بحث في الموديلات" />
+            </div>
+            <button type="button" class="btn btn-primary" data-cat-add data-cat-tab="models">إضافة موديل جديد</button>
+        </div>
+        <div class="cat-scroll-container">
+                    <ul class="cat-list" data-search-list>
+                        @foreach (PhoneModel phoneModel in Model.PhoneModels)
+                        {
+                            var parentBrand = Model.Brands.FirstOrDefault(b => b.Id == phoneModel.BrandId);
+                            <li class="cat-row @(phoneModel.IsActive ? "" : "cat-row--inactive")" 
+                                data-search-item="@($"{phoneModel.Name} {(parentBrand != null ? parentBrand.Name : "")}".ToLowerInvariant())">
+                                <div class="cat-row__thumb">
+                                    @if (!string.IsNullOrWhiteSpace(phoneModel.ThumbnailUrl))
+                                    {
+                                        <img src="@phoneModel.ThumbnailUrl" alt="@phoneModel.Name" loading="lazy" />
+                                    }
+                                    else if (parentBrand is not null && !string.IsNullOrWhiteSpace(parentBrand.ThumbnailUrl))
+                                    {
+                                        <img src="@parentBrand.ThumbnailUrl" alt="@parentBrand.Name" loading="lazy" />
+                                    }
+                                    else
+                                    {
+                                        <span class="catalog-image-placeholder" aria-hidden="true">@(phoneModel.Name.Length > 0 ? phoneModel.Name[..1] : "?")</span>
+                                    }
+                                </div>
+                                <div class="cat-row__name">
+                                    <span class="cat-row__name-latin">@phoneModel.Name@(parentBrand != null ? $" · {parentBrand.Name}" : "")</span>
+                                </div>
+                                <span class="pill @(phoneModel.IsActive ? "pill--paid" : "pill--unpaid")">@(phoneModel.IsActive ? "مفعّل" : "معطّل")</span>
+                                <div class="cat-row__actions">
+                                    <button type="button" class="btn btn-outline-secondary btn--sm" data-image-fetch-btn
+                                            data-id="@phoneModel.Id"
+                                            data-model-name="@phoneModel.Name"
+                                            data-brand-name="@(parentBrand?.Name ?? "")">جلب صورة</button>
+                                    <button type="button" class="btn btn-outline-primary btn--sm" data-edit-btn data-cat-tab="models"
+                                            data-id="@phoneModel.Id" data-name="@phoneModel.Name" data-display-ar="@phoneModel.DisplayNameAr" 
+                                            data-sort-order="@phoneModel.SortOrder" data-is-active="@phoneModel.IsActive.ToString().ToLowerInvariant()"
+                                            data-brand-id="@phoneModel.BrandId">تعديل</button>
+                                    <form asp-action="SetPhoneModelActive" asp-route-id="@phoneModel.Id" method="post" class="cat-toggle-form"
+                                          data-confirm-modal data-confirm-title="@(phoneModel.IsActive ? "تعطيل الموديل" : "تفعيل الموديل")"
+                                          data-confirm-body="هل تريد @(phoneModel.IsActive ? "تعطيل" : "تفعيل") '@phoneModel.Name'؟">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="isActive" value="@(phoneModel.IsActive ? "false" : "true")" />
+                                        <button type="submit" class="btn @(phoneModel.IsActive ? "btn-outline-secondary" : "btn-outline-primary") btn--sm">@(phoneModel.IsActive ? "تعطيل" : "تفعيل")</button>
+                                    </form>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                    <div class="empty cat-empty-state" style="display: none; padding: var(--space-5);">
+                        <span class="empty__icon" aria-hidden="true" style="font-size: 1.25rem;">
+                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </span>
+                        <p class="empty__msg">لا توجد نتائج تطابق البحث</p>
+                    </div>
+        </div>
+    </div>
+
+    <!-- TAB: TYPES -->
+    <div id="tab-types" class="cat-tab-content" role="tabpanel" style="display: none;">
+        <div class="cat-toolbar">
+            <div class="filter-search" style="position: relative; flex: 1; min-width: 0;">
+                <span style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); pointer-events: none;">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </span>
+                <input type="search" placeholder="ابحث في أنواع القطع..." class="form-control" style="padding-right: 40px;" data-search-input aria-label="بحث في أنواع القطع" />
+            </div>
+            <button type="button" class="btn btn-primary" data-cat-add data-cat-tab="types">إضافة نوع قطعة جديد</button>
+        </div>
+        <div class="cat-scroll-container">
+                    <ul class="cat-list" data-search-list>
+                        @foreach (PartType partType in Model.PartTypes)
+                        {
+                            <li class="cat-row @(partType.IsActive ? "" : "cat-row--inactive")" 
+                                data-search-item="@(partType.Name.ToLowerInvariant())">
+                                <div class="cat-row__thumb">
+                                    @if (!string.IsNullOrWhiteSpace(partType.ThumbnailUrl))
+                                    {
+                                        <img src="@partType.ThumbnailUrl" alt="@partType.Name" loading="lazy" />
+                                    }
+                                    else
+                                    {
+                                        <span class="catalog-image-placeholder" aria-hidden="true">@(partType.Name.Length > 0 ? partType.Name[..1] : "?")</span>
+                                    }
+                                </div>
+                                <div class="cat-row__name">
+                                    <span class="cat-row__name-latin">@partType.Name</span>
+                                </div>
+                                <span class="pill @(partType.IsActive ? "pill--paid" : "pill--unpaid")">@(partType.IsActive ? "مفعّل" : "معطّل")</span>
+                                <div class="cat-row__actions">
+                                    <button type="button" class="btn btn-outline-primary btn--sm" data-edit-btn data-cat-tab="types"
+                                            data-id="@partType.Id" data-name="@partType.Name" data-display-ar="@partType.DisplayNameAr" 
+                                            data-sort-order="@partType.SortOrder" data-is-active="@partType.IsActive.ToString().ToLowerInvariant()"
+                                            data-thumbnail-url="@partType.ThumbnailUrl">تعديل</button>
+                                    <form asp-action="SetPartTypeActive" asp-route-id="@partType.Id" method="post" class="cat-toggle-form"
+                                          data-confirm-modal data-confirm-title="@(partType.IsActive ? "تعطيل نوع القطعة" : "تفعيل نوع القطعة")"
+                                          data-confirm-body="هل تريد @(partType.IsActive ? "تعطيل" : "تفعيل") '@partType.Name'؟">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="isActive" value="@(partType.IsActive ? "false" : "true")" />
+                                        <button type="submit" class="btn @(partType.IsActive ? "btn-outline-secondary" : "btn-outline-primary") btn--sm">@(partType.IsActive ? "تعطيل" : "تفعيل")</button>
+                                    </form>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                    <div class="empty cat-empty-state" style="display: none; padding: var(--space-5);">
+                        <span class="empty__icon" aria-hidden="true" style="font-size: 1.25rem;">
+                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </span>
+                        <p class="empty__msg">لا توجد نتائج تطابق البحث</p>
+                    </div>
+        </div>
+    </div>
+
+    <!-- TAB: VARIANTS -->
+    <div id="tab-variants" class="cat-tab-content" role="tabpanel" style="display: none;">
+        <div class="cat-toolbar">
+            <div class="filter-search" style="position: relative; flex: 1; min-width: 0;">
+                <span style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); pointer-events: none;">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </span>
+                <input type="search" placeholder="ابحث في النوعيات..." class="form-control" style="padding-right: 40px;" data-search-input aria-label="بحث في النوعيات" />
+            </div>
+            <button type="button" class="btn btn-primary" data-cat-add data-cat-tab="variants">إضافة نوعية جديدة</button>
+        </div>
+        <div class="cat-scroll-container">
+                    <ul class="cat-list" data-search-list>
+                        @foreach (PartVariant partVariant in Model.PartVariants)
+                        {
+                            <li class="cat-row @(partVariant.IsActive ? "" : "cat-row--inactive")" 
+                                data-search-item="@(partVariant.Name.ToLowerInvariant())">
+                                <div class="cat-row__name">
+                                    <span class="cat-row__name-latin">@partVariant.Name</span>
+                                </div>
+                                <span class="pill @(partVariant.IsActive ? "pill--paid" : "pill--unpaid")">@(partVariant.IsActive ? "مفعّلة" : "معطّلة")</span>
+                                <div class="cat-row__actions">
+                                    <button type="button" class="btn btn-outline-primary btn--sm" data-edit-btn data-cat-tab="variants"
+                                            data-id="@partVariant.Id" data-name="@partVariant.Name" data-display-ar="@partVariant.DisplayNameAr" 
+                                            data-sort-order="@partVariant.SortOrder" data-is-active="@partVariant.IsActive.ToString().ToLowerInvariant()">تعديل</button>
+                                    <form asp-action="SetPartVariantActive" asp-route-id="@partVariant.Id" method="post" class="cat-toggle-form"
+                                          data-confirm-modal data-confirm-title="@(partVariant.IsActive ? "تعطيل النوعية" : "تفعيل النوعية")"
+                                          data-confirm-body="هل تريد @(partVariant.IsActive ? "تعطيل" : "تفعيل") '@partVariant.Name'؟">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="isActive" value="@(partVariant.IsActive ? "false" : "true")" />
+                                        <button type="submit" class="btn @(partVariant.IsActive ? "btn-outline-secondary" : "btn-outline-primary") btn--sm">@(partVariant.IsActive ? "تعطيل" : "تفعيل")</button>
+                                    </form>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                    <div class="empty cat-empty-state" style="display: none; padding: var(--space-5);">
+                        <span class="empty__icon" aria-hidden="true" style="font-size: 1.25rem;">
+                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </span>
+                        <p class="empty__msg">لا توجد نتائج تطابق البحث</p>
+                    </div>
+        </div>
+    </div>
+</div>
+
+@* ===== Category entity modals ===== *@
+
+<div class="modal fade" id="catBrandModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content cat-form-card" data-form-card data-cat-modal-tab="brands">
+            <form asp-action="CreateBrand" method="post" enctype="multipart/form-data" data-form>
+                <div class="modal-header">
+                    <h5 class="modal-title" data-card-title>إضافة علامة جديدة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body stack stack--md">
+                    @Html.AntiForgeryToken()
+                    <div class="form-field">
+                        <label class="form-label">الاسم (لاتيني)</label>
+                        <input name="NewBrand.Name" class="form-control" placeholder="مثال: Samsung" required data-val-latin />
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">الاسم بالعربية</label>
+                        <input name="NewBrand.DisplayNameAr" class="form-control" placeholder="مثال: سامسونج" required data-val-ar />
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">الصورة</label>
+                        <input name="NewBrand.ImageFile" type="file" class="form-control" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" />
+                        <p class="form-hint">سيتم تحسين الصورة وحفظها بصيغة WebP.</p>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">الترتيب</label>
+                        <input name="NewBrand.SortOrder" value="0" class="form-control" inputmode="numeric" dir="ltr" data-val-sort />
+                    </div>
+                    <div class="form-check form-check--row" style="margin-top: var(--space-2);">
+                        <input name="NewBrand.IsActive" value="true" type="checkbox" checked class="form-check-input" id="chk-brand-active" data-val-active />
+                        <input name="NewBrand.IsActive" value="false" type="hidden" />
+                        <label class="form-check-label form-check-label--bold" for="chk-brand-active">مفعّلة</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" style="display: none;" data-cancel-btn>إلغاء التعديل</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إغلاق</button>
+                    <button type="submit" class="btn btn-primary" data-submit-btn>إضافة علامة</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="catModelModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content cat-form-card" data-form-card data-cat-modal-tab="models">
+            <form asp-action="CreatePhoneModel" method="post" enctype="multipart/form-data" data-form>
+                <div class="modal-header">
+                    <h5 class="modal-title" data-card-title>إضافة موديل جديد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body stack stack--md">
+                    @Html.AntiForgeryToken()
+                    <div class="form-field">
+                        <label class="form-label">العلامة</label>
+                        <select name="NewPhoneModel.BrandId" class="form-select" required data-val-brand>
+                            <option value="">اختر العلامة</option>
+                            @foreach (Brand brand in Model.Brands)
+                            {
+                                <option value="@brand.Id">@brand.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">الاسم (لاتيني)</label>
+                        <input name="NewPhoneModel.Name" class="form-control" placeholder="مثال: Galaxy A54" required data-val-latin />
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">الاسم بالعربية</label>
+                        <input name="NewPhoneModel.DisplayNameAr" class="form-control" placeholder="مثال: جالاكسي A54" required data-val-ar />
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">الصورة</label>
+                        <input name="NewPhoneModel.ImageFile" type="file" class="form-control" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" />
+                        <p class="form-hint">تظهر كصورة الموديل وتستخدم كبديل لصورة القطعة.</p>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">الترتيب</label>
+                        <input name="NewPhoneModel.SortOrder" value="0" class="form-control" inputmode="numeric" dir="ltr" data-val-sort />
+                    </div>
+                    <div class="form-check form-check--row" style="margin-top: var(--space-2);">
+                        <input name="NewPhoneModel.IsActive" value="true" type="checkbox" checked class="form-check-input" id="chk-model-active" data-val-active />
+                        <input name="NewPhoneModel.IsActive" value="false" type="hidden" />
+                        <label class="form-check-label form-check-label--bold" for="chk-model-active">مفعّل</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" style="display: none;" data-cancel-btn>إلغاء التعديل</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إغلاق</button>
+                    <button type="submit" class="btn btn-primary" data-submit-btn>إضافة موديل</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="catTypeModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content cat-form-card" data-form-card data-cat-modal-tab="types">
+            <form asp-action="CreatePartType" method="post" enctype="multipart/form-data" data-form>
+                <div class="modal-header">
+                    <h5 class="modal-title" data-card-title>إضافة نوع قطعة جديد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body stack stack--md">
+                    @Html.AntiForgeryToken()
+                    <div class="form-field">
+                        <label class="form-label">الاسم (لاتيني)</label>
+                        <input name="NewPartType.Name" class="form-control" placeholder="مثال: Camera" required data-val-latin />
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">الاسم بالعربية</label>
+                        <input name="NewPartType.DisplayNameAr" class="form-control" placeholder="مثال: كاميرا" required data-val-ar />
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">الصورة</label>
+                        <input name="NewPartType.ImageFile" type="file" class="form-control" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" />
+                        <p class="form-hint">تستخدم كصورة افتراضية للقطع من هذا النوع عند عدم توفر صورة خاصة.</p>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">الترتيب</label>
+                        <input name="NewPartType.SortOrder" value="0" class="form-control" inputmode="numeric" dir="ltr" data-val-sort />
+                    </div>
+                    <div class="form-check form-check--row" style="margin-top: var(--space-2);">
+                        <input name="NewPartType.IsActive" value="true" type="checkbox" checked class="form-check-input" id="chk-type-active" data-val-active />
+                        <input name="NewPartType.IsActive" value="false" type="hidden" />
+                        <label class="form-check-label form-check-label--bold" for="chk-type-active">مفعّل</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" style="display: none;" data-cancel-btn>إلغاء التعديل</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إغلاق</button>
+                    <button type="submit" class="btn btn-primary" data-submit-btn>إضافة نوع</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="catVariantModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content cat-form-card" data-form-card data-cat-modal-tab="variants">
+            <form asp-action="CreatePartVariant" method="post" data-form>
+                <div class="modal-header">
+                    <h5 class="modal-title" data-card-title>إضافة نوعية جديدة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body stack stack--md">
+                    @Html.AntiForgeryToken()
+                    <div class="form-field">
+                        <label class="form-label">الاسم (لاتيني)</label>
+                        <input name="NewPartVariant.Name" class="form-control" placeholder="مثال: Original OEM" required data-val-latin />
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">الاسم بالعربية</label>
+                        <input name="NewPartVariant.DisplayNameAr" class="form-control" placeholder="مثال: أصلي" required data-val-ar />
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">الترتيب</label>
+                        <input name="NewPartVariant.SortOrder" value="0" class="form-control" inputmode="numeric" dir="ltr" data-val-sort />
+                    </div>
+                    <div class="form-check form-check--row" style="margin-top: var(--space-2);">
+                        <input name="NewPartVariant.IsActive" value="true" type="checkbox" checked class="form-check-input" id="chk-variant-active" data-val-active />
+                        <input name="NewPartVariant.IsActive" value="false" type="hidden" />
+                        <label class="form-check-label form-check-label--bold" for="chk-variant-active">مفعّلة</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" style="display: none;" data-cancel-btn>إلغاء التعديل</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إغلاق</button>
+                    <button type="submit" class="btn btn-primary" data-submit-btn>إضافة نوعية</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="image-fetch-modal" data-image-fetch-modal hidden>
+    <div class="image-fetch-modal__backdrop" data-image-fetch-close></div>
+    <section class="image-fetch-dialog" role="dialog" aria-modal="true" aria-labelledby="image-fetch-title">
+        <div class="image-fetch-dialog__header">
+            <div>
+                <p class="image-fetch-dialog__eyebrow">GSMArena</p>
+                <h2 id="image-fetch-title" class="image-fetch-dialog__title">جلب صورة موديل</h2>
+            </div>
+            <button type="button" class="btn btn-outline-secondary btn--sm" data-image-fetch-close>إغلاق</button>
+        </div>
+        <div class="image-fetch-dialog__body">
+            <div class="image-fetch-search">
+                <input type="search" class="form-control" data-image-fetch-query aria-label="بحث عن صورة موديل" />
+                <button type="button" class="btn btn-primary" data-image-fetch-search>بحث</button>
+            </div>
+            <p class="form-hint" data-image-fetch-status>اختر نتيجة واحدة بعد مراجعة الصورة والاسم.</p>
+            <div class="image-fetch-results" data-image-fetch-results></div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            // Tab switching logic
+            const tabButtons = document.querySelectorAll(".cat-tab-btn");
+            const tabContents = document.querySelectorAll(".cat-tab-content");
+
+            function showTab(target) {
+                tabButtons.forEach(btn => {
+                    if (btn.getAttribute("data-target") === target) {
+                        btn.classList.add("is-active");
+                        btn.setAttribute("aria-selected", "true");
+                    } else {
+                        btn.classList.remove("is-active");
+                        btn.setAttribute("aria-selected", "false");
+                    }
+                });
+
+                tabContents.forEach(content => {
+                    if (content.id === "tab-" + target) {
+                        content.style.display = "block";
+                    } else {
+                        content.style.display = "none";
+                    }
+                });
+
+                localStorage.setItem("mimo_categories_active_tab", target);
+            }
+
+            tabButtons.forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const target = btn.getAttribute("data-target");
+                    showTab(target);
+                });
+            });
+
+            const savedTab = localStorage.getItem("mimo_categories_active_tab") || "brands";
+            if (document.querySelector(`[data-target="${savedTab}"]`)) {
+                showTab(savedTab);
+            } else {
+                showTab("brands");
+            }
+
+            // Client-side search filtering
+            const searchInputs = document.querySelectorAll("[data-search-input]");
+            searchInputs.forEach(input => {
+                input.addEventListener("input", (e) => {
+                    const query = e.target.value.toLowerCase().trim();
+                    const tabContent = e.target.closest(".cat-tab-content");
+                    const listItems = tabContent.querySelectorAll("[data-search-item]");
+                    const emptyState = tabContent.querySelector(".cat-empty-state");
+                    let matchCount = 0;
+
+                    listItems.forEach(item => {
+                        const searchText = item.getAttribute("data-search-item") || "";
+                        if (searchText.indexOf(query) !== -1) {
+                            item.style.display = "grid";
+                            matchCount++;
+                        } else {
+                            item.style.display = "none";
+                        }
+                    });
+
+                    if (emptyState) {
+                        emptyState.style.display = (matchCount === 0 && query !== "") ? "flex" : "none";
+                    }
+                });
+            });
+
+            // === Category entity modal helper ===
+            const TAB_META = {
+                brands: { modalId: "catBrandModal",      createUrl: "/Categories/CreateBrand",       createTitle: "إضافة علامة جديدة",   createSubmit: "إضافة علامة",  editUrl: (id) => `/Categories/UpdateBrand/${id}`,       entityName: "العلامة" },
+                models: { modalId: "catModelModal",      createUrl: "/Categories/CreatePhoneModel",  createTitle: "إضافة موديل جديد",  createSubmit: "إضافة موديل", editUrl: (id) => `/Categories/UpdatePhoneModel/${id}`,  entityName: "الموديل" },
+                types:  { modalId: "catTypeModal",       createUrl: "/Categories/CreatePartType",    createTitle: "إضافة نوع قطعة جديد", createSubmit: "إضافة نوع",   editUrl: (id) => `/Categories/UpdatePartType/${id}`,    entityName: "نوع القطعة" },
+                variants: { modalId: "catVariantModal", createUrl: "/Categories/CreatePartVariant", createTitle: "إضافة نوعية جديدة",  createSubmit: "إضافة نوعية",  editUrl: (id) => `/Categories/UpdatePartVariant/${id}`,  entityName: "النوعية" }
+            };
+
+            function getModalEl(tabId) {
+                const meta = TAB_META[tabId];
+                return meta ? document.getElementById(meta.modalId) : null;
+            }
+
+            function getBootstrapModal(tabId) {
+                const el = getModalEl(tabId);
+                return el ? bootstrap.Modal.getOrCreateInstance(el) : null;
+            }
+
+            function resetToCreate(tabId) {
+                const meta = TAB_META[tabId];
+                const el = getModalEl(tabId);
+                if (!el || !meta) return;
+                const form = el.querySelector("[data-form]");
+                const card = el; // .modal-content has data-form-card
+                const submitBtn = card.querySelector("[data-submit-btn]");
+                const cancelBtn = card.querySelector("[data-cancel-btn]");
+                const cardTitle = card.querySelector("[data-card-title]");
+
+                form.reset();
+                form.action = meta.createUrl;
+                form.removeAttribute("data-editing-id");
+                if (cardTitle) cardTitle.textContent = meta.createTitle;
+                if (submitBtn) submitBtn.textContent = meta.createSubmit;
+                if (cancelBtn) cancelBtn.style.display = "none";
+                card.classList.remove("cat-form-card--editing");
+            }
+
+            function switchToEdit(tabId, btn) {
+                const meta = TAB_META[tabId];
+                const el = getModalEl(tabId);
+                if (!el || !meta) return;
+                const card = el;
+                const form = card.querySelector("[data-form]");
+
+                const id = btn.getAttribute("data-id");
+                const name = btn.getAttribute("data-name");
+                const displayAr = btn.getAttribute("data-display-ar");
+                const sortOrder = btn.getAttribute("data-sort-order");
+                const isActive = btn.getAttribute("data-is-active") === "true";
+                const brandId = btn.getAttribute("data-brand-id");
+
+                const inputLatin = card.querySelector("[data-val-latin]");
+                const inputAr = card.querySelector("[data-val-ar]");
+                const inputSort = card.querySelector("[data-val-sort]");
+                const inputActive = card.querySelector("[data-val-active]");
+                const selectBrand = card.querySelector("[data-val-brand]");
+
+                if (inputLatin) inputLatin.value = name;
+                if (inputAr) inputAr.value = displayAr;
+                if (inputSort) inputSort.value = sortOrder;
+                if (inputActive) inputActive.checked = isActive;
+                if (selectBrand && brandId) selectBrand.value = brandId;
+
+                const submitBtn = card.querySelector("[data-submit-btn]");
+                const cancelBtn = card.querySelector("[data-cancel-btn]");
+                const cardTitle = card.querySelector("[data-card-title]");
+
+                card.classList.add("cat-form-card--editing");
+                if (cancelBtn) cancelBtn.style.display = "inline-flex";
+                if (cardTitle) cardTitle.textContent = `تعديل ${meta.entityName}: ${name}`;
+                if (submitBtn) submitBtn.textContent = "حفظ التعديل";
+                form.action = meta.editUrl(id);
+                form.setAttribute("data-editing-id", id);
+            }
+
+            // Add buttons
+            document.querySelectorAll("[data-cat-add]").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const tabId = btn.getAttribute("data-cat-tab");
+                    resetToCreate(tabId);
+                    getBootstrapModal(tabId).show();
+                });
+            });
+
+            // Edit buttons
+            document.querySelectorAll("[data-edit-btn]").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const tabId = btn.getAttribute("data-cat-tab");
+                    switchToEdit(tabId, btn);
+                    getBootstrapModal(tabId).show();
+                });
+            });
+
+            // Cancel-edit buttons inside modals
+            document.querySelectorAll("[data-cancel-btn]").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const card = btn.closest("[data-form-card]");
+                    const tabId = card?.getAttribute("data-cat-modal-tab");
+                    if (!tabId) return;
+                    resetToCreate(tabId);
+                });
+            });
+
+            // When modal closes via backdrop/X, also reset to create mode for next open.
+            Object.keys(TAB_META).forEach(tabId => {
+                const el = getModalEl(tabId);
+                if (!el) return;
+                el.addEventListener("hidden.bs.modal", () => resetToCreate(tabId));
+            });
+
+            const imageFetchModal = document.querySelector("[data-image-fetch-modal]");
+            const imageFetchQuery = document.querySelector("[data-image-fetch-query]");
+            const imageFetchStatus = document.querySelector("[data-image-fetch-status]");
+            const imageFetchResults = document.querySelector("[data-image-fetch-results]");
+            const imageFetchSearch = document.querySelector("[data-image-fetch-search]");
+            const imageFetchToken = document.querySelector("input[name='__RequestVerificationToken']")?.value || "";
+            let activePhoneModelId = "";
+            let activeModelRow = null;
+
+            function setImageFetchStatus(message, isError) {
+                if (!imageFetchStatus) return;
+                imageFetchStatus.textContent = message;
+                imageFetchStatus.classList.toggle("image-fetch-dialog__status--error", Boolean(isError));
+            }
+
+            function openImageFetchModal(button) {
+                activePhoneModelId = button.getAttribute("data-id") || "";
+                activeModelRow = button.closest(".cat-row");
+                const modelName = button.getAttribute("data-model-name") || "";
+                const brandName = button.getAttribute("data-brand-name") || "";
+                const defaultQuery = `${brandName} ${modelName}`.trim();
+
+                imageFetchQuery.value = defaultQuery;
+                imageFetchResults.innerHTML = "";
+                setImageFetchStatus("اختر نتيجة واحدة بعد مراجعة الصورة والاسم.", false);
+                imageFetchModal.hidden = false;
+                document.body.classList.add("modal-open");
+                imageFetchQuery.focus();
+                searchPhoneImages();
+            }
+
+            function closeImageFetchModal() {
+                imageFetchModal.hidden = true;
+                document.body.classList.remove("modal-open");
+                activePhoneModelId = "";
+                activeModelRow = null;
+            }
+
+            async function searchPhoneImages() {
+                const query = imageFetchQuery.value.trim();
+                if (!activePhoneModelId || !query) {
+                    setImageFetchStatus("أدخل اسم الموديل للبحث.", true);
+                    return;
+                }
+
+                imageFetchSearch.disabled = true;
+                imageFetchResults.innerHTML = "";
+                setImageFetchStatus("جاري البحث...", false);
+
+                try {
+                    const url = `/Categories/SearchPhoneModelImages/${encodeURIComponent(activePhoneModelId)}?query=${encodeURIComponent(query)}`;
+                    const response = await fetch(url, { headers: { "Accept": "application/json" } });
+                    if (!response.ok) {
+                        throw new Error("search_failed");
+                    }
+
+                    const candidates = await response.json();
+                    renderImageCandidates(candidates);
+                    setImageFetchStatus(candidates.length ? "راجع النتائج واختر الصورة المطابقة." : "لا توجد نتائج لهذا البحث.", !candidates.length);
+                } catch {
+                    setImageFetchStatus("تعذر البحث الآن. جرّب مرة أخرى.", true);
+                } finally {
+                    imageFetchSearch.disabled = false;
+                }
+            }
+
+            function renderImageCandidates(candidates) {
+                imageFetchResults.innerHTML = "";
+
+                candidates.forEach(candidate => {
+                    const card = document.createElement("button");
+                    card.type = "button";
+                    card.className = "image-fetch-card";
+
+                    const image = document.createElement("img");
+                    image.src = candidate.imageUrl;
+                    image.alt = candidate.title;
+                    image.loading = "lazy";
+
+                    const title = document.createElement("span");
+                    title.className = "image-fetch-card__title";
+                    title.textContent = candidate.title;
+
+                    const source = document.createElement("span");
+                    source.className = "image-fetch-card__source";
+                    source.textContent = candidate.sourceName;
+
+                    card.append(image, title, source);
+                    card.addEventListener("click", () => applyPhoneImage(candidate.sourceUrl, card));
+                    imageFetchResults.appendChild(card);
+                });
+            }
+
+            async function applyPhoneImage(sourceUrl, selectedCard) {
+                if (!activePhoneModelId || !sourceUrl) return;
+
+                const cards = imageFetchResults.querySelectorAll(".image-fetch-card");
+                cards.forEach(card => card.disabled = true);
+                selectedCard.classList.add("image-fetch-card--selected");
+                setImageFetchStatus("جاري حفظ الصورة...", false);
+
+                const formData = new FormData();
+                formData.append("__RequestVerificationToken", imageFetchToken);
+                formData.append("id", activePhoneModelId);
+                formData.append("sourceUrl", sourceUrl);
+
+                try {
+                    const response = await fetch("/Categories/ApplyPhoneModelImage", {
+                        method: "POST",
+                        body: formData,
+                        headers: { "Accept": "application/json" }
+                    });
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.message || "تعذر حفظ الصورة.");
+                    }
+
+                    if (activeModelRow && data.thumbnailUrl) {
+                        const thumb = activeModelRow.querySelector(".cat-row__thumb");
+                        thumb.innerHTML = "";
+                        const image = document.createElement("img");
+                        image.src = data.thumbnailUrl;
+                        image.alt = imageFetchQuery.value.trim();
+                        image.loading = "lazy";
+                        thumb.appendChild(image);
+                    }
+
+                    setImageFetchStatus(data.message || "تم حفظ صورة الموديل.", false);
+                    window.setTimeout(closeImageFetchModal, 700);
+                } catch (error) {
+                    cards.forEach(card => card.disabled = false);
+                    selectedCard.classList.remove("image-fetch-card--selected");
+                    setImageFetchStatus(error.message || "تعذر حفظ الصورة.", true);
+                }
+            }
+
+            document.querySelectorAll("[data-image-fetch-btn]").forEach(button => {
+                button.addEventListener("click", () => openImageFetchModal(button));
+            });
+
+            imageFetchSearch?.addEventListener("click", searchPhoneImages);
+            imageFetchQuery?.addEventListener("keydown", event => {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    searchPhoneImages();
+                }
+            });
+
+            document.querySelectorAll("[data-image-fetch-close]").forEach(button => {
+                button.addEventListener("click", closeImageFetchModal);
+            });
+
+            document.addEventListener("keydown", event => {
+                if (event.key === "Escape" && imageFetchModal && !imageFetchModal.hidden) {
+                    closeImageFetchModal();
+                }
+            });
+        })();
+    </script>
+}

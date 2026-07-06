@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MimoShop.Models;
 using MimoShop.Services;
@@ -10,15 +11,18 @@ public sealed class RepairTicketsController : Controller
     private readonly RepairIntakeService repairIntakeService;
     private readonly RepairWorkflowService repairWorkflowService;
     private readonly StaffAccountService staffAccountService;
+    private readonly ShopSettingsService shopSettingsService;
 
     public RepairTicketsController(
         RepairIntakeService repairIntakeService,
         RepairWorkflowService repairWorkflowService,
-        StaffAccountService staffAccountService)
+        StaffAccountService staffAccountService,
+        ShopSettingsService shopSettingsService)
     {
         this.repairIntakeService = repairIntakeService;
         this.repairWorkflowService = repairWorkflowService;
         this.staffAccountService = staffAccountService;
+        this.shopSettingsService = shopSettingsService;
     }
 
     [HttpGet]
@@ -28,14 +32,14 @@ public sealed class RepairTicketsController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Create()
+    public async Task<IActionResult> CreateModal()
     {
-        return View(await BuildViewModelAsync(new RepairIntakeViewModel()));
+        return PartialView("_CreateModalPartial", await BuildViewModelAsync(new RepairIntakeViewModel()));
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(RepairIntakeViewModel model)
+    public async Task<IActionResult> Create(RepairIntakeViewModel model, string action = "print")
     {
         StaffAccount? assignedWorker = await staffAccountService.FindByUsernameAsync(model.AssignedWorkerUsername);
         if (assignedWorker is null)
@@ -43,18 +47,49 @@ public sealed class RepairTicketsController : Controller
             ModelState.AddModelError(nameof(model.AssignedWorkerUsername), "اختر العامل المسؤول");
         }
 
-        if (!repairIntakeService.IsKnownBrandModel(model.DeviceBrand, model.DeviceModel))
+        if (!await repairIntakeService.IsKnownBrandModelAsync(model.DeviceBrand, model.DeviceModel))
         {
             ModelState.AddModelError(nameof(model.DeviceModel), "اختر موديلاً من القائمة الخاصة بالعلامة");
         }
 
         if (!ModelState.IsValid || assignedWorker is null)
         {
-            return View(await BuildViewModelAsync(model));
+            Response.StatusCode = StatusCodes.Status400BadRequest;
+            return PartialView("_CreateModalPartial", await BuildViewModelAsync(model));
         }
 
         RepairTicketRecord ticket = await repairIntakeService.CreateTicketAsync(model, assignedWorker);
+
+        if (IsAjaxRequest())
+        {
+            if (string.Equals(action, "continue", StringComparison.OrdinalIgnoreCase))
+            {
+                return Json(new
+                {
+                    ok = true,
+                    replace = "repairCreate",
+                    message = $"تم حفظ البطاقة {ticket.JobCode}. ابدأ بطاقة جديدة."
+                });
+            }
+            return Json(new
+            {
+                ok = true,
+                redirectUrl = Url.Action(nameof(Receipt), new { jobCode = ticket.JobCode })
+            });
+        }
+
+        if (string.Equals(action, "continue", StringComparison.OrdinalIgnoreCase))
+        {
+            TempData["IntakeMessage"] = $"تم حفظ البطاقة {ticket.JobCode}. ابدأ بطاقة جديدة.";
+            return RedirectToAction(nameof(Create));
+        }
+
         return RedirectToAction(nameof(Receipt), new { jobCode = ticket.JobCode });
+    }
+
+    private bool IsAjaxRequest()
+    {
+        return string.Equals(Request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.OrdinalIgnoreCase);
     }
 
     [HttpGet]
@@ -66,10 +101,16 @@ public sealed class RepairTicketsController : Controller
             return NotFound();
         }
 
+        ShopSetting settings = await shopSettingsService.GetSettingsAsync();
+
         return View(new RepairReceiptViewModel
         {
-            ShopName = "MimoShop",
-            ShopContact = "الهاتف: 0000 00 00 00",
+            ShopName = settings.Name,
+            ShopLatinName = settings.LatinName,
+            ShopPhone = settings.Phone,
+            ShopAddress = settings.Address,
+            ShopTelegramHandle = settings.TelegramHandle,
+            ShopLogoUrl = settings.LogoUrl,
             JobCode = ticket.JobCode,
             CreatedAt = ticket.CreatedAt,
             CustomerName = ticket.Customer.Name,
@@ -235,7 +276,7 @@ public sealed class RepairTicketsController : Controller
     {
         string? currentUsername = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        model.DeviceOptions = repairIntakeService.GetDeviceOptions();
+        model.DeviceOptions = await repairIntakeService.GetDeviceOptionsAsync();
         model.StaffOptions = (await staffAccountService.GetAssignableStaffAsync())
             .Select(account => new StaffOption(account.Username, account.DisplayName))
             .ToList();

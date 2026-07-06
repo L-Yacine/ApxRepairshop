@@ -1,0 +1,98 @@
+@model ShopSettingsViewModel
+@{
+    string logoUrl = Model.ExistingLogoUrl ?? "";
+    bool hasLogo = !string.IsNullOrWhiteSpace(logoUrl);
+}
+
+<div class="modal fade" id="shopSettingsModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form asp-action="Index" method="post" enctype="multipart/form-data" data-modal-form>
+                <div class="modal-header">
+                    <h5 class="modal-title">إعدادات المحل</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="ExistingLogoUrl" />
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger validation-summary"></div>
+
+                    <p class="text-muted">عدّل اسم المحل وبيانات الاتصال وساعات العمل والشعار.</p>
+
+                    <div class="form-grid form-grid--2">
+                        <div class="form-field">
+                            <label asp-for="Name" class="form-label">اسم المحل (بالعربية)</label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                        <div class="form-field">
+                            <label asp-for="LatinName" class="form-label">الاسم (لاتيني)</label>
+                            <input asp-for="LatinName" class="form-control" />
+                            <span asp-validation-for="LatinName" class="text-danger"></span>
+                        </div>
+                        <div class="form-field">
+                            <label asp-for="Phone" class="form-label">رقم الهاتف</label>
+                            <input asp-for="Phone" class="form-control" inputmode="tel" dir="ltr" />
+                            <span asp-validation-for="Phone" class="text-danger"></span>
+                        </div>
+                        <div class="form-field">
+                            <label asp-for="WhatsApp" class="form-label">واتساب</label>
+                            <input asp-for="WhatsApp" class="form-control" inputmode="tel" dir="ltr" />
+                        </div>
+                        <div class="form-field">
+                            <label asp-for="Address" class="form-label">العنوان</label>
+                            <input asp-for="Address" class="form-control" />
+                            <span asp-validation-for="Address" class="text-danger"></span>
+                        </div>
+                        <div class="form-field">
+                            <label asp-for="TelegramHandle" class="form-label">معرف بوت التيليغرام</label>
+                            <input asp-for="TelegramHandle" class="form-control" dir="ltr" placeholder="@Model.TelegramHandle" />
+                        </div>
+                        <div class="form-field" style="grid-column: 1 / -1;">
+                            <label asp-for="OpeningHours" class="form-label">ساعات العمل</label>
+                            <input asp-for="OpeningHours" class="form-control" placeholder="مثال: السبت - الخميس 09:00 - 18:00" />
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <h6 class="mb-2">شعار المحل</h6>
+                    <p class="text-muted small">يظهر في الشريط الجانبي، تذييل الصفحات، صفحة الدخول، وصل الصيانة، وقائمة بوت التيليغرام.</p>
+                    <div class="shop-logo-editor">
+                        <div class="shop-logo-editor__preview">
+                            @if (hasLogo)
+                            {
+                                <img src="@Url.Content(logoUrl)" alt="الشعار الحالي" class="shop-logo-editor__img" asp-append-version="true" />
+                            }
+                            else
+                            {
+                                <span class="shop-logo-editor__placeholder" aria-hidden="true">لا يوجد شعار</span>
+                            }
+                        </div>
+                        <div class="shop-logo-editor__fields">
+                            <div class="form-field">
+                                <label asp-for="LogoFile" class="form-label">اختر شعاراً جديداً</label>
+                                <input asp-for="LogoFile" type="file" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" class="form-control" />
+                                <span asp-validation-for="LogoFile" class="text-danger"></span>
+                                <small class="form-text text-muted">PNG أو JPG أو WEBP. الحد الأقصى 2 ميغابايت.</small>
+                            </div>
+                            @if (hasLogo)
+                            {
+                                <div class="form-check">
+                                    <input asp-for="RemoveLogo" type="checkbox" class="form-check-input" />
+                                    <label asp-for="RemoveLogo" class="form-check-label">إزالة الشعار الحالي والعودة للاسم اللاتيني</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ الإعدادات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

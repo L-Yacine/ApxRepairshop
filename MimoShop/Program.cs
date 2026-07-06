@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using MimoShop.Data;
 using MimoShop.Services;
+using MimoShop.Services.Telegram;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,39 @@ builder.Services.AddScoped<StaffAccountService>();
 builder.Services.AddScoped<RepairIntakeService>();
 builder.Services.AddScoped<RepairWorkflowService>();
 builder.Services.AddScoped<InventoryService>();
+builder.Services.AddScoped<CatalogImageService>();
+builder.Services.AddHttpClient(GsmArenaCatalogImageProvider.HttpClientName, client =>
+{
+    client.DefaultRequestHeaders.UserAgent.ParseAdd(
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36");
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
+builder.Services.AddScoped<GsmArenaCatalogImageProvider>();
+builder.Services.AddScoped<ICatalogImageProvider>(provider =>
+    provider.GetRequiredService<GsmArenaCatalogImageProvider>());
+
+builder.Services.AddHttpClient(IFixitCatalogImageProvider.HttpClientName, client =>
+{
+    client.BaseAddress = new Uri("https://www.ifixit.com/");
+    client.DefaultRequestHeaders.UserAgent.ParseAdd(
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36");
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
+builder.Services.AddScoped<IFixitCatalogImageProvider>();
+
+builder.Services.AddScoped<CatalogImageFetchService>();
+builder.Services.AddScoped<DashboardService>();
+builder.Services.AddScoped<ShopSettingsService>();
+builder.Services.AddScoped<SeedImportService>();
+
+builder.Services.Configure<TelegramBotOptions>(
+    builder.Configuration.GetSection(TelegramBotOptions.SectionName));
+builder.Services.AddScoped<PartsCatalogQueryService>();
+builder.Services.AddScoped<RepairStatusQueryService>();
+builder.Services.AddSingleton<RepairStatusInputState>();
+builder.Services.AddSingleton<ChatMenuState>();
+builder.Services.AddScoped<TelegramBotUpdateHandler>();
+builder.Services.AddHostedService<TelegramBotHostedService>();
 builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

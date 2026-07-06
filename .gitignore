@@ -18,3 +18,10 @@ Thumbs.db
 *.log
 *.tmp
 *.temp
+
+# Runtime catalog uploads
+MimoShop/wwwroot/uploads/catalog/
+
+# Sensitive config files
+MimoShop/appsettings.json
+Credentials.txt

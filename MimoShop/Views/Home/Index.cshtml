@@ -1,36 +1,65 @@
-﻿@{
+﻿@inject RepairWorkflowService RepairWorkflow
+@using MimoShop.Models
+@using MimoShop.Services
+@{
     ViewData["Title"] = "الرئيسية";
+    RepairTicketListViewModel? list = null;
+    try
+    {
+        list = await RepairWorkflow.GetTicketListAsync();
+    }
+    catch
+    {
+        list = null;
+    }
+    int openCount = list?.ActiveJobs?.Count ?? 0;
+    int waitingCount = list?.WaitingForPartJobs?.Count ?? 0;
+    int doneCount = list?.ActiveJobs?.Count(t => t.Status == RepairJobStatuses.Done) ?? 0;
 }
 
 <section class="page-header">
-    <p class="eyebrow">نظام إدارة محل الصيانة</p>
-    <h1>مرحباً، @User.Identity?.Name</h1>
-    <p>هذه الواجهة مخصصة لموظفي المحل فقط. استخدمها لاستقبال الصيانة، متابعة الحالات، إدارة المخزون، وتسجيل المدفوعات.</p>
+    <p class="page-header__eyebrow">مرحباً</p>
+    <h1 class="page-header__title">@User.Identity?.Name</h1>
+    <p class="page-header__lede">هذه هي الواجهة المخصصة لموظفي المحل. ابدأ باستقبال جهاز جديد، أو تابع الحالات المفتوحة.</p>
 </section>
 
-<div class="module-grid">
-    <article class="module-card">
-        <span class="module-status">الشريحة 2</span>
-        <h2>استقبال جهاز جديد</h2>
-        <p>بحث بالهاتف، إنشاء بطاقة صيانة، وطباعة وصل برمز الطلب.</p>
-        <a asp-controller="RepairTickets" asp-action="Create" class="btn btn-primary mt-3">فتح الاستقبال</a>
-    </article>
-    <article class="module-card">
-        <span class="module-status">الشريحة 3</span>
-        <h2>متابعة حالات الصيانة</h2>
-        <p>تتبع الطلبات من جديد إلى تم التسليم مع إبراز الطلبات المنتظرة للقطع.</p>
-        <a asp-controller="RepairTickets" asp-action="Index" class="btn btn-primary mt-3">فتح الحالات</a>
-    </article>
-    <article class="module-card">
-        <span class="module-status">الشريحة 4</span>
-        <h2>المخزون</h2>
-        <p>إدارة قطع الغيار حسب العلامة، الموديل، النوع، والنسخة.</p>
-        <a asp-controller="Inventory" asp-action="Index" class="btn btn-primary mt-3">فتح المخزون</a>
-    </article>
-    <article class="module-card">
-        <span class="module-status">الشريحة 5</span>
-        <h2>الدفع والرصيد</h2>
-        <p>تحديث السعر المتفق عليه، تسجيل المدفوع، ومتابعة الباقي من بطاقة الصيانة.</p>
-        <a asp-controller="RepairTickets" asp-action="Index" class="btn btn-primary mt-3">فتح البطاقات</a>
-    </article>
+<button type="button" class="primary-action" data-open-modal="repairCreate">
+    <p class="primary-action__eyebrow">الخطوة الأولى</p>
+    <h2 class="primary-action__title">استقبال جهاز جديد</h2>
+    <p class="primary-action__lede">أنشئ بطاقة صيانة، ابحث عن عميل موجود، واطبع الوصل برمز الطلب.</p>
+    <div class="primary-action__actions">
+        <span class="btn btn-primary btn--lg">فتح الاستقبال</span>
+    </div>
+</button>
+
+<div class="kpi-grid">
+    <a asp-controller="RepairTickets" asp-action="Index" class="kpi kpi--info">
+        <span class="kpi__label">طلبات مفتوحة</span>
+        <span class="kpi__value">@openCount</span>
+        <span class="kpi__hint">قيد العمل أو قيد الانتظار</span>
+        <span class="kpi__action btn btn-ghost btn--sm">عرض كل الحالات ←</span>
+    </a>
+    <a asp-controller="RepairTickets" asp-action="Index" class="kpi kpi--warn">
+        <span class="kpi__label">بانتظار قطعة</span>
+        <span class="kpi__value">@waitingCount</span>
+        <span class="kpi__hint">تحتاج متابعة وصول القطع</span>
+        <span class="kpi__action btn btn-ghost btn--sm">عرض المنتظرة ←</span>
+    </a>
+    <a asp-controller="RepairTickets" asp-action="Index" class="kpi kpi--ok">
+        <span class="kpi__label">جاهز للتسليم</span>
+        <span class="kpi__value">@doneCount</span>
+        <span class="kpi__hint">ينتظر العميل لاستلام الجهاز</span>
+        <span class="kpi__action btn btn-ghost btn--sm">عرض الجاهزة ←</span>
+    </a>
 </div>
+
+@if (User.IsInRole("Owner"))
+{
+    <section class="card card--home-owner">
+        <div class="card__header">
+            <h2 class="card__title">للمالك</h2>
+        </div>
+        <p>لوحة نظرة عامة على نشاط المحل، المدفوعات المعلقة، وحركة المخزون.</p>
+        <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-primary">فتح لوحة المالك</a>
+    </section>
+}

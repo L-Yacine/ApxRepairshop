@@ -4,7 +4,15 @@ public sealed class RepairReceiptViewModel
 {
     public required string ShopName { get; init; }
 
-    public required string ShopContact { get; init; }
+    public required string ShopLatinName { get; init; }
+
+    public required string ShopPhone { get; init; }
+
+    public required string ShopAddress { get; init; }
+
+    public string? ShopTelegramHandle { get; init; }
+
+    public string? ShopLogoUrl { get; init; }
 
     public required string JobCode { get; init; }
 

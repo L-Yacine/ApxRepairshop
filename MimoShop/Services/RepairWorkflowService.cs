@@ -58,12 +58,32 @@ public sealed class RepairWorkflowService
             return null;
         }
 
-        List<InventoryPart> matchingParts = await dbContext.InventoryParts
+        int? brandId = await dbContext.Brands
             .AsNoTracking()
-            .Where(part => part.Brand == ticket.DeviceBrand && part.Model == ticket.DeviceModel)
-            .OrderBy(part => part.PartType)
-            .ThenBy(part => part.Variant)
-            .ToListAsync();
+            .Where(brand => brand.Name == ticket.DeviceBrand)
+            .Select(brand => (int?)brand.Id)
+            .SingleOrDefaultAsync();
+
+        int? phoneModelId = await dbContext.PhoneModels
+            .AsNoTracking()
+            .Where(model => model.BrandId == brandId && model.Name == ticket.DeviceModel)
+            .Select(model => (int?)model.Id)
+            .SingleOrDefaultAsync();
+
+        List<InventoryPart> matchingParts = brandId.HasValue && phoneModelId.HasValue
+            ? await dbContext.InventoryParts
+                .AsNoTracking()
+                .Where(part => part.BrandId == brandId.Value && part.PhoneModelId == phoneModelId.Value)
+                .Include(part => part.Brand)
+                .Include(part => part.PhoneModel)
+                .Include(part => part.PartType)
+                .Include(part => part.PartVariant)
+                .OrderBy(part => part.PartType.SortOrder)
+                .ThenBy(part => part.PartType.Name)
+                .ThenBy(part => part.PartVariant.SortOrder)
+                .ThenBy(part => part.PartVariant.Name)
+                .ToListAsync()
+            : [];
 
         return ToDetails(ticket, matchingParts);
     }
@@ -118,6 +138,10 @@ public sealed class RepairWorkflowService
         RepairTicket? ticket = await dbContext.RepairTickets
             .SingleOrDefaultAsync(ticket => ticket.JobCode == normalizedCode);
         InventoryPart? part = await dbContext.InventoryParts
+            .Include(part => part.Brand)
+            .Include(part => part.PhoneModel)
+            .Include(part => part.PartType)
+            .Include(part => part.PartVariant)
             .SingleOrDefaultAsync(part => part.Id == inventoryPartId);
 
         if (ticket is null || part is null || !part.IsStocked || part.Quantity < quantity)
@@ -133,10 +157,10 @@ public sealed class RepairWorkflowService
         {
             RepairTicket = ticket,
             InventoryPart = part,
-            Brand = part.Brand,
-            Model = part.Model,
-            PartType = part.PartType,
-            Variant = part.Variant,
+            BrandName = part.Brand.Name,
+            PhoneModelName = part.PhoneModel.Name,
+            PartTypeName = part.PartType.Name,
+            PartVariantName = part.PartVariant.Name,
             Quantity = quantity,
             UnitCostPrice = part.UnitCostPrice,
             UnitSalePrice = part.UnitSalePrice,
@@ -175,6 +199,10 @@ public sealed class RepairWorkflowService
         RepairTicket? ticket = await dbContext.RepairTickets
             .SingleOrDefaultAsync(ticket => ticket.JobCode == normalizedCode);
         InventoryPart? part = await dbContext.InventoryParts
+            .Include(part => part.Brand)
+            .Include(part => part.PhoneModel)
+            .Include(part => part.PartType)
+            .Include(part => part.PartVariant)
             .SingleOrDefaultAsync(part => part.Id == inventoryPartId);
 
         if (ticket is null || part is null || part.IsStocked)
@@ -187,10 +215,10 @@ public sealed class RepairWorkflowService
         {
             RepairTicket = ticket,
             InventoryPart = part,
-            Brand = part.Brand,
-            Model = part.Model,
-            PartType = part.PartType,
-            Variant = part.Variant,
+            BrandName = part.Brand.Name,
+            PhoneModelName = part.PhoneModel.Name,
+            PartTypeName = part.PartType.Name,
+            PartVariantName = part.PartVariant.Name,
             Quantity = quantity,
             UnitCostPrice = part.UnitCostPrice,
             UnitSalePrice = part.UnitSalePrice,
@@ -308,6 +336,9 @@ public sealed class RepairWorkflowService
 
     private static RepairTicketDetailsViewModel ToDetails(RepairTicket ticket, IReadOnlyList<InventoryPart> matchingParts)
     {
+        var stockedParts = dbPartOptions(stocked: true);
+        var onDemandParts = dbPartOptions(stocked: false);
+
         return new RepairTicketDetailsViewModel
         {
             JobCode = ticket.JobCode,
@@ -341,14 +372,16 @@ public sealed class RepairWorkflowService
                     ChangedByUsername = history.ChangedByUsername
                 })
                 .ToList(),
-            StockedPartOptions = dbPartOptions(ticket.DeviceBrand, ticket.DeviceModel, stocked: true),
-            OnDemandPartOptions = dbPartOptions(ticket.DeviceBrand, ticket.DeviceModel, stocked: false),
+            StockedPartOptions = stockedParts,
+            OnDemandPartOptions = onDemandParts,
+            StockedPartTypes = BuildPartTypeTabs(stockedParts),
+            OnDemandPartTypes = BuildPartTypeTabs(onDemandParts),
             PartUsages = ticket.PartUsages
                 .OrderByDescending(usage => usage.RequestedAt)
                 .Select(usage => new RepairPartUsageViewModel
                 {
                     Id = usage.Id,
-                    DisplayName = FormatPartName(usage.Brand, usage.Model, usage.PartType, usage.Variant),
+                    DisplayName = FormatPartName(usage.BrandName, usage.PhoneModelName, usage.PartTypeName, usage.PartVariantName),
                     Quantity = usage.Quantity,
                     UnitSalePrice = usage.UnitSalePrice,
                     IsOnDemand = usage.IsOnDemand,
@@ -360,20 +393,39 @@ public sealed class RepairWorkflowService
                 .ToList()
         };
 
-        IReadOnlyList<RepairPartOptionViewModel> dbPartOptions(string brand, string model, bool stocked)
+        IReadOnlyList<RepairPartOptionViewModel> dbPartOptions(bool stocked)
         {
             return matchingParts
                 .Where(part => part.IsStocked == stocked
-                    && (!stocked || part.Quantity > 0)
-                    && string.Equals(part.Brand, brand, StringComparison.OrdinalIgnoreCase)
-                    && string.Equals(part.Model, model, StringComparison.OrdinalIgnoreCase))
+                    && (!stocked || part.Quantity > 0))
                 .Select(part => new RepairPartOptionViewModel
                 {
                     Id = part.Id,
-                    DisplayName = FormatPartName(part.Brand, part.Model, part.PartType, part.Variant),
+                    PartTypeId = part.PartType.Id,
+                    PartTypeName = string.IsNullOrWhiteSpace(part.PartType.DisplayNameAr)
+                        ? part.PartType.Name
+                        : part.PartType.DisplayNameAr,
+                    PartVariantName = part.PartVariant.Name,
+                    DisplayName = $"{part.PartType.Name} - {part.PartVariant.Name}",
+                    ThumbnailUrl = part.PartType.ThumbnailUrl,
                     Quantity = part.Quantity,
                     UnitSalePrice = part.UnitSalePrice,
                     IsStocked = part.IsStocked
+                })
+                .ToList();
+        }
+
+        static IReadOnlyList<RepairPartTypeTabViewModel> BuildPartTypeTabs(IReadOnlyList<RepairPartOptionViewModel> parts)
+        {
+            return parts
+                .GroupBy(part => part.PartTypeId)
+                .Select(group => new RepairPartTypeTabViewModel
+                {
+                    Id = group.Key,
+                    Name = group.First().PartTypeName,
+                    ThumbnailUrl = group.First().ThumbnailUrl,
+                    VariantCount = group.Count(),
+                    Parts = group.ToList()
                 })
                 .ToList();
         }

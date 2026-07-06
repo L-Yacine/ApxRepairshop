@@ -1,12 +1,78 @@
 @model RepairTicketDetailsViewModel
-
+@using MimoShop.Services
 @{
     ViewData["Title"] = $"بطاقة {Model.JobCode}";
+    ViewData["BreadcrumbSuffix"] = Model.JobCode;
+
+    string statusClass = Model.Status switch
+    {
+        RepairJobStatuses.New => "new",
+        RepairJobStatuses.InProgress => "progress",
+        RepairJobStatuses.WaitingForPart => "waiting",
+        RepairJobStatuses.Done => "done",
+        RepairJobStatuses.Collected => "collected",
+        _ => "new"
+    };
+    string statusPillClass = Model.Status switch
+    {
+        RepairJobStatuses.New => "pill--new",
+        RepairJobStatuses.InProgress => "pill--progress",
+        RepairJobStatuses.WaitingForPart => "pill--waiting",
+        RepairJobStatuses.Done => "pill--done",
+        RepairJobStatuses.Collected => "pill--collected",
+        _ => "pill--new"
+    };
+    string paymentPillClass = Model.PaymentStatusLabel switch
+    {
+        "غير مدفوع" => "pill--unpaid",
+        "مدفوع جزئياً" => "pill--partial",
+        "مدفوع بالكامل" => "pill--paid",
+        _ => "pill--unpaid"
+    };
+    int statusIndex = Model.Status switch
+    {
+        RepairJobStatuses.New => 0,
+        RepairJobStatuses.InProgress => 1,
+        RepairJobStatuses.WaitingForPart => 2,
+        RepairJobStatuses.Done => 3,
+        RepairJobStatuses.Collected => 4,
+        _ => 0
+    };
+    var steps = new[]
+    {
+        (Label: "جديد", Value: RepairJobStatuses.New),
+        (Label: "قيد العمل", Value: RepairJobStatuses.InProgress),
+        (Label: "بانتظار قطعة", Value: RepairJobStatuses.WaitingForPart),
+        (Label: "جاهز للتسليم", Value: RepairJobStatuses.Done),
+        (Label: "تم التسليم", Value: RepairJobStatuses.Collected)
+    };
+    bool isCollected = Model.Status == RepairJobStatuses.Collected;
+    bool isDone = Model.Status == RepairJobStatuses.Done;
+    bool isInProgress = Model.Status == RepairJobStatuses.InProgress;
+    bool isWaiting = Model.Status == RepairJobStatuses.WaitingForPart;
+    bool isNew = Model.Status == RepairJobStatuses.New;
+    string priceDisplay = Model.EstimatedPrice.ToString("N0");
+    string paidDisplay = Model.AmountPaid.ToString("N0");
+    string balanceDisplay = Model.BalanceOwed.ToString("N0");
 }
 
-<div class="status-page-actions">
-    <a asp-action="Index" class="btn btn-outline-secondary">كل البطاقات</a>
-    <a asp-action="Receipt" asp-route-jobCode="@Model.JobCode" class="btn btn-outline-primary">عرض الوصل</a>
+@functions {
+    static string StepClass(int stepIndex, int currentIndex, string currentStatus)
+    {
+        if (stepIndex < currentIndex) return "stepper__step--done";
+        if (stepIndex == currentIndex)
+        {
+            return currentStatus == RepairJobStatuses.WaitingForPart
+                ? "stepper__step--waiting"
+                : "stepper__step--active";
+        }
+        return "";
+    }
+}
+
+<div class="cluster" style="margin-bottom: var(--space-4);">
+    <a asp-action="Index" class="btn btn-outline-secondary btn--sm">كل البطاقات</a>
+    <a asp-action="Receipt" asp-route-jobCode="@Model.JobCode" class="btn btn-outline-secondary btn--sm">عرض الوصل</a>
 </div>
 
 @if (TempData["RepairMessage"] is string message)
@@ -14,230 +80,608 @@
     <div class="alert alert-info">@message</div>
 }
 
-<section class="ticket-detail-header">
-    <div>
-        <p class="eyebrow">بطاقة صيانة</p>
-        <h1>@Model.JobCode</h1>
-        <p>@Model.DeviceName - @Model.CustomerName</p>
+<section class="ticket-hero">
+    <div class="ticket-hero__top">
+        <div class="ticket-hero__code-block">
+            <p class="ticket-hero__eyebrow">بطاقة صيانة</p>
+            <h1 class="ticket-hero__code">@Model.JobCode</h1>
+            <p class="ticket-hero__sub">
+                <strong>@Model.CustomerName</strong>
+                <span> · </span>
+                <span>@Model.CustomerPhone</span>
+                <span> · </span>
+                <span>@Model.DeviceName</span>
+            </p>
+        </div>
+        <div class="ticket-hero__status">
+            <span class="pill pill--xl @statusPillClass">
+                <span class="pill__dot" aria-hidden="true"></span>
+                @Model.StatusLabel
+            </span>
+            <span class="pill @paymentPillClass">@Model.PaymentStatusLabel</span>
+        </div>
     </div>
-    <span class="status-badge status-large @(Model.Status == RepairJobStatuses.WaitingForPart ? "status-waiting" : "")">@Model.StatusLabel</span>
-</section>
 
-<div class="ticket-detail-grid">
-    <section class="form-section" aria-labelledby="ticket-details">
-        <div class="section-heading">
-            <h2 id="ticket-details">تفاصيل الطلب</h2>
-        </div>
-        <dl class="detail-list">
-            <div>
-                <dt>تاريخ الاستقبال</dt>
-                <dd>@Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")</dd>
-            </div>
-            <div>
-                <dt>العميل</dt>
-                <dd>@Model.CustomerName</dd>
-            </div>
-            <div>
-                <dt>الهاتف</dt>
-                <dd>@Model.CustomerPhone</dd>
-            </div>
-            <div>
-                <dt>الجهاز</dt>
-                <dd>@Model.DeviceName</dd>
-            </div>
-            <div>
-                <dt>العامل المسؤول</dt>
-                <dd>@Model.AssignedWorkerName</dd>
-            </div>
-            <div>
-                <dt>السعر المتفق عليه</dt>
-                <dd>@Model.EstimatedPrice.ToString("N0") دج</dd>
-            </div>
-            <div>
-                <dt>المدفوع</dt>
-                <dd>@Model.AmountPaid.ToString("N0") دج</dd>
-            </div>
-            <div>
-                <dt>الباقي</dt>
-                <dd>@Model.BalanceOwed.ToString("N0") دج</dd>
-            </div>
-            <div>
-                <dt>حالة الدفع</dt>
-                <dd>@Model.PaymentStatusLabel</dd>
-            </div>
-        </dl>
-        <section class="detail-block">
-            <h2>وصف المشكل</h2>
-            <p>@Model.ProblemDescription</p>
-        </section>
-        @if (!string.IsNullOrWhiteSpace(Model.Notes))
+    <ol class="stepper" aria-label="مراحل الصيانة">
+        @for (int i = 0; i < steps.Length; i++)
         {
-            <section class="detail-block">
-                <h2>ملاحظات</h2>
-                <p>@Model.Notes</p>
-            </section>
-        }
-    </section>
-
-    <aside class="form-section" aria-labelledby="status-update">
-        <div class="section-heading">
-            <h2 id="status-update">تحديث الحالة</h2>
-        </div>
-        <form asp-action="UpdateStatus" method="post" class="status-update-form">
-            <input type="hidden" name="jobCode" value="@Model.JobCode" />
-            <label for="status" class="form-label">الحالة الجديدة</label>
-            <select id="status" name="status" class="form-select">
-                @foreach (RepairStatusOptionViewModel option in Model.StatusOptions)
-                {
-                    <option value="@option.Value" selected="@(option.Value == Model.Status)">@option.Label</option>
-                }
-            </select>
-            <button type="submit" class="btn btn-primary">حفظ الحالة</button>
-        </form>
-        @if (Model.Status == RepairJobStatuses.WaitingForPart)
-        {
-            <form asp-action="UpdateStatus" method="post" class="mt-3">
-                <input type="hidden" name="jobCode" value="@Model.JobCode" />
-                <input type="hidden" name="status" value="@RepairJobStatuses.InProgress" />
-                <button type="submit" class="btn btn-outline-success w-100">وصلت القطعة، استئناف العمل</button>
-            </form>
-        }
-    </aside>
-</div>
-
-<div class="ticket-detail-grid mt-3">
-    <section class="form-section" aria-labelledby="payment-update">
-        <div class="section-heading">
-            <h2 id="payment-update">الدفع والرصيد</h2>
-            <span class="status-badge">@Model.PaymentStatusLabel</span>
-        </div>
-        <form asp-action="UpdatePayment" method="post" class="form-grid">
-            <input type="hidden" name="jobCode" value="@Model.JobCode" />
-            <div>
-                <label for="EstimatedPrice" class="form-label">السعر المتفق عليه (دج)</label>
-                <input id="EstimatedPrice" name="EstimatedPrice" value="@Model.EstimatedPrice" class="form-control" inputmode="decimal" readonly="@(Model.Status == RepairJobStatuses.Collected)" />
-                @if (Model.Status == RepairJobStatuses.Collected)
-                {
-                    <span class="form-text">لا يتم تعديل السعر بعد التسليم.</span>
-                }
-            </div>
-            <div>
-                <label for="AmountPaid" class="form-label">المبلغ المدفوع (دج)</label>
-                <input id="AmountPaid" name="AmountPaid" value="@Model.AmountPaid" class="form-control" inputmode="decimal" />
-            </div>
-            <div class="form-submit-cell">
-                <button type="submit" class="btn btn-primary w-100">حفظ الدفع</button>
-            </div>
-        </form>
-    </section>
-
-    <aside class="form-section" aria-labelledby="part-actions">
-        <div class="section-heading">
-            <h2 id="part-actions">قطع الغيار</h2>
-        </div>
-
-        <form asp-action="ConsumeStockedPart" method="post" class="part-action-form">
-            <input type="hidden" name="jobCode" value="@Model.JobCode" />
-            <label for="stockedPartId" class="form-label">استهلاك قطعة مخزنة</label>
-            <select id="stockedPartId" name="InventoryPartId" class="form-select">
-                <option value="">اختر قطعة</option>
-                @foreach (RepairPartOptionViewModel part in Model.StockedPartOptions)
-                {
-                    <option value="@part.Id">@part.DisplayName - @part.UnitSalePrice.ToString("N0") دج - الكمية @part.Quantity</option>
-                }
-            </select>
-            <div class="part-action-row">
-                <input name="Quantity" value="1" class="form-control" inputmode="numeric" aria-label="الكمية" />
-                <button type="submit" class="btn btn-outline-primary">استهلاك</button>
-            </div>
-        </form>
-
-        <form asp-action="RequestOnDemandPart" method="post" class="part-action-form">
-            <input type="hidden" name="jobCode" value="@Model.JobCode" />
-            <label for="onDemandPartId" class="form-label">طلب قطعة عند الحاجة</label>
-            <select id="onDemandPartId" name="InventoryPartId" class="form-select">
-                <option value="">اختر قطعة</option>
-                @foreach (RepairPartOptionViewModel part in Model.OnDemandPartOptions)
-                {
-                    <option value="@part.Id">@part.DisplayName - @part.UnitSalePrice.ToString("N0") دج</option>
-                }
-            </select>
-            <div class="part-action-row">
-                <input name="Quantity" value="1" class="form-control" inputmode="numeric" aria-label="الكمية" />
-                <button type="submit" class="btn btn-outline-warning">طلب القطعة</button>
-            </div>
-        </form>
-    </aside>
-</div>
-
-<section class="job-section" aria-labelledby="parts-history">
-    <div class="section-heading">
-        <h2 id="parts-history">قطع مستخدمة في الصيانة</h2>
-        <span class="job-count">@Model.PartUsages.Count</span>
-    </div>
-    @if (Model.PartUsages.Count == 0)
-    {
-        <p class="empty-state">لم يتم تسجيل قطع لهذه البطاقة بعد.</p>
-    }
-    else
-    {
-        <div class="job-table-wrap">
-            <table class="table job-table">
-                <thead>
-                    <tr>
-                        <th>القطعة</th>
-                        <th>الكمية</th>
-                        <th>سعر البيع</th>
-                        <th>الحالة</th>
-                        <th>التاريخ</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (RepairPartUsageViewModel usage in Model.PartUsages)
-                    {
-                        bool isPending = usage.IsOnDemand && !usage.ConsumedAt.HasValue;
-                        <tr>
-                            <td>@usage.DisplayName</td>
-                            <td>@usage.Quantity</td>
-                            <td>@usage.UnitSalePrice.ToString("N0") دج</td>
-                            <td>
-                                <span class="status-badge @(isPending ? "status-waiting" : "")">
-                                    @(usage.IsOnDemand ? (isPending ? "مطلوبة" : "استلمت واستهلكت") : "استهلكت من المخزون")
-                                </span>
-                            </td>
-                            <td>@usage.RequestedAt.ToString("yyyy/MM/dd HH:mm")</td>
-                            <td>
-                                @if (isPending)
-                                {
-                                    <form asp-action="ReceiveOnDemandPart" method="post">
-                                        <input type="hidden" name="jobCode" value="@Model.JobCode" />
-                                        <input type="hidden" name="partUsageId" value="@usage.Id" />
-                                        <button type="submit" class="btn btn-outline-success btn-sm">استلام واستهلاك</button>
-                                    </form>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
-</section>
-
-<section class="job-section" aria-labelledby="status-history">
-    <div class="section-heading">
-        <h2 id="status-history">سجل الحالات</h2>
-        <span class="job-count">@Model.StatusHistory.Count</span>
-    </div>
-    <ol class="status-timeline">
-        @foreach (RepairStatusHistoryViewModel history in Model.StatusHistory)
-        {
-            <li>
-                <span class="status-badge @(history.Status == RepairJobStatuses.WaitingForPart ? "status-waiting" : "")">@history.StatusLabel</span>
-                <span>@history.ChangedAt.ToString("yyyy/MM/dd HH:mm")</span>
-                <span>بواسطة @history.ChangedByUsername</span>
+            <li class="stepper__step @StepClass(i, statusIndex, Model.Status)">
+                <span class="stepper__dot">
+                    <span class="stepper__dot-text">@(i + 1)</span>
+                </span>
+                <span class="stepper__label">@steps[i].Label</span>
             </li>
         }
     </ol>
 </section>
+
+@* === Status-driven primary action card ============================== *@
+
+@if (isNew)
+{
+    <section class="primary-action">
+        <p class="primary-action__eyebrow">الخطوة التالية</p>
+        <h2 class="primary-action__title">ابدأ العمل على هذا الجهاز</h2>
+        <p class="primary-action__lede">انتقل إلى "قيد العمل" لتسجيل بدء الإصلاح. سيتم احتساب الوقت من الآن.</p>
+        <form asp-action="UpdateStatus" method="post" style="display:inline;"
+              data-confirm-modal data-confirm-title="بدء العمل"
+              data-confirm-body="هل تريد بدء العمل على البطاقة الآن؟">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="jobCode" value="@Model.JobCode" />
+            <input type="hidden" name="status" value="@RepairJobStatuses.InProgress" />
+            <button type="submit" class="btn btn-primary btn--lg">ابدأ العمل</button>
+        </form>
+    </section>
+}
+else if (isInProgress)
+{
+    <section class="primary-action">
+        <p class="primary-action__eyebrow">الإصلاح</p>
+        <h2 class="primary-action__title">سجّل نتيجة الإصلاح</h2>
+        <p class="primary-action__lede">حدد ما إذا تم الإصلاح، أو أن الجهاز ينتظر قطعة من المورد.</p>
+        <div class="primary-action__actions">
+            <form asp-action="UpdateStatus" method="post" style="display:inline;"
+                  data-confirm-modal data-confirm-title="تم الإصلاح"
+                  data-confirm-body="هل تريد وضع البطاقة كجاهزة للتسليم؟">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="jobCode" value="@Model.JobCode" />
+                <input type="hidden" name="status" value="@RepairJobStatuses.Done" />
+                <button type="submit" class="btn btn-primary btn--lg">تم الإصلاح - جاهز للتسليم</button>
+            </form>
+            <form asp-action="UpdateStatus" method="post" style="display:inline;"
+                  data-confirm-modal data-confirm-title="بانتظار قطعة"
+                  data-confirm-body="سيتم نقل البطاقة إلى 'بانتظار قطعة'. متابعة؟">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="jobCode" value="@Model.JobCode" />
+                <input type="hidden" name="status" value="@RepairJobStatuses.WaitingForPart" />
+                <button type="submit" class="btn btn-outline-primary btn--lg">بانتظار قطعة من المورد</button>
+            </form>
+        </div>
+    </section>
+}
+else if (isWaiting)
+{
+    <section class="primary-action primary-action--wait">
+        <p class="primary-action__eyebrow">بانتظار قطعة</p>
+        <h2 class="primary-action__title">هل وصلت القطعة؟</h2>
+        <p class="primary-action__lede">استقبل القطعة، استهلكها من المخزون إن وجدت، ثم استأنف العمل.</p>
+        <div class="primary-action__actions">
+            <form asp-action="UpdateStatus" method="post" style="display:inline;"
+                  data-confirm-modal data-confirm-title="استئناف العمل"
+                  data-confirm-body="هل وصلت القطعة وتريد استئناف العمل؟">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="jobCode" value="@Model.JobCode" />
+                <input type="hidden" name="status" value="@RepairJobStatuses.InProgress" />
+                <button type="submit" class="btn btn-primary btn--lg">وصلت القطعة - استئناف العمل</button>
+            </form>
+        </div>
+    </section>
+}
+else if (isDone)
+{
+    <section class="primary-action primary-action--collect">
+        <p class="primary-action__eyebrow">جاهز للتسليم</p>
+        <h2 class="primary-action__title">سلّم الجهاز للعميل</h2>
+        <p class="primary-action__lede">
+            السعر المتفق عليه: <span class="primary-action__amount">@priceDisplay دج</span>
+            · الرصيد الحالي: <span class="primary-action__amount">@balanceDisplay دج</span>
+        </p>
+        <div class="primary-action__actions">
+            <button type="button" class="btn btn-outline-primary btn--lg"
+                    data-pm-trigger data-pm-estimated="@Model.EstimatedPrice" data-pm-paid="@Model.AmountPaid" data-pm-readonly="false">
+                تعديل السعر والدفع
+            </button>
+            <form asp-action="UpdateStatus" method="post" style="display:inline;"
+                  data-confirm-modal data-confirm-title="تأكيد تسليم الجهاز"
+                  data-confirm-body="هل تريد تسليم الجهاز للعميل وإغلاق البطاقة؟">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="jobCode" value="@Model.JobCode" />
+                <input type="hidden" name="status" value="@RepairJobStatuses.Collected" />
+                <button type="submit" class="btn btn-primary btn--xl">تسليم الجهاز</button>
+            </form>
+        </div>
+    </section>
+}
+else if (isCollected)
+{
+    <section class="primary-action primary-action--done">
+        <p class="primary-action__eyebrow">مكتمل</p>
+        <h2 class="primary-action__title">تم تسليم الجهاز</h2>
+        <p class="primary-action__lede">
+            السعر: <span class="primary-action__amount">@priceDisplay دج</span>
+            · المدفوع: <span class="primary-action__amount">@paidDisplay دج</span>
+            · @Model.PaymentStatusLabel
+        </p>
+
+        @if (Model.BalanceOwed > 0)
+        {
+            <div style="margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid rgba(255,255,255,0.2);">
+                <p class="form-hint" style="color: rgba(255,255,255,0.8); margin-bottom: var(--space-3);">يمكن للعميل تسديد الباقي في أي وقت</p>
+                <button type="button" class="btn btn-primary btn--lg"
+                        data-pm-trigger data-pm-estimated="@Model.EstimatedPrice" data-pm-paid="@Model.AmountPaid" data-pm-readonly="true">
+                    تسديد الباقي
+                </button>
+            </div>
+        }
+    </section>
+}
+
+@* === Secondary tabs (details / parts / payment / history) =========== *@
+
+<div class="tabs">
+    <input type="radio" id="tab-details" name="detail-tabs" class="tabs__input" checked />
+    <input type="radio" id="tab-parts" name="detail-tabs" class="tabs__input" />
+    <input type="radio" id="tab-payment" name="detail-tabs" class="tabs__input" />
+    <input type="radio" id="tab-history" name="detail-tabs" class="tabs__input" />
+
+    <div class="tabs__nav" role="tablist">
+        <label for="tab-details" class="tabs__tab">تفاصيل الطلب</label>
+        <label for="tab-parts" class="tabs__tab">قطع الغيار <span class="pill pill--new" style="font-size: 0.7rem; padding: 0.1rem 0.5rem;">@Model.PartUsages.Count</span></label>
+        <label for="tab-payment" class="tabs__tab">الدفع</label>
+        <label for="tab-history" class="tabs__tab">السجل</label>
+    </div>
+
+    <div class="tabs__panels">
+        <div class="tabs__panel" id="panel-details">
+            <dl class="detail-list detail-list--3">
+                <div>
+                    <dt>تاريخ الاستقبال</dt>
+                    <dd>@Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")</dd>
+                </div>
+                <div>
+                    <dt>العميل</dt>
+                    <dd>@Model.CustomerName</dd>
+                </div>
+                <div>
+                    <dt>الهاتف</dt>
+                    <dd>@Model.CustomerPhone</dd>
+                </div>
+                <div>
+                    <dt>الجهاز</dt>
+                    <dd>@Model.DeviceName</dd>
+                </div>
+                <div>
+                    <dt>العامل المسؤول</dt>
+                    <dd>@Model.AssignedWorkerName</dd>
+                </div>
+                <div>
+                    <dt>حالة الدفع</dt>
+                    <dd><span class="pill @paymentPillClass">@Model.PaymentStatusLabel</span></dd>
+                </div>
+            </dl>
+
+            <section class="detail-block" style="border-top: 1px solid var(--color-line-soft); margin-top: var(--space-4); padding-top: var(--space-4);">
+                <h2 class="detail-section__title">وصف المشكلة</h2>
+                <p style="white-space: pre-line; margin: 0;">@Model.ProblemDescription</p>
+            </section>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Notes))
+            {
+                <section class="detail-block" style="border-top: 1px solid var(--color-line-soft); margin-top: var(--space-4); padding-top: var(--space-4);">
+                    <h2 class="detail-section__title">ملاحظات</h2>
+                    <p style="white-space: pre-line; margin: 0;">@Model.Notes</p>
+                </section>
+            }
+        </div>
+
+        <div class="tabs__panel" id="panel-parts">
+            <div class="cluster stack stack--sm" style="margin-bottom: var(--space-4);">
+                @if (Model.StockedPartOptions.Count > 0)
+                {
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#repairConsumePartModal">استهلاك قطعة من المخزون</button>
+                }
+                @if (Model.OnDemandPartOptions.Count > 0)
+                {
+                    <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#repairRequestPartModal">طلب قطعة عند الحاجة</button>
+                }
+            </div>
+
+            @if (Model.PartUsages.Count > 0)
+            {
+                <section style="margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--color-line-soft);">
+                    <h3 style="font-size: 1rem; font-weight: 700; margin: 0 0 var(--space-3);">قطع مستخدمة في الصيانة</h3>
+                    <div class="table-wrap">
+                        <table class="table table--compact">
+                            <thead>
+                                <tr>
+                                    <th>القطعة</th>
+                                    <th>الكمية</th>
+                                    <th>سعر البيع</th>
+                                    <th>الحالة</th>
+                                    <th>التاريخ</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (RepairPartUsageViewModel usage in Model.PartUsages)
+                                {
+                                    bool isPending = usage.IsOnDemand && !usage.ConsumedAt.HasValue;
+                                    <tr>
+                                        <td>@usage.DisplayName</td>
+                                        <td>@usage.Quantity</td>
+                                        <td>@usage.UnitSalePrice.ToString("N0") دج</td>
+                                        <td>
+                                            <span class="pill @(isPending ? "pill--waiting" : (usage.IsOnDemand ? "pill--done" : "pill--progress"))">
+                                                @(usage.IsOnDemand ? (isPending ? "مطلوبة" : "مستلمة") : "مستهلكة")
+                                            </span>
+                                        </td>
+                                        <td>@usage.RequestedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                                        <td>
+                                            @if (isPending)
+                                            {
+                                                <form asp-action="ReceiveOnDemandPart" method="post"
+                                                      data-confirm-modal data-confirm-title="استلام القطعة"
+                                                      data-confirm-body="هل وصلت القطعة '@usage.DisplayName' وتريد تسجيل استلامها؟">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="jobCode" value="@Model.JobCode" />
+                                                    <input type="hidden" name="partUsageId" value="@usage.Id" />
+                                                    <button type="submit" class="btn btn-outline-success btn--sm">استلام</button>
+                                                </form>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            }
+            else
+            {
+                <div class="empty" style="margin-top: var(--space-4);">
+                    <span class="empty__icon" aria-hidden="true" style="padding: 12px; display: inline-flex; justify-content: center; align-items: center;">
+                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 8 12 3 3 8v8l9 5 9-5z" />
+                            <path d="M3.3 8.5 12 13l8.7-4.5M12 22V13" />
+                        </svg>
+                    </span>
+                    <p class="empty__msg">لم يتم استخدام قطع غيار في هذه البطاقة بعد.</p>
+                </div>
+            }
+        </div>
+
+        <div class="tabs__panel" id="panel-payment">
+            <dl class="detail-list detail-list--3">
+                <div>
+                    <dt>السعر المتفق عليه</dt>
+                    <dd class="is-amount">@priceDisplay دج</dd>
+                </div>
+                <div>
+                    <dt>المدفوع</dt>
+                    <dd class="is-amount">@paidDisplay دج</dd>
+                </div>
+                <div>
+                    <dt>الباقي</dt>
+                    <dd class="is-amount @(Model.BalanceOwed > 0 ? "is-amount--warn" : "is-amount--ok")">@balanceDisplay دج</dd>
+                </div>
+            </dl>
+
+            <div style="margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-line-soft);">
+                @if (!isCollected)
+                {
+                    <button type="button" class="btn btn-primary"
+                            data-pm-trigger data-pm-estimated="@Model.EstimatedPrice" data-pm-paid="@Model.AmountPaid" data-pm-readonly="false">
+                        تعديل الدفع
+                    </button>
+                }
+                else
+                {
+                    <p class="form-hint" style="margin-bottom: var(--space-3);">يمكن تعديل المبلغ المدفوع بعد تسليم الجهاز</p>
+                    <button type="button" class="btn btn-primary"
+                            data-pm-trigger data-pm-estimated="@Model.EstimatedPrice" data-pm-paid="@Model.AmountPaid" data-pm-readonly="true">
+                        تعديل المبلغ المدفوع
+                    </button>
+                }
+            </div>
+        </div>
+
+        <div class="tabs__panel" id="panel-history">
+            @if (Model.StatusHistory.Count == 0)
+            {
+                <div class="empty">
+                    <span class="empty__icon" aria-hidden="true" style="padding: 12px; display: inline-flex; justify-content: center; align-items: center;">
+                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    </span>
+                    <p class="empty__msg">لا يوجد سجل حالات بعد.</p>
+                </div>
+            }
+            else
+            {
+                <ol class="status-timeline" style="background: transparent; border: 0; padding: 0;">
+                    @foreach (RepairStatusHistoryViewModel history in Model.StatusHistory)
+                    {
+                        string histClass = history.Status switch
+                        {
+                            RepairJobStatuses.New => "pill--new",
+                            RepairJobStatuses.InProgress => "pill--progress",
+                            RepairJobStatuses.WaitingForPart => "pill--waiting",
+                            RepairJobStatuses.Done => "pill--done",
+                            RepairJobStatuses.Collected => "pill--collected",
+                            _ => "pill--new"
+                        };
+                        <li class="timeline-entry">
+                            <span class="pill @histClass">
+                                <span class="pill__dot" aria-hidden="true"></span>
+                                @history.StatusLabel
+                            </span>
+                            <span style="color: var(--color-text-soft); font-size: 0.9rem;">@history.ChangedAt.ToString("yyyy/MM/dd HH:mm")</span>
+                            <span style="color: var(--color-text-soft); font-size: 0.88rem;">بواسطة @history.ChangedByUsername</span>
+                        </li>
+                    }
+                </ol>
+            }
+        </div>
+    </div>
+</div>
+
+@* ===== Shared modals ===== *@
+
+<div class="modal fade" id="repairPaymentModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <form asp-action="UpdatePayment" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">تعديل السعر والدفع</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="jobCode" value="@Model.JobCode" />
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label class="form-label">السعر المتفق عليه</label>
+                            <div class="price-input">
+                                <input type="text" name="EstimatedPrice" class="form-control price-input__field" inputmode="decimal" dir="ltr" placeholder="مثال: 1500" data-price-input data-pm-estimated />
+                                <button type="button" class="price-input__clear" data-price-clear aria-label="مسح السعر" tabindex="-1">✕</button>
+                                <span class="price-input__unit">دج</span>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">المبلغ المدفوع</label>
+                            <div class="price-input">
+                                <input type="text" name="AmountPaid" class="form-control price-input__field" inputmode="decimal" dir="ltr" placeholder="مثال: 1000" data-price-input data-pm-paid />
+                                <button type="button" class="price-input__clear" data-price-clear aria-label="مسح المبلغ" tabindex="-1">✕</button>
+                                <span class="price-input__unit">دج</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@if (Model.StockedPartOptions.Count > 0)
+{
+    <div class="modal fade" id="repairConsumePartModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <form asp-action="ConsumeStockedPart" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title">استهلاك قطعة من المخزون</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                    </div>
+                    <div class="modal-body">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="jobCode" value="@Model.JobCode" />
+                        <input type="hidden" name="InventoryPartId" value="" data-part-input />
+                        <div class="part-type-tabs" role="tablist" aria-label="أنواع القطع">
+                            @foreach (RepairPartTypeTabViewModel tab in Model.StockedPartTypes)
+                            {
+                                var isFirst = tab == Model.StockedPartTypes.First();
+                                <button type="button"
+                                        class="part-type-tab @(isFirst ? "is-active" : "")"
+                                        role="tab"
+                                        data-part-type-id="@tab.Id"
+                                        @(isFirst ? "aria-selected=true" : "aria-selected=false")>
+                                    @if (!string.IsNullOrWhiteSpace(tab.ThumbnailUrl))
+                                    {
+                                        <img src="@tab.ThumbnailUrl" alt="@tab.Name" class="part-type-tab__img" loading="lazy" />
+                                    }
+                                    else
+                                    {
+                                        <span class="part-type-tab__img part-type-tab__img--placeholder" aria-hidden="true">@(tab.Name.Length > 0 ? tab.Name[..1] : "?")</span>
+                                    }
+                                    <span class="part-type-tab__name">@tab.Name</span>
+                                    <span class="part-type-tab__count">@tab.VariantCount</span>
+                                </button>
+                            }
+                        </div>
+                        <div class="part-variants" data-variants-container>
+                            @foreach (RepairPartTypeTabViewModel tab in Model.StockedPartTypes)
+                            {
+                                var isFirst = tab == Model.StockedPartTypes.First();
+                                <div class="part-variants__group @(isFirst ? "" : "u-hidden")" data-variant-group="@tab.Id">
+                                    @foreach (RepairPartOptionViewModel part in tab.Parts)
+                                    {
+                                        <button type="button"
+                                                class="part-variant-card"
+                                                data-part-id="@part.Id"
+                                                data-part-name="@part.PartVariantName"
+                                                data-part-price="@part.UnitSalePrice.ToString("N0")"
+                                                data-part-stock="@part.Quantity">
+                                            <span class="part-variant-card__name">@part.PartVariantName</span>
+                                            <span class="part-variant-card__meta">
+                                                <span class="part-variant-card__price">@part.UnitSalePrice.ToString("N0") دج</span>
+                                                <span class="part-variant-card__dot" aria-hidden="true">·</span>
+                                                <span class="part-variant-card__stock @(part.Quantity <= 2 ? "part-variant-card__stock--low" : "")">متوفر @part.Quantity</span>
+                                            </span>
+                                        </button>
+                                    }
+                                </div>
+                            }
+                        </div>
+                        <div class="form-field" style="margin-top: var(--space-4);">
+                            <label class="form-label">الكمية</label>
+                            <input name="Quantity" value="1" class="form-control" inputmode="numeric" dir="ltr" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">استهلاك</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model.OnDemandPartOptions.Count > 0)
+{
+    <div class="modal fade" id="repairRequestPartModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <form asp-action="RequestOnDemandPart" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title">طلب قطعة عند الحاجة</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                    </div>
+                    <div class="modal-body">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="jobCode" value="@Model.JobCode" />
+                        <input type="hidden" name="InventoryPartId" value="" data-part-input />
+                        <p class="form-hint">سيتم نقل البطاقة إلى "بانتظار قطعة" حتى وصولها.</p>
+                        <div class="part-type-tabs" role="tablist" aria-label="أنواع القطع">
+                            @foreach (RepairPartTypeTabViewModel tab in Model.OnDemandPartTypes)
+                            {
+                                var isFirst = tab == Model.OnDemandPartTypes.First();
+                                <button type="button"
+                                        class="part-type-tab @(isFirst ? "is-active" : "")"
+                                        role="tab"
+                                        data-part-type-id="@tab.Id"
+                                        @(isFirst ? "aria-selected=true" : "aria-selected=false")>
+                                    @if (!string.IsNullOrWhiteSpace(tab.ThumbnailUrl))
+                                    {
+                                        <img src="@tab.ThumbnailUrl" alt="@tab.Name" class="part-type-tab__img" loading="lazy" />
+                                    }
+                                    else
+                                    {
+                                        <span class="part-type-tab__img part-type-tab__img--placeholder" aria-hidden="true">@(tab.Name.Length > 0 ? tab.Name[..1] : "?")</span>
+                                    }
+                                    <span class="part-type-tab__name">@tab.Name</span>
+                                    <span class="part-type-tab__count">@tab.VariantCount</span>
+                                </button>
+                            }
+                        </div>
+                        <div class="part-variants" data-variants-container>
+                            @foreach (RepairPartTypeTabViewModel tab in Model.OnDemandPartTypes)
+                            {
+                                var isFirst = tab == Model.OnDemandPartTypes.First();
+                                <div class="part-variants__group @(isFirst ? "" : "u-hidden")" data-variant-group="@tab.Id">
+                                    @foreach (RepairPartOptionViewModel part in tab.Parts)
+                                    {
+                                        <button type="button"
+                                                class="part-variant-card"
+                                                data-part-id="@part.Id"
+                                                data-part-name="@part.PartVariantName"
+                                                data-part-price="@part.UnitSalePrice.ToString("N0")">
+                                            <span class="part-variant-card__name">@part.PartVariantName</span>
+                                            <span class="part-variant-card__meta">
+                                                <span class="part-variant-card__price">@part.UnitSalePrice.ToString("N0") دج</span>
+                                            </span>
+                                        </button>
+                                    }
+                                </div>
+                            }
+                        </div>
+                        <div class="form-field" style="margin-top: var(--space-4);">
+                            <label class="form-label">الكمية</label>
+                            <input name="Quantity" value="1" class="form-control" inputmode="numeric" dir="ltr" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-outline-warning">طلب القطعة</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        (() => {
+            const pmModal = document.getElementById("repairPaymentModal");
+            const pmEst = pmModal?.querySelector("[data-pm-estimated]");
+            const pmPaid = pmModal?.querySelector("[data-pm-paid]");
+            document.querySelectorAll("[data-pm-trigger]").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    if (!pmModal || !window.bootstrap) return;
+                    pmEst.value = btn.getAttribute("data-pm-estimated") ?? "";
+                    pmPaid.value = btn.getAttribute("data-pm-paid") ?? "";
+                    const readonly = btn.getAttribute("data-pm-readonly") === "true";
+                    pmEst.readOnly = readonly;
+                    pmEst.style.opacity = readonly ? "0.65" : "";
+                    bootstrap.Modal.getOrCreateInstance(pmModal).show();
+                });
+            });
+
+            document.querySelectorAll(".part-type-tabs").forEach(tabRow => {
+                const variants = tabRow.parentElement.querySelector("[data-variants-container]");
+                const form = tabRow.closest("form");
+                const partInput = form?.querySelector("[data-part-input]");
+
+                tabRow.addEventListener("click", e => {
+                    const tab = e.target.closest(".part-type-tab");
+                    if (!tab || tab.classList.contains("is-active")) return;
+
+                    tabRow.querySelectorAll(".part-type-tab").forEach(t => {
+                        t.classList.remove("is-active");
+                        t.setAttribute("aria-selected", "false");
+                    });
+                    tab.classList.add("is-active");
+                    tab.setAttribute("aria-selected", "true");
+
+                    if (variants) {
+                        const typeId = tab.getAttribute("data-part-type-id");
+                        variants.querySelectorAll("[data-variant-group]").forEach(g => {
+                            g.style.display = g.getAttribute("data-variant-group") === typeId ? "" : "none";
+                        });
+                    }
+
+                    if (partInput) partInput.value = "";
+                });
+
+                if (variants) {
+                    variants.addEventListener("click", e => {
+                        const card = e.target.closest(".part-variant-card");
+                        if (!card) return;
+
+                        const group = card.closest("[data-variant-group]");
+                        group.querySelectorAll(".part-variant-card").forEach(c => c.classList.remove("is-selected"));
+                        card.classList.add("is-selected");
+                        if (partInput) partInput.value = card.getAttribute("data-part-id");
+                    });
+                }
+            });
+        })();
+    </script>
+}

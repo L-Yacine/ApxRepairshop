@@ -2,137 +2,233 @@
 
 @{
     ViewData["Title"] = "حالات الصيانة";
+    int newCount = Model.ActiveJobs.Count(t => t.Status == MimoShop.Services.RepairJobStatuses.New);
+    int progressCount = Model.ActiveJobs.Count(t => t.Status == MimoShop.Services.RepairJobStatuses.InProgress);
+    int doneCount = Model.ActiveJobs.Count(t => t.Status == MimoShop.Services.RepairJobStatuses.Done);
+    int collectedCount = Model.CollectedJobs.Count;
+    int waitingCount = Model.WaitingForPartJobs.Count;
+    int activeCount = Model.ActiveJobs.Count;
+    int totalCount = activeCount + waitingCount + collectedCount;
+}
+
+@functions {
+    static string StatusClass(string status) => status switch
+    {
+        MimoShop.Services.RepairJobStatuses.New => "new",
+        MimoShop.Services.RepairJobStatuses.InProgress => "progress",
+        MimoShop.Services.RepairJobStatuses.WaitingForPart => "waiting",
+        MimoShop.Services.RepairJobStatuses.Done => "done",
+        MimoShop.Services.RepairJobStatuses.Collected => "collected",
+        _ => "new"
+    };
+
+    static string StatusPillClass(string status) => status switch
+    {
+        MimoShop.Services.RepairJobStatuses.New => "pill--new",
+        MimoShop.Services.RepairJobStatuses.InProgress => "pill--progress",
+        MimoShop.Services.RepairJobStatuses.WaitingForPart => "pill--waiting",
+        MimoShop.Services.RepairJobStatuses.Done => "pill--done",
+        MimoShop.Services.RepairJobStatuses.Collected => "pill--collected",
+        _ => "pill--new"
+    };
 }
 
 <section class="page-header">
-    <p class="eyebrow">حالات الصيانة</p>
-    <h1>متابعة بطاقات الصيانة</h1>
-    <p>راجع الطلبات المفتوحة، الطلبات المنتظرة لقطع الغيار، وآخر الطلبات التي تم تسليمها.</p>
+    <p class="page-header__eyebrow">حالات الصيانة</p>
+    <h1 class="page-header__title">متابعة البطاقات</h1>
+    <p class="page-header__lede">راجع الطلبات المفتوحة، انتظر وصول القطع، أو سجّل التسليم.</p>
 </section>
 
-<div class="status-page-actions">
-    <a asp-action="Create" class="btn btn-primary">بطاقة صيانة جديدة</a>
+<div class="filter-bar" data-ticket-filter>
+    <div class="filter-tabs" role="tablist">
+        <button type="button" class="filter-tab is-active" data-filter="all" role="tab">
+            الكل <span class="filter-tab__count">@totalCount</span>
+        </button>
+        <button type="button" class="filter-tab" data-filter="New" role="tab">
+            جديد <span class="filter-tab__count">@newCount</span>
+        </button>
+        <button type="button" class="filter-tab" data-filter="In progress" role="tab">
+            قيد العمل <span class="filter-tab__count">@progressCount</span>
+        </button>
+        <button type="button" class="filter-tab" data-filter="Waiting for part" role="tab">
+            بانتظار قطعة <span class="filter-tab__count">@waitingCount</span>
+        </button>
+        <button type="button" class="filter-tab" data-filter="Done" role="tab">
+            جاهز للتسليم <span class="filter-tab__count">@doneCount</span>
+        </button>
+        <button type="button" class="filter-tab" data-filter="Collected" role="tab">
+            تم التسليم <span class="filter-tab__count">@collectedCount</span>
+        </button>
+    </div>
+    <div class="cat-toolbar" style="margin-top: var(--space-3); margin-bottom: 0;">
+        <div class="filter-search" style="position: relative; flex: 1; min-width: 0;">
+            <span style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); pointer-events: none; display: inline-flex;">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </span>
+            <input type="search" placeholder="ابحث برمز الطلب، اسم العميل، أو الهاتف..." data-ticket-search aria-label="بحث" />
+        </div>
+        <button type="button" class="btn btn-primary" data-open-modal="repairCreate">بطاقة صيانة جديدة</button>
+    </div>
 </div>
 
-<section class="job-section waiting-section" aria-labelledby="waiting-jobs">
-    <div class="section-heading">
-        <h2 id="waiting-jobs">بانتظار قطعة</h2>
-        <span class="job-count">@Model.WaitingForPartJobs.Count</span>
+@if (totalCount == 0)
+{
+    <div class="empty">
+        <span class="empty__icon" aria-hidden="true" style="padding: 12px; display: inline-flex; justify-content: center; align-items: center;">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+        </span>
+        <h2 class="empty__title">لا توجد بطاقات صيانة بعد</h2>
+        <p class="empty__msg">ابدأ بإستقبال أول جهاز. سيتم إنشاء البطاقة وطباعة الوصل في خطوة واحدة.</p>
+        <div class="empty__action">
+        <button type="button" class="btn btn-primary" data-open-modal="repairCreate">بطاقة صيانة جديدة</button>
+        </div>
     </div>
-    @if (Model.WaitingForPartJobs.Count == 0)
-    {
-        <p class="empty-state">لا توجد طلبات منتظرة لقطع الغيار حالياً.</p>
-    }
-    else
-    {
-        <div class="job-card-grid">
-            @foreach (RepairTicketListItemViewModel ticket in Model.WaitingForPartJobs)
-            {
-                <article class="job-card job-card-waiting">
-                    <div class="job-card-header">
-                        <strong>@ticket.JobCode</strong>
-                        <span class="status-badge status-waiting">@ticket.StatusLabel</span>
+}
+else
+{
+    <ul class="job-list" data-ticket-list>
+        @foreach (RepairTicketListItemViewModel ticket in Model.WaitingForPartJobs)
+        {
+            <li>
+                <a asp-action="Details" asp-route-jobCode="@ticket.JobCode"
+                   class="job-row job-row--@StatusClass(ticket.Status)"
+                   data-status="@ticket.Status"
+                   data-search="@($"{ticket.JobCode} {ticket.CustomerName} {ticket.CustomerPhone} {ticket.DeviceName}".ToLowerInvariant())">
+                    <span class="job-row__code">@ticket.JobCode</span>
+                    <div class="job-row__main">
+                        <p class="job-row__device">@ticket.DeviceName</p>
+                        <p class="job-row__problem">@ticket.ProblemDescription</p>
+                        <span class="job-row__date">@ticket.CreatedAt.ToString("yyyy/MM/dd")</span>
                     </div>
-                    <h3>@ticket.DeviceName</h3>
-                    <p>@ticket.ProblemDescription</p>
-                    <dl class="job-meta">
-                        <div>
-                            <dt>العميل</dt>
-                            <dd>@ticket.CustomerName</dd>
-                        </div>
-                        <div>
-                            <dt>العامل</dt>
-                            <dd>@ticket.AssignedWorkerName</dd>
-                        </div>
-                        <div>
-                            <dt>آخر تحديث</dt>
-                            <dd>@(ticket.LastStatusChangedAt?.ToString("yyyy/MM/dd HH:mm") ?? "-")</dd>
-                        </div>
-                    </dl>
-                    <a asp-action="Details" asp-route-jobCode="@ticket.JobCode" class="btn btn-outline-primary btn-sm">فتح البطاقة</a>
-                </article>
-            }
-        </div>
-    }
-</section>
-
-<section class="job-section" aria-labelledby="active-jobs">
-    <div class="section-heading">
-        <h2 id="active-jobs">الطلبات المفتوحة</h2>
-        <span class="job-count">@Model.ActiveJobs.Count</span>
-    </div>
-    @if (Model.ActiveJobs.Count == 0)
-    {
-        <p class="empty-state">لا توجد طلبات مفتوحة حالياً.</p>
-    }
-    else
-    {
-        <div class="job-card-grid">
-            @foreach (RepairTicketListItemViewModel ticket in Model.ActiveJobs)
-            {
-                <article class="job-card">
-                    <div class="job-card-header">
-                        <strong>@ticket.JobCode</strong>
-                        <span class="status-badge">@ticket.StatusLabel</span>
+                    <div class="job-row__meta">
+                        <strong>@ticket.CustomerName</strong>
+                        <span>@ticket.CustomerPhone</span>
                     </div>
-                    <h3>@ticket.DeviceName</h3>
-                    <p>@ticket.ProblemDescription</p>
-                    <dl class="job-meta">
-                        <div>
-                            <dt>العميل</dt>
-                            <dd>@ticket.CustomerName</dd>
-                        </div>
-                        <div>
-                            <dt>العامل</dt>
-                            <dd>@ticket.AssignedWorkerName</dd>
-                        </div>
-                        <div>
-                            <dt>آخر تحديث</dt>
-                            <dd>@(ticket.LastStatusChangedAt?.ToString("yyyy/MM/dd HH:mm") ?? "-")</dd>
-                        </div>
-                    </dl>
-                    <a asp-action="Details" asp-route-jobCode="@ticket.JobCode" class="btn btn-outline-primary btn-sm">فتح البطاقة</a>
-                </article>
-            }
-        </div>
-    }
-</section>
+                    <span class="job-row__status">
+                        <span class="pill @StatusPillClass(ticket.Status)">
+                            <span class="pill__dot" aria-hidden="true"></span>
+                            @ticket.StatusLabel
+                        </span>
+                    </span>
+                </a>
+            </li>
+        }
+        @foreach (RepairTicketListItemViewModel ticket in Model.ActiveJobs)
+        {
+            <li>
+                <a asp-action="Details" asp-route-jobCode="@ticket.JobCode"
+                   class="job-row job-row--@StatusClass(ticket.Status)"
+                   data-status="@ticket.Status"
+                   data-search="@($"{ticket.JobCode} {ticket.CustomerName} {ticket.CustomerPhone} {ticket.DeviceName}".ToLowerInvariant())">
+                    <span class="job-row__code">@ticket.JobCode</span>
+                    <div class="job-row__main">
+                        <p class="job-row__device">@ticket.DeviceName</p>
+                        <p class="job-row__problem">@ticket.ProblemDescription</p>
+                        <span class="job-row__date">@ticket.CreatedAt.ToString("yyyy/MM/dd")</span>
+                    </div>
+                    <div class="job-row__meta">
+                        <strong>@ticket.CustomerName</strong>
+                        <span>@ticket.CustomerPhone</span>
+                    </div>
+                    <span class="job-row__status">
+                        <span class="pill @StatusPillClass(ticket.Status)">
+                            <span class="pill__dot" aria-hidden="true"></span>
+                            @ticket.StatusLabel
+                        </span>
+                    </span>
+                </a>
+            </li>
+        }
+        @foreach (RepairTicketListItemViewModel ticket in Model.CollectedJobs)
+        {
+            <li>
+                <a asp-action="Details" asp-route-jobCode="@ticket.JobCode"
+                   class="job-row job-row--@StatusClass(ticket.Status)"
+                   data-status="@ticket.Status"
+                   data-search="@($"{ticket.JobCode} {ticket.CustomerName} {ticket.CustomerPhone} {ticket.DeviceName}".ToLowerInvariant())">
+                    <span class="job-row__code">@ticket.JobCode</span>
+                    <div class="job-row__main">
+                        <p class="job-row__device">@ticket.DeviceName</p>
+                        <p class="job-row__problem">@ticket.ProblemDescription</p>
+                        <span class="job-row__date">@ticket.CreatedAt.ToString("yyyy/MM/dd")</span>
+                    </div>
+                    <div class="job-row__meta">
+                        <strong>@ticket.CustomerName</strong>
+                        <span>@ticket.CustomerPhone</span>
+                    </div>
+                    <span class="job-row__status">
+                        <span class="pill @StatusPillClass(ticket.Status)">
+                            <span class="pill__dot" aria-hidden="true"></span>
+                            @ticket.StatusLabel
+                        </span>
+                    </span>
+                </a>
+            </li>
+        }
+    </ul>
 
-<section class="job-section" aria-labelledby="collected-jobs">
-    <div class="section-heading">
-        <h2 id="collected-jobs">آخر الطلبات المسلمة</h2>
-        <span class="job-count">@Model.CollectedJobs.Count</span>
+    <div class="empty" data-ticket-empty hidden>
+        <span class="empty__icon" aria-hidden="true" style="padding: 12px; display: inline-flex; justify-content: center; align-items: center;">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                <line x1="8" y1="11" x2="14" y2="11"></line>
+            </svg>
+        </span>
+        <h2 class="empty__title">لا توجد بطاقات تطابق البحث</h2>
+        <p class="empty__msg">جرّب اسم عميل آخر، رمز طلب، أو رقم هاتف.</p>
     </div>
-    @if (Model.CollectedJobs.Count == 0)
-    {
-        <p class="empty-state">لم يتم تسجيل طلبات مسلمة بعد.</p>
-    }
-    else
-    {
-        <div class="job-table-wrap">
-            <table class="table job-table">
-                <thead>
-                    <tr>
-                        <th>الرمز</th>
-                        <th>الجهاز</th>
-                        <th>العميل</th>
-                        <th>آخر تحديث</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (RepairTicketListItemViewModel ticket in Model.CollectedJobs)
-                    {
-                        <tr>
-                            <td>@ticket.JobCode</td>
-                            <td>@ticket.DeviceName</td>
-                            <td>@ticket.CustomerName</td>
-                            <td>@(ticket.LastStatusChangedAt?.ToString("yyyy/MM/dd HH:mm") ?? "-")</td>
-                            <td><a asp-action="Details" asp-route-jobCode="@ticket.JobCode">عرض</a></td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
-</section>
+}
+
+@section Scripts {
+    <script>
+        (() => {
+            const root = document.querySelector("[data-ticket-filter]");
+            const list = document.querySelector("[data-ticket-list]");
+            const search = document.querySelector("[data-ticket-search]");
+            const empty = document.querySelector("[data-ticket-empty]");
+            if (!root || !list) return;
+
+            const tabs = root.querySelectorAll(".filter-tab");
+            const items = list.querySelectorAll("li");
+
+            function apply() {
+                const status = root.getAttribute("data-active-status") || "all";
+                const q = (search?.value || "").trim().toLowerCase();
+                let visible = 0;
+
+                items.forEach(li => {
+                    const row = li.querySelector(".job-row");
+                    if (!row) return;
+                    const rowStatus = row.getAttribute("data-status");
+                    const rowSearch = row.getAttribute("data-search") || "";
+                    const matchStatus = status === "all" || rowStatus === status;
+                    const matchSearch = !q || rowSearch.includes(q);
+                    const show = matchStatus && matchSearch;
+                    li.hidden = !show;
+                    if (show) visible++;
+                });
+
+                if (empty) empty.hidden = visible > 0;
+            }
+
+            tabs.forEach(tab => {
+                tab.addEventListener("click", () => {
+                    tabs.forEach(t => t.classList.remove("is-active"));
+                    tab.classList.add("is-active");
+                    root.setAttribute("data-active-status", tab.getAttribute("data-filter") || "all");
+                    apply();
+                });
+            });
+
+            search?.addEventListener("input", apply);
+        })();
+    </script>
+}

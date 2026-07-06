@@ -1,0 +1,61 @@
+@model CreateStaffViewModel
+@{
+    var roles = new[] {
+        new { Value = StaffRoles.SuperAdmin, Label = StaffRoles.ToArabicLabel(StaffRoles.SuperAdmin) },
+        new { Value = StaffRoles.Owner, Label = StaffRoles.ToArabicLabel(StaffRoles.Owner) },
+        new { Value = StaffRoles.Worker, Label = StaffRoles.ToArabicLabel(StaffRoles.Worker) }
+    };
+}
+
+<div class="modal fade" id="staffCreateModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <form asp-action="Create" method="post" data-modal-form>
+                <div class="modal-header">
+                    <h5 class="modal-title">إضافة مستخدم جديد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger validation-summary"></div>
+                    <div class="form-grid form-grid--1">
+                        <div class="form-field">
+                            <label asp-for="Username" class="form-label"></label>
+                            <input asp-for="Username" class="form-control" dir="ltr" autocomplete="off" />
+                            <span asp-validation-for="Username" class="text-danger"></span>
+                        </div>
+                        <div class="form-field">
+                            <label asp-for="DisplayName" class="form-label"></label>
+                            <input asp-for="DisplayName" class="form-control" />
+                            <span asp-validation-for="DisplayName" class="text-danger"></span>
+                        </div>
+                        <div class="form-field">
+                            <label asp-for="Role" class="form-label"></label>
+                            <select asp-for="Role" class="form-select">
+                                @foreach (var role in roles)
+                                {
+                                    <option value="@role.Value">@role.Label</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Role" class="text-danger"></span>
+                        </div>
+                        <div class="form-field">
+                            <label asp-for="Password" class="form-label"></label>
+                            <input asp-for="Password" class="form-control" dir="ltr" autocomplete="new-password" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+                        <div class="form-field">
+                            <label asp-for="ConfirmPassword" class="form-label"></label>
+                            <input asp-for="ConfirmPassword" class="form-control" dir="ltr" autocomplete="new-password" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">إنشاء الحساب</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

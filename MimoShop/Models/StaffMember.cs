@@ -17,6 +17,8 @@ public sealed class StaffMember
 
     public string PasswordHash { get; set; } = string.Empty;
 
+    public bool IsActive { get; set; } = true;
+
     public static StaffMember CreateSeed(int id, string username, string password, string displayName, string role)
     {
         string salt = $"mimoshop-v1-{username}";
@@ -28,7 +30,8 @@ public sealed class StaffMember
             DisplayName = displayName,
             Role = role,
             Salt = salt,
-            PasswordHash = HashPassword(salt, password)
+            PasswordHash = HashPassword(salt, password),
+            IsActive = true
         };
     }
 

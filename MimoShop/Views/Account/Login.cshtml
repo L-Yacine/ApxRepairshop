@@ -1,36 +1,49 @@
 @model LoginViewModel
-
 @{
     ViewData["Title"] = "تسجيل الدخول";
     Layout = "_AuthLayout";
+    string shopName = ViewData["ShopName"] as string ?? "ميمو شوب";
+    string shopMark = ViewData["ShopMark"] as string ?? "M";
+    string? shopLogoUrl = ViewData["ShopLogoUrl"] as string;
+    if (string.IsNullOrWhiteSpace(shopLogoUrl))
+    {
+        shopLogoUrl = null;
+    }
 }
 
 <section class="auth-panel" aria-labelledby="login-title">
     <div class="auth-brand">
-        <span class="brand-mark">M</span>
+        @if (shopLogoUrl is not null)
+        {
+            <img src="@Url.Content(shopLogoUrl)" alt="@shopName" class="auth-brand__logo" asp-append-version="true" />
+        }
+        else
+        {
+            <span class="auth-brand__mark" aria-hidden="true">@shopMark</span>
+        }
         <div>
-            <p class="eyebrow">MimoShop</p>
-            <h1 id="login-title">دخول الموظفين</h1>
+            <p class="page-header__eyebrow">@shopName</p>
+            <h1 class="auth-brand__title" id="login-title">دخول الموظفين</h1>
         </div>
     </div>
 
-    <form asp-action="Login" method="post" class="auth-form">
+    <form asp-action="Login" method="post" class="stack stack--sm auth-form">
         <input asp-for="ReturnUrl" type="hidden" />
-        <div asp-validation-summary="ModelOnly" class="text-danger validation-summary"></div>
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger validation-summary"></div>
 
-        <div class="mb-3">
-            <label asp-for="Username" class="form-label"></label>
+        <div class="form-field">
+            <label asp-for="Username" class="form-label">اسم المستخدم</label>
             <input asp-for="Username" class="form-control" autocomplete="username" autofocus />
             <span asp-validation-for="Username" class="text-danger"></span>
         </div>
 
-        <div class="mb-4">
-            <label asp-for="Password" class="form-label"></label>
+        <div class="form-field">
+            <label asp-for="Password" class="form-label">كلمة المرور</label>
             <input asp-for="Password" class="form-control" autocomplete="current-password" />
             <span asp-validation-for="Password" class="text-danger"></span>
         </div>
 
-        <button type="submit" class="btn btn-primary w-100">تسجيل الدخول</button>
+        <button type="submit" class="btn btn-primary btn--lg btn--block">تسجيل الدخول</button>
     </form>
 </section>
 

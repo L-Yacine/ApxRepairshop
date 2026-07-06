@@ -3,11 +3,12 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - MimoShop</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - @(ViewData["ShopLatin"] ?? "MimoShop")</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Reem+Kufi:wght@500;600;700&display=swap">
     <link rel="stylesheet" href="@Url.Content("~/lib/bootstrap/dist/css/bootstrap.rtl.min.css")" />
-    <link rel="stylesheet" href="@Url.Content("~/css/site.css")" />
-    <link rel="stylesheet" href="@Url.Content("~/MimoShop.styles.css")" />
+    <link rel="stylesheet" href="@Url.Content("~/css/site.css")" asp-append-version="true" />
 </head>
 <body class="auth-body">
     <main role="main" class="auth-page">
