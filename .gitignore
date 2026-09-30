@@ -28,3 +28,4 @@ Credentials.txt
 
 # Markdown docs / workflow files - local only, never committed
 *.md
+!README.md
