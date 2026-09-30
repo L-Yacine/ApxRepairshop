@@ -1,0 +1,61 @@
+@model HeroSlideFormInput
+@{
+    ViewData["Title"] = "شريحة";
+}
+
+<div class="hs-form-grid">
+    <div class="form-field">
+        <label asp-for="Title"></label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="form-field">
+        <label asp-for="Subtitle"></label>
+        <input asp-for="Subtitle" class="form-control" />
+        <span asp-validation-for="Subtitle" class="text-danger"></span>
+    </div>
+
+    <div class="form-field">
+        <label asp-for="ImageFile"></label>
+        <input asp-for="ImageFile" type="file" class="form-control" accept=".png,.jpg,.jpeg,.webp" />
+        <span asp-validation-for="ImageFile" class="text-danger"></span>
+        <span class="hs-form__hint">يُفضل صورة عريضة (1600×600 أو ما يناسبها). PNG أو JPG أو WEBP، بحد أقصى 3 ميغابايت.</span>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.ExistingImageUrl))
+    {
+        <div class="form-field">
+            <label>الصورة الحالية</label>
+            <img src="@Url.Content(Model.ExistingImageUrl)" alt="" class="hs-thumb hs-thumb--large" asp-append-version="true" />
+            <label asp-for="RemoveImage" class="hs-remove-check">
+                <input asp-for="RemoveImage" /> @Html.DisplayNameFor(m => m.RemoveImage)
+            </label>
+        </div>
+    }
+
+    <div class="form-field">
+        <label asp-for="CtaText"></label>
+        <input asp-for="CtaText" class="form-control" />
+        <span asp-validation-for="CtaText" class="text-danger"></span>
+    </div>
+
+    <div class="form-field">
+        <label asp-for="CtaUrl"></label>
+        <input asp-for="CtaUrl" class="form-control" dir="ltr" placeholder="/Catalog/Brands" />
+        <span asp-validation-for="CtaUrl" class="text-danger"></span>
+        <span class="hs-form__hint">اتركه فارغاً للتحويل إلى صفحة تصفح القطع.</span>
+    </div>
+
+    <div class="form-field">
+        <label asp-for="SortOrder"></label>
+        <input asp-for="SortOrder" class="form-control" type="number" min="0" />
+        <span asp-validation-for="SortOrder" class="text-danger"></span>
+    </div>
+
+    <div class="form-field form-field--check">
+        <label asp-for="IsActive">
+            <input asp-for="IsActive" /> @Html.DisplayNameFor(m => m.IsActive)
+        </label>
+    </div>
+</div>

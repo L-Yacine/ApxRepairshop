@@ -1,0 +1,72 @@
+@model ShopOrdersIndexViewModel
+@{
+    ViewData["Title"] = "الطلبات";
+    var tabs = new[]
+    {
+        new { Key = ShopOrderStatuses.New, Label = "جديد", Count = Model.NewCount },
+        new { Key = ShopOrderStatuses.Confirmed, Label = "مؤكد", Count = Model.ConfirmedCount },
+        new { Key = ShopOrderStatuses.Shipped, Label = "تم الشحن", Count = Model.ShippedCount },
+        new { Key = ShopOrderStatuses.Delivered, Label = "تم التسليم", Count = Model.DeliveredCount },
+        new { Key = ShopOrderStatuses.Returned, Label = "مرتجع", Count = Model.ReturnedCount },
+        new { Key = ShopOrderStatuses.Cancelled, Label = "ملغى", Count = Model.CancelledCount },
+        new { Key = "All", Label = "الكل", Count = Model.NewCount + Model.ConfirmedCount + Model.ShippedCount + Model.DeliveredCount + Model.ReturnedCount + Model.CancelledCount }
+    };
+}
+
+<section class="page-header">
+    <p class="page-header__eyebrow">المتجر</p>
+    <h1 class="page-header__title">الطلبات</h1>
+    <p class="page-header__lede">راجع الطلبات الواردة، أكدها، شحنها، وحدّث حالتها عند التسليم أو الإرجاع.</p>
+</section>
+
+@if (TempData["ShopOrdersMessage"] is string okMsg)
+{
+    <div class="alert alert-success">@okMsg</div>
+}
+@if (TempData["ShopOrdersError"] is string errMsg)
+{
+    <div class="alert alert-danger">@errMsg</div>
+}
+
+<div class="so-layout">
+    <div class="so-filter-tabs">
+        @foreach (var t in tabs)
+        {
+            <a asp-action="Index" asp-route-status="@t.Key"
+               class="so-tab @(Model.StatusFilter == t.Key ? "is-active" : "")">
+                @t.Label <span class="so-tab__count">@t.Count</span>
+            </a>
+        }
+    </div>
+
+    @if (Model.Orders.Count == 0)
+    {
+        <div class="empty">
+            <p class="empty__msg">لا توجد طلبات في هذه الحالة.</p>
+        </div>
+    }
+    else
+    {
+        <div class="so-list">
+            @foreach (ShopOrderSummary o in Model.Orders)
+            {
+                <a asp-action="Details" asp-route-id="@o.Id" class="so-card" style="text-decoration:none; color:inherit;">
+                    <div class="so-card__head">
+                        <span class="so-card__code">@o.OrderCode</span>
+                        <span class="so-card__name">@o.CustomerName</span>
+                        <span class="so-card__date">@o.CreatedAt.ToString("yyyy-MM-dd HH:mm")</span>
+                    </div>
+                    <div>
+                        <div class="so-card__name">@o.CustomerPhone</div>
+                        <div class="so-card__date">@o.WilayaName — @o.CommuneName</div>
+                    </div>
+                    <div>
+                        <span class="so-pill so-pill--@o.Status">@ShopOrderStatuses.ToArabicLabel(o.Status)</span>
+                        <div class="so-card__date">@o.LineCount قطعة</div>
+                    </div>
+                    <div class="so-card__total">@o.TotalAmount.ToString("N0") دج</div>
+                </a>
+            }
+        </div>
+    }
+</div>

@@ -1,0 +1,48 @@
+@model IReadOnlyList<PublicBrandCard>
+@{
+    ViewData["Title"] = L["Catalog.BrowseBrands"].Value;
+}
+
+<section class="public-section">
+    <div class="public-section__head">
+        <h2 class="public-section__title">@L["Catalog.ChooseBrand"]</h2>
+        <p class="public-section__hint">@L["Catalog.ChooseBrandHint"]</p>
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <div class="public-empty">
+            <p class="public-empty__title">@L["Catalog.NoPartsTitle"]</p>
+            <p>@L["Catalog.NoPartsHint"]</p>
+        </div>
+    }
+    else
+    {
+        <div class="public-grid public-grid--brands">
+            @foreach (PublicBrandCard brand in Model)
+            {
+                <a class="public-card public-card--brand"
+                   asp-area="Public" asp-controller="Catalog" asp-action="Models" asp-route-id="@brand.Id">
+                    <div class="public-card__media">
+                        @if (!string.IsNullOrWhiteSpace(brand.ThumbnailUrl))
+                        {
+                            <img src="@Url.Content(brand.ThumbnailUrl)" alt="@brand.LocalizedName" loading="lazy" asp-append-version="true" />
+                        }
+                        else if (!string.IsNullOrWhiteSpace(brand.ImageUrl))
+                        {
+                            <img src="@Url.Content(brand.ImageUrl)" alt="@brand.LocalizedName" loading="lazy" asp-append-version="true" />
+                        }
+                        else
+                        {
+                            <span class="public-card__placeholder" aria-hidden="true">@brand.LocalizedName.FirstOrDefault()</span>
+                        }
+                    </div>
+                    <div class="public-card__body">
+                        <span class="public-card__title">@brand.LocalizedName</span>
+                        <span class="public-card__sub">@brand.Name</span>
+                    </div>
+                </a>
+            }
+        </div>
+    }
+</section>

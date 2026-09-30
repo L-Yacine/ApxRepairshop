@@ -1,0 +1,169 @@
+@model PublicSearchPageViewModel
+@{
+    ViewData["Title"] = string.IsNullOrWhiteSpace(Model.Query)
+        ? L["Search.Title"].Value
+        : L["Search.TitleQuery", Model.Query].Value;
+}
+
+<section class="public-section">
+    <h1 class="public-section__title public-section__title--lead">@L["Search.Heading"]</h1>
+    <p class="public-section__hint">@L["Search.Hint"]</p>
+
+    <form asp-area="Public" asp-controller="Search" asp-action="Index" method="get" class="public-search__filters" id="search-form">
+        <div class="public-field">
+            <label for="search-query">@L["Search.Query"]</label>
+            <input type="search" id="search-query" name="query" value="@Model.Query" placeholder="@L["Search.QueryPlaceholder"]" />
+        </div>
+        <div class="public-field">
+            <label for="search-brand">@L["Search.Brand"]</label>
+            <select id="search-brand" name="brandId">
+                <option value="">@L["Search.All"]</option>
+                @foreach (PublicSearchFilterItem brand in Model.FilterOptions.Brands)
+                {
+                    <option value="@brand.Id" selected="@(Model.BrandId == brand.Id ? "selected" : null)">@brand.LocalizedLabel</option>
+                }
+            </select>
+        </div>
+        <div class="public-field">
+            <label for="search-model">@L["Search.Model"]</label>
+            <select id="search-model" name="modelId" disabled="@(Model.FilterOptions.Models.Count == 0 ? "disabled" : null)">
+                <option value="">@L["Search.All"]</option>
+                @foreach (PublicSearchFilterItem modelItem in Model.FilterOptions.Models)
+                {
+                    <option value="@modelItem.Id" selected="@(Model.ModelId == modelItem.Id ? "selected" : null)">@modelItem.LocalizedLabel</option>
+                }
+            </select>
+        </div>
+        <div class="public-field">
+            <label for="search-parttype">@L["Search.PartType"]</label>
+            <select id="search-parttype" name="partTypeId" disabled="@(Model.FilterOptions.PartTypes.Count == 0 ? "disabled" : null)">
+                <option value="">@L["Search.All"]</option>
+                @foreach (PublicSearchFilterItem pt in Model.FilterOptions.PartTypes)
+                {
+                    <option value="@pt.Id" selected="@(Model.PartTypeId == pt.Id ? "selected" : null)">@pt.LocalizedLabel</option>
+                }
+            </select>
+        </div>
+        <div class="public-field public-search__submit">
+            <button type="submit" class="public-btn public-btn--primary public-btn--block">@L["Search.Submit"]</button>
+        </div>
+    </form>
+</section>
+
+<section class="public-section public-search__results">
+    <div class="public-section__head">
+        <h2 class="public-section__title">@L["Search.Results"]</h2>
+        <p class="public-section__hint">@L["Search.ResultCount", Model.Results.Count]</p>
+    </div>
+
+    @if (Model.Results.Count == 0)
+    {
+        <div class="public-empty">
+            <p class="public-empty__title">@L["Search.NoResults"]</p>
+            <p>@L["Search.NoResultsHint"]</p>
+            <div class="public-empty__actions">
+                <a asp-area="Public" asp-controller="Catalog" asp-action="Brands" class="public-btn public-btn--ghost">@L["Search.BrowseBrands"]</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="public-grid public-grid--search">
+            @foreach (PublicSearchResultCard part in Model.Results)
+            {
+                <div class="public-card public-card--part">
+                    @{
+                        string partTitle = $"{part.LocalizedBrandName} {part.LocalizedModelName}";
+                        string partSubtitle = $"{part.LocalizedPartTypeName} — {part.LocalizedVariantName}";
+                    }
+                    <a asp-area="Public" asp-controller="Catalog" asp-action="PartDetail"
+                       asp-route-id="@part.InventoryPartId" class="public-card__media">
+                        @if (!string.IsNullOrWhiteSpace(part.ThumbnailUrl))
+                        {
+                            <img src="@Url.Content(part.ThumbnailUrl)" alt="@partTitle" loading="lazy" asp-append-version="true" />
+                        }
+                        else if (!string.IsNullOrWhiteSpace(part.ImageUrl))
+                        {
+                            <img src="@Url.Content(part.ImageUrl)" alt="@partTitle" loading="lazy" asp-append-version="true" />
+                        }
+                        else
+                        {
+                            <span class="public-card__placeholder" aria-hidden="true">@part.LocalizedBrandName.FirstOrDefault()</span>
+                        }
+                    </a>
+                    <div class="public-card__body">
+                        <span class="public-card__title">@partTitle</span>
+                        <span class="public-card__sub">@partSubtitle</span>
+                        <span class="public-card__price">@part.SalePrice.ToString("N0") @L["Common.Currency"]</span>
+                        <span class="public-card__availability is-in">@L["Common.InStockCount", part.Quantity]</span>
+                        <a asp-area="Public" asp-controller="Catalog" asp-action="PartDetail"
+                           asp-route-id="@part.InventoryPartId" class="public-btn public-btn--ghost public-card__form">@L["Search.ViewPart"]</a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</section>
+
+@section Scripts {
+<script>
+(function () {
+    var S = (window.PUBLIC && window.PUBLIC.strings) || {};
+    var brandSel = document.getElementById("search-brand");
+    var modelSel = document.getElementById("search-model");
+    var typeSel = document.getElementById("search-parttype");
+
+    function resetSelect(sel, placeholder) {
+        sel.innerHTML = '<option value="">' + placeholder + '</option>';
+        sel.disabled = true;
+    }
+
+    function fillSelect(sel, items, placeholder) {
+        var html = '<option value="">' + placeholder + '</option>';
+        (items || []).forEach(function (it) {
+            html += '<option value="' + it.id + '">' + (it.localizedLabel || it.label) + '</option>';
+        });
+        sel.innerHTML = html;
+        sel.disabled = false;
+    }
+
+    if (brandSel) {
+        brandSel.addEventListener("change", function () {
+            var brandId = parseInt(brandSel.value, 10) || 0;
+            resetSelect(modelSel, S.searchAll || "");
+            resetSelect(typeSel, S.searchAll || "");
+            if (!brandId) { return; }
+            fetch('@Url.Action("GetModels", "Search", new { area = "Public" })?brandId=' + brandId, { headers: { 'Accept': 'application/json' } })
+                .then(function (r) { return r.ok ? r.json() : []; })
+                .then(function (list) {
+                    if (list.length === 0) {
+                        resetSelect(modelSel, S.searchNoModels || "");
+                    } else {
+                        fillSelect(modelSel, list, S.searchAll || "");
+                    }
+                })
+                .catch(function () { resetSelect(modelSel, S.searchLoadError || ""); });
+        });
+    }
+
+    if (modelSel) {
+        modelSel.addEventListener("change", function () {
+            var brandId = parseInt(brandSel.value, 10) || 0;
+            var modelId = parseInt(modelSel.value, 10) || 0;
+            resetSelect(typeSel, S.searchAll || "");
+            if (!brandId || !modelId) { return; }
+            fetch('@Url.Action("GetPartTypes", "Search", new { area = "Public" })?brandId=' + brandId + '&modelId=' + modelId, { headers: { 'Accept': 'application/json' } })
+                .then(function (r) { return r.ok ? r.json() : []; })
+                .then(function (list) {
+                    if (list.length === 0) {
+                        resetSelect(typeSel, S.searchNoTypes || "");
+                    } else {
+                        fillSelect(typeSel, list, S.searchAll || "");
+                    }
+                })
+                .catch(function () { resetSelect(typeSel, S.searchLoadError || ""); });
+        });
+    }
+})();
+</script>
+}

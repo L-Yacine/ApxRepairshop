@@ -1,0 +1,149 @@
+@model DeliveryZonesIndexViewModel
+@{
+    ViewData["Title"] = "مناطق التوصيل";
+    bool isOwnerOrSuper = User.IsInRole("SuperAdmin") || User.IsInRole("Owner");
+}
+
+<section class="page-header">
+    <p class="page-header__eyebrow">الإدارة</p>
+    <h1 class="page-header__title">مناطق التوصيل</h1>
+    <p class="page-header__lede">أدِر الولايات والبلديات ورسوم التوصيل. تعطيل الولاية أو البلدية يحجبها من صفحة الطلب دون حذفها.</p>
+    <div class="page-header__actions">
+        <a asp-action="CreateWilaya" class="btn btn-primary">إضافة ولاية</a>
+    </div>
+</section>
+
+@if (TempData["DeliveryZonesMessage"] is string okMessage)
+{
+    <div class="alert alert-success">@okMessage</div>
+}
+@if (TempData["DeliveryZonesError"] is string errorMessage)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+<div class="dz-layout">
+    <div class="dz-wilayas">
+        <h2 class="dz-section__title">الولايات (@Model.Wilayas.Count)</h2>
+        <div class="dz-table-wrap">
+            <table class="dz-table">
+                <thead>
+                    <tr>
+                        <th>الرمز</th>
+                        <th>العربية</th>
+                        <th>الفرنسية</th>
+                        <th>رسوم التوصيل</th>
+                        <th>البلديات</th>
+                        <th>الحالة</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (WilayaSummary w in Model.Wilayas)
+                    {
+                        bool selected = w.Id == Model.SelectedWilayaId;
+                        <tr class="@(selected ? "is-selected" : "") @(w.IsActive ? "" : "is-inactive")">
+                            <td><strong>@w.Code</strong></td>
+                            <td>
+                                <a asp-action="Index" asp-route-selectedWilayaId="@w.Id" class="dz-wilaya-link">@w.NameAr</a>
+                            </td>
+                            <td>@w.NameFr</td>
+                            <td>@w.ShippingFee.ToString("N0") دج</td>
+                            <td>@w.CommuneCount</td>
+                            <td>
+                                <form asp-action="ToggleWilaya" asp-route-id="@w.Id" method="post" class="dz-toggle">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm @(w.IsActive ? "btn-success" : "btn-outline-secondary")" data-confirm-modal data-confirm-title="تأكيد التغيير" data-confirm-body="تأكيد تغيير حالة الولاية؟">
+                                        @(w.IsActive ? "مفعّلة" : "معطّلة")
+                                    </button>
+                                </form>
+                            </td>
+                            <td class="dz-row__actions">
+                                <a asp-action="EditWilaya" asp-route-id="@w.Id" class="btn btn-sm btn-outline-primary">تعديل</a>
+                                @if (isOwnerOrSuper)
+                                {
+                                    <form asp-action="DeleteWilaya" asp-route-id="@w.Id" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                data-confirm-modal data-confirm-title="تأكيد الحذف"
+                                                data-confirm-body="سيتم حذف الولاية وجميع بلدياتها. هذا الإجراء لا يمكن التراجع عنه. متاح للمالك فقط.">
+                                            حذف
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="dz-communes">
+        @if (Model.SelectedWilaya is null)
+        {
+            <div class="dz-communes__empty">
+                <h2 class="dz-section__title">البلديات</h2>
+                <p class="dz-communes__hint">اختر ولاية لعرض بلدياتها وإدارتها.</p>
+            </div>
+        }
+        else
+        {
+            <div class="dz-communes__head">
+                <div>
+                    <h2 class="dz-section__title">بلديات — @Model.SelectedWilaya.NameAr</h2>
+                    <p class="dz-communes__hint">@(Model.Communes.Count) بلدية</p>
+                </div>
+                <a asp-action="CreateCommune" asp-route-wilayaId="@Model.SelectedWilaya.Id" class="btn btn-primary">إضافة بلدية</a>
+            </div>
+
+            @if (Model.Communes.Count == 0)
+            {
+                <p class="dz-communes__hint">لا توجد بلديات لهذه الولاية بعد. أضفها يدوياً.</p>
+            }
+            else
+            {
+                <div class="dz-table-wrap">
+                    <table class="dz-table">
+                        <thead>
+                            <tr>
+                                <th>العربية</th>
+                                <th>الفرنسية</th>
+                                <th>الحالة</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (CommuneSummary c in Model.Communes)
+                            {
+                                <tr class="@(c.IsActive ? "" : "is-inactive")">
+                                    <td>@c.NameAr</td>
+                                    <td>@c.NameFr</td>
+                                    <td>
+                                        <form asp-action="ToggleCommune" asp-route-id="@c.Id" method="post" class="dz-toggle">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm @(c.IsActive ? "btn-success" : "btn-outline-secondary")">
+                                                @(c.IsActive ? "مفعّلة" : "معطّلة")
+                                            </button>
+                                        </form>
+                                    </td>
+                                    <td class="dz-row__actions">
+                                        <a asp-action="EditCommune" asp-route-id="@c.Id" class="btn btn-sm btn-outline-primary">تعديل</a>
+                                        <form asp-action="DeleteCommune" asp-route-id="@c.Id" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                    data-confirm-modal data-confirm-title="تأكيد الحذف"
+                                                    data-confirm-body="سيتم حذف البلدية. لا يمكن الحذف إذا وجود طلبات مرتبطة بها.">
+                                                حذف
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        }
+    </div>
+</div>

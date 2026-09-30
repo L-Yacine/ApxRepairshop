@@ -1,0 +1,208 @@
+@model ShopOrderDetailViewModel
+@{
+    ShopOrder order = Model.Order;
+    ViewData["Title"] = $"الطلب {order.OrderCode}";
+    string username = User.Identity?.Name ?? "";
+}
+
+<section class="page-header">
+    <p class="page-header__eyebrow">المتجر</p>
+    <h1 class="page-header__title">الطلب @order.OrderCode</h1>
+    <div class="page-header__actions">
+        <a asp-action="Index" class="btn btn-outline-secondary">العودة للقائمة</a>
+    </div>
+</section>
+
+@if (TempData["ShopOrdersMessage"] is string okMsg)
+{
+    <div class="alert alert-success">@okMsg</div>
+}
+@if (TempData["ShopOrdersError"] is string errMsg)
+{
+    <div class="alert alert-danger">@errMsg</div>
+}
+
+<div class="so-detail">
+    <div class="so-detail__grid">
+        <div class="so-detail__card">
+            <h2>معلومات الزبون</h2>
+            <dl class="so-detail__dl">
+                <dt>الاسم</dt><dd>@order.CustomerName</dd>
+                <dt>الهاتف</dt><dd>@order.CustomerPhone</dd>
+                <dt>واتساب</dt><dd>@(order.CustomerWhatsApp ?? "—")</dd>
+                <dt>الولاية</dt><dd>@order.WilayaName</dd>
+                <dt>البلدية</dt><dd>@order.CommuneName — @order.CommuneNameFr</dd>
+                <dt>العنوان</dt><dd>@order.Address</dd>
+                <dt>ملاحظات</dt><dd>@(order.Notes ?? "—")</dd>
+            </dl>
+        </div>
+
+        <div class="so-detail__card">
+            <h2>ملخص الطلب</h2>
+            <div class="so-detail__lines">
+                @foreach (ShopOrderLine line in order.Lines)
+                {
+                    <div class="so-line">
+                        <div class="so-line__media">
+                            @if (!string.IsNullOrWhiteSpace(line.ImageUrl))
+                            {
+                                <img src="@Url.Content(line.ImageUrl)" alt="@line.PartDisplayName" asp-append-version="true" />
+                            }
+                            else
+                            {
+                                <span class="ph" aria-hidden="true">📦</span>
+                            }
+                        </div>
+                        <div>
+                            <div class="so-line__name">@line.PartDisplayName</div>
+                            <div class="so-line__unit">@line.Quantity × @line.UnitPrice.ToString("N0") دج</div>
+                        </div>
+                        <div class="so-line__total">@line.LineTotal.ToString("N0") دج</div>
+                    </div>
+                }
+            </div>
+
+            <dl class="so-detail__dl" style="margin-top:14px;">
+                <dt>المجموع الفرعي</dt><dd>@order.Subtotal.ToString("N0") دج</dd>
+                <dt>التوصيل</dt><dd>@order.ShippingFee.ToString("N0") دج</dd>
+                <dt>الإجمالي</dt><dd><strong>@order.TotalAmount.ToString("N0") دج</strong></dd>
+            </dl>
+
+            <h3 style="margin-top:18px; font-size:.95rem;">الجدول الزمني</h3>
+            <div class="so-detail__timeline">
+                <div class="so-detail__timeline-item"><span>تاريخ الطلب</span><span>@order.CreatedAt.ToString("yyyy-MM-dd HH:mm")</span></div>
+                @if (order.ConfirmedAt.HasValue) { <div class="so-detail__timeline-item"><span>تأكيد</span><span>@order.ConfirmedAt.Value.ToString("yyyy-MM-dd HH:mm")</span></div> }
+                @if (order.ShippedAt.HasValue) { <div class="so-detail__timeline-item"><span>شحن</span><span>@order.ShippedAt.Value.ToString("yyyy-MM-dd HH:mm")</span></div> }
+                @if (order.DeliveredAt.HasValue) { <div class="so-detail__timeline-item"><span>تسليم</span><span>@order.DeliveredAt.Value.ToString("yyyy-MM-dd HH:mm")</span></div> }
+                @if (order.ReturnedAt.HasValue) { <div class="so-detail__timeline-item"><span>إرجاع</span><span>@order.ReturnedAt.Value.ToString("yyyy-MM-dd HH:mm") — @order.ReturnReason</span></div> }
+                @if (order.CancelledAt.HasValue) { <div class="so-detail__timeline-item"><span>إلغاء</span><span>@order.CancelledAt.Value.ToString("yyyy-MM-dd HH:mm") — @order.CancelledReason</span></div> }
+            </div>
+        </div>
+    </div>
+
+    <div class="so-detail__card" style="margin-top:16px;">
+        <h2>إجراءات</h2>
+        <div class="so-detail__actions">
+            <span class="so-pill so-pill--@order.Status">الحالة الحالية: @ShopOrderStatuses.ToArabicLabel(order.Status)</span>
+
+            @if (Model.CanConfirm)
+            {
+                <form asp-action="Confirm" asp-route-id="@order.Id" method="post" class="so-detail__form">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-success"
+                            data-confirm-modal data-confirm-title="تأكيد الطلب"
+                            data-confirm-body="سيتم تخفيض الكميات من المخزون. متابعة؟">تأكيد الطلب</button>
+                </form>
+            }
+            @if (Model.CanShip)
+            {
+                <form asp-action="Ship" asp-route-id="@order.Id" method="post" class="so-detail__form">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-primary">شحن الطلب</button>
+                </form>
+            }
+            @if (Model.CanDeliver)
+            {
+                <form asp-action="Deliver" asp-route-id="@order.Id" method="post" class="so-detail__form">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-primary"
+                            data-confirm-modal data-confirm-title="تأكيد التسليم"
+                            data-confirm-body="تم استلام المبلغ عند التسليم؟">تسليم الطلب</button>
+                </form>
+            }
+            @if (Model.CanReturn)
+            {
+                <button type="button" class="btn btn-outline-warning" data-toggle="return-modal">إرجاع الطلب</button>
+            }
+            @if (Model.CanCancel)
+            {
+                <button type="button" class="btn btn-outline-danger" data-toggle="cancel-modal">إلغاء الطلب</button>
+            }
+        </div>
+    </div>
+</div>
+
+@if (Model.CanReturn)
+{
+    <div class="modal fade" id="return-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form asp-action="Return" asp-route-id="@order.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="modal-header">
+                        <h5 class="modal-title">إرجاع الطلب</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p style="color: var(--color-text-muted);">سيتم إرجاع جميع القطع إلى المخزون.</p>
+                        <label for="return-reason" class="form-label">سبب الإرجاع *</label>
+                        <input type="text" name="reason" id="return-reason" class="form-control" required
+                               placeholder="مثال: رفض الاستلام — عدم التسليم" />
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-warning">تأكيد الإرجاع</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model.CanCancel)
+{
+    <div class="modal fade" id="cancel-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form asp-action="Cancel" asp-route-id="@order.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="modal-header">
+                        <h5 class="modal-title">إلغاء الطلب</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if (order.Status == ShopOrderStatuses.Confirmed)
+                        {
+                            <p style="color: var(--color-text-muted);">الطلب مؤكد، سيتم إرجاع القطع إلى المخزون.</p>
+                            <label for="cancel-reason" class="form-label">سبب الإلغاء *</label>
+                            <input type="text" name="reason" id="cancel-reason" class="form-control" required
+                                   placeholder="مثال: نفاد المخزون — العميل غير متاح" />
+                        }
+                        else
+                        {
+                            <p style="color: var(--color-text-muted);">سيتم إلغاء الطلب قبل التأكيد؛ المخزون لم يتأثر.</p>
+                            <label for="cancel-reason" class="form-label">سبب الإلغاء (اختياري)</label>
+                            <input type="text" name="reason" id="cancel-reason" class="form-control"
+                                   placeholder="مثال: العميل غير متاح" />
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">تراجع</button>
+                        <button type="submit" class="btn btn-danger">تأكيد الإلغاء</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+<script>
+    (function () {
+        var returnToggle = document.querySelector('[data-toggle="return-modal"]');
+        var cancelToggle = document.querySelector('[data-toggle="cancel-modal"]');
+        if (window.bootstrap) {
+            if (returnToggle) {
+                returnToggle.addEventListener('click', function () {
+                    new bootstrap.Modal(document.getElementById('return-modal')).show();
+                });
+            }
+            if (cancelToggle) {
+                cancelToggle.addEventListener('click', function () {
+                    new bootstrap.Modal(document.getElementById('cancel-modal')).show();
+                });
+            }
+        }
+    })();
+</script>
+}

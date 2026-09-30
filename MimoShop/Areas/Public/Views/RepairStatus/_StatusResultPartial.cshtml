@@ -1,0 +1,104 @@
+@using MimoShop.Services
+@model PublicRepairStatusPageViewModel
+
+@if (Model.Result is not null)
+{
+    var currentStatus = Model.Result.Status;
+
+    bool step1Done = true;
+    bool step2Done = currentStatus == RepairJobStatuses.InProgress ||
+                     currentStatus == RepairJobStatuses.WaitingForPart ||
+                     currentStatus == RepairJobStatuses.Done ||
+                     currentStatus == RepairJobStatuses.Collected;
+    bool step3Done = currentStatus == RepairJobStatuses.Done ||
+                     currentStatus == RepairJobStatuses.Collected;
+    bool step4Done = currentStatus == RepairJobStatuses.Collected;
+
+    bool step1Active = currentStatus == RepairJobStatuses.New;
+    bool step2Active = currentStatus == RepairJobStatuses.InProgress || currentStatus == RepairJobStatuses.WaitingForPart;
+    bool step3Active = currentStatus == RepairJobStatuses.Done;
+    bool step4Active = currentStatus == RepairJobStatuses.Collected;
+
+    string step2Label = currentStatus == RepairJobStatuses.WaitingForPart
+        ? L["RepairStatus.InProgressWaitingPart"].Value
+        : L["RepairStatus.InProgress"].Value;
+
+    <div class="public-repairstatus__result">
+        <div class="public-repairstatus__card">
+            <div class="public-repairstatus__row">
+                <span class="public-repairstatus__label">@L["RepairStatus.Code"]</span>
+                <span class="public-repairstatus__value" dir="ltr">@Model.Result.JobCode</span>
+            </div>
+            <div class="public-repairstatus__row">
+                <span class="public-repairstatus__label">@L["RepairStatus.Device"]</span>
+                <span class="public-repairstatus__value">@Model.Result.DeviceName</span>
+            </div>
+            <div class="public-repairstatus__row">
+                <span class="public-repairstatus__label">@L["RepairStatus.Worker"]</span>
+                <span class="public-repairstatus__value">@Model.Result.AssignedWorkerName</span>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(Model.Result.ProblemDescription))
+            {
+                <div class="public-repairstatus__row public-repairstatus__row--full">
+                    <span class="public-repairstatus__label">@L["RepairStatus.Problem"]</span>
+                    <span class="public-repairstatus__value">@Model.Result.ProblemDescription</span>
+                </div>
+            }
+        </div>
+
+        <div class="public-repairstatus__card" style="display: block;">
+            <h2 style="font-size: 18px; font-weight: 800; margin: 0 0 16px;">@L["RepairStatus.TimelineTitle"]</h2>
+
+            <div class="repairstatus-timeline" aria-label="@L["RepairStatus.TimelineAria"]">
+                <!-- Step 1: Received -->
+                <div class="repairstatus-timeline__item @(step1Active ? "repairstatus-timeline__item--active" : "") @(step1Done && !step1Active ? "repairstatus-timeline__item--completed" : "")">
+                    <div class="repairstatus-timeline__node"></div>
+                    <div class="repairstatus-timeline__content">
+                        <span class="repairstatus-timeline__title">@L["RepairStatus.StepReceived"]</span>
+                        <span class="repairstatus-timeline__time">@L["RepairStatus.ReceivedAt", Model.Result.CreatedAt.ToString("yyyy-MM-dd HH:mm")]</span>
+                    </div>
+                </div>
+
+                <!-- Step 2: In Progress / Waiting for part -->
+                <div class="repairstatus-timeline__item @(step2Active ? "repairstatus-timeline__item--active" : "") @(step2Done && !step2Active ? "repairstatus-timeline__item--completed" : "")">
+                    <div class="repairstatus-timeline__node"></div>
+                    <div class="repairstatus-timeline__content">
+                        <span class="repairstatus-timeline__title">@step2Label</span>
+                        @if (step2Done && Model.Result.LastStatusChangedAt.HasValue && (currentStatus == RepairJobStatuses.InProgress || currentStatus == RepairJobStatuses.WaitingForPart))
+                        {
+                            <span class="repairstatus-timeline__time">@L["RepairStatus.LastUpdate", Model.Result.LastStatusChangedAt.Value.ToString("yyyy-MM-dd HH:mm")]</span>
+                        }
+                    </div>
+                </div>
+
+                <!-- Step 3: Done -->
+                <div class="repairstatus-timeline__item @(step3Active ? "repairstatus-timeline__item--active" : "") @(step3Done && !step3Active ? "repairstatus-timeline__item--completed" : "")">
+                    <div class="repairstatus-timeline__node"></div>
+                    <div class="repairstatus-timeline__content">
+                        <span class="repairstatus-timeline__title">@L["RepairStatus.StepDone"]</span>
+                        @if (step3Done && Model.Result.LastStatusChangedAt.HasValue && currentStatus == RepairJobStatuses.Done)
+                        {
+                            <span class="repairstatus-timeline__time">@L["RepairStatus.ReadyAt", Model.Result.LastStatusChangedAt.Value.ToString("yyyy-MM-dd HH:mm")]</span>
+                        }
+                    </div>
+                </div>
+
+                <!-- Step 4: Collected -->
+                <div class="repairstatus-timeline__item @(step4Active ? "repairstatus-timeline__item--active" : "")">
+                    <div class="repairstatus-timeline__node"></div>
+                    <div class="repairstatus-timeline__content">
+                        <span class="repairstatus-timeline__title">@L["RepairStatus.StepCollected"]</span>
+                        @if (step4Done && Model.Result.LastStatusChangedAt.HasValue)
+                        {
+                            <span class="repairstatus-timeline__time">@L["RepairStatus.DeliveredAt", Model.Result.LastStatusChangedAt.Value.ToString("yyyy-MM-dd HH:mm")]</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else if (!string.IsNullOrEmpty(Model.Message))
+{
+    <div class="public-alert public-alert--error">@Model.Message</div>
+}

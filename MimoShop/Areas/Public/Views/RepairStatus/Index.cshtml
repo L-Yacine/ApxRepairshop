@@ -1,0 +1,29 @@
+@model PublicRepairStatusPageViewModel
+@{
+    ViewData["Title"] = L["RepairStatus.Title"].Value;
+}
+
+<section class="public-section">
+    <h1 class="public-section__title public-section__title--lead">@L["RepairStatus.Heading"]</h1>
+    <p class="public-section__hint">@L["RepairStatus.Hint"]</p>
+
+    <form asp-area="Public" asp-controller="RepairStatus" asp-action="Index" method="post" class="public-repairstatus__form">
+        @Html.AntiForgeryToken()
+        <div class="public-form-grid public-repairstatus__formgrid">
+            <div class="public-field">
+                <label for="job-code">@L["RepairStatus.Code"]</label>
+                <input type="text" id="job-code" name="jobCode" value="@Model.JobCodeInput" placeholder="REP-0042" dir="ltr" maxlength="20" required />
+            </div>
+            <div class="public-field public-repairstatus__submit">
+                <button type="submit" class="public-btn public-btn--primary public-btn--block">@L["RepairStatus.Show"]</button>
+            </div>
+        </div>
+    </form>
+</section>
+
+@if (Model.Result is not null || !string.IsNullOrEmpty(Model.Message))
+{
+    <section class="public-section">
+        @await Html.PartialAsync("_StatusResultPartial", Model)
+    </section>
+}

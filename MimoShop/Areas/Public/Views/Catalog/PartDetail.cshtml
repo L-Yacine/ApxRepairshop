@@ -1,0 +1,291 @@
+@model PublicPartDetail
+@{
+    string displayName = Model.LocalizedDisplayName;
+    bool inStock = Model.Quantity > 0;
+    int maxQuantity = Model.Quantity < 99 ? Model.Quantity : 99;
+}
+
+<section class="public-part-detail">
+    <div class="public-part-detail__grid">
+        <div class="public-part-detail__media">
+            @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+            {
+                <img src="@Url.Content(Model.ImageUrl)" alt="@displayName" asp-append-version="true" />
+            }
+            else if (!string.IsNullOrWhiteSpace(Model.ThumbnailUrl))
+            {
+                <img src="@Url.Content(Model.ThumbnailUrl)" alt="@displayName" asp-append-version="true" />
+            }
+            else
+            {
+                <span class="public-card__placeholder" aria-hidden="true">@Model.LocalizedBrandName.FirstOrDefault()</span>
+            }
+        </div>
+
+        <div class="public-part-detail__info">
+            <span class="public-part-detail__meta">@Model.LocalizedBrandName · @Model.LocalizedModelName · @Model.LocalizedPartTypeName</span>
+            <h1 class="public-part-detail__title">@Model.LocalizedVariantName</h1>
+            <p class="public-part-detail__sub">@Model.BrandName @Model.ModelName — @Model.PartTypeName</p>
+
+            <div class="public-part-detail__pricerow">
+                <span class="public-part-detail__price">@Model.SalePrice.ToString("N0") @L["Common.Currency"]</span>
+                <span class="public-part-detail__stock @(inStock ? "is-in" : "is-out")">
+                    @(inStock ? L["Common.InStock"].Value : L["Common.OutOfStock"].Value)
+                </span>
+            </div>
+
+            <div class="public-part-detail__trust" aria-label="@L["PartDetail.Benefits"]">
+                <div class="public-part-detail__trust-item">
+                    <span class="public-part-detail__trust-icon" aria-hidden="true">🚚</span>
+                    <span>@L["PartDetail.Delivery"]</span>
+                </div>
+                <div class="public-part-detail__trust-item">
+                    <span class="public-part-detail__trust-icon" aria-hidden="true">💵</span>
+                    <span>@L["PartDetail.Cod"]</span>
+                </div>
+                <div class="public-part-detail__trust-item">
+                    <span class="public-part-detail__trust-icon" aria-hidden="true">🛡️</span>
+                    <span>@L["PartDetail.Genuine"]</span>
+                </div>
+            </div>
+
+            <section class="public-quickorder" aria-label="@L["PartDetail.QuickOrderAria"]">
+                <h2 class="public-quickorder__title">@L["PartDetail.QuickOrderTitle"]</h2>
+                <p class="public-quickorder__hint">@L["PartDetail.QuickOrderHint"]</p>
+
+                @if (!string.IsNullOrEmpty(TempData["QuickOrderError"] as string))
+                {
+                    <div class="public-alert public-alert--error">@TempData["QuickOrderError"]</div>
+                }
+
+                <form asp-area="Public" asp-controller="QuickOrder" asp-action="Place"
+                      asp-route-id="@Model.InventoryPartId" method="post" id="quickorder-form" novalidate>
+                    @Html.AntiForgeryToken()
+
+                    <div class="public-form-grid">
+                        <div class="public-field">
+                            <label for="qo-name">@L["Form.FullName"]</label>
+                            <input id="qo-name" name="CustomerName" required maxlength="120" autocomplete="name" />
+                            <span class="public-field__error" data-valmsg-for="CustomerName"></span>
+                        </div>
+                        <div class="public-field">
+                            <label for="qo-phone">@L["Form.Phone"]</label>
+                            <input id="qo-phone" name="CustomerPhone" inputmode="tel" dir="ltr" required
+                                   pattern="[0-9 +\-]{7,40}" maxlength="40" autocomplete="tel" />
+                            <span class="public-field__error" data-valmsg-for="CustomerPhone"></span>
+                        </div>
+                        <div class="public-field public-field--qty">
+                            <label>@L["Form.Quantity"]</label>
+                            <span class="public-stepper" data-stepper data-min="1" data-max="@maxQuantity">
+                                <button type="button" data-stepper-minus aria-label="@L["Form.Decrease"]">−</button>
+                                <input type="number" name="Quantity" value="1" min="1" max="@maxQuantity" inputmode="numeric" />
+                                <button type="button" data-stepper-plus aria-label="@L["Form.Increase"]">+</button>
+                            </span>
+                        </div>
+                        <div class="public-field">
+                            <label for="qo-wilaya">@L["Form.Wilaya"]</label>
+                            <select id="qo-wilaya" name="WilayaId" required>
+                                <option value="">@L["Form.ChooseWilaya"]</option>
+                                @foreach (WilayaOption w in Model.Wilayas)
+                                {
+                                    <option value="@w.Id" data-fee="@w.ShippingFee">@w.Code — @w.LocalizedName</option>
+                                }
+                            </select>
+                            <span class="public-field__error" data-valmsg-for="WilayaId"></span>
+                        </div>
+                        <div class="public-field">
+                            <label for="qo-commune">@L["Form.Commune"]</label>
+                            <select id="qo-commune" name="CommuneId" required disabled>
+                                <option value="">@L["Form.ChooseWilayaFirst"]</option>
+                            </select>
+                            <span class="public-field__error" data-valmsg-for="CommuneId"></span>
+                        </div>
+                        <div class="public-field full">
+                            <label for="qo-address">@L["Form.Address"]</label>
+                            <input id="qo-address" name="Address" required maxlength="300"
+                                   placeholder="@L["Form.AddressPlaceholder"]" autocomplete="street-address" />
+                            <span class="public-field__error" data-valmsg-for="Address"></span>
+                        </div>
+                        <div class="public-field full">
+                            <label for="qo-notes">@L["Form.Notes"]</label>
+                            <textarea id="qo-notes" name="Notes" rows="2" maxlength="500"
+                                      placeholder="@L["Form.NotesPlaceholder"]"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="public-quickorder__totals">
+                        <span>@L["Checkout.Subtotal"]: <strong id="qo-subtotal">@Model.SalePrice.ToString("N0") @L["Common.Currency"]</strong></span>
+                        <span>@L["Checkout.Shipping"]: <strong id="qo-fee">— @L["Form.ChooseWilaya"]</strong></span>
+                        <span class="public-quickorder__total">@L["Checkout.Total"]: <strong id="qo-total">@Model.SalePrice.ToString("N0") @L["Common.Currency"]</strong></span>
+                    </div>
+
+                    <button type="submit" class="public-btn public-btn--primary public-btn--block public-btn--lg public-quickorder__submit">@L["PartDetail.OrderNow"]</button>
+                </form>
+            </section>
+
+            @if (inStock)
+            {
+                <form asp-area="Public" asp-controller="Cart" asp-action="Add" asp-route-id="@Model.InventoryPartId"
+                      method="post" class="public-part-detail__buy" data-cart-add>
+                    @Html.AntiForgeryToken()
+                    <div class="public-part-detail__buyrow">
+                        <span class="public-stepper" data-stepper data-min="1" data-max="@Model.Quantity">
+                            <button type="button" data-stepper-minus aria-label="@L["Form.Decrease"]">−</button>
+                            <input type="number" name="quantity" value="1" min="1" max="@Model.Quantity" inputmode="numeric" />
+                            <button type="button" data-stepper-plus aria-label="@L["Form.Increase"]">+</button>
+                        </span>
+                        <button type="submit" class="public-btn public-btn--primary public-btn--lg public-part-detail__addcart">@L["Common.AddToCart"]</button>
+                    </div>
+                    <div class="public-part-detail__viewcart"><a asp-area="Public" asp-controller="Cart" asp-action="Index">@L["Common.ViewCart"]</a> · @L["PartDetail.ContinueOrder"]</div>
+                </form>
+            }
+
+            <div class="public-part-detail__back">
+                <a asp-area="Public" asp-controller="Catalog" asp-action="Variants"
+                   asp-route-brandId="@Model.BrandId" asp-route-modelId="@Model.ModelId" asp-route-partTypeId="@Model.PartTypeId">
+                    ← @L["PartDetail.BackToVariants"]
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+@if (inStock)
+{
+    <form asp-area="Public" asp-controller="Cart" asp-action="Add" asp-route-id="@Model.InventoryPartId"
+          method="post" class="public-part-buybar" data-cart-add aria-label="@L["PartDetail.BuyBarAria"]">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="quantity" value="1" />
+        <span class="public-part-buybar__price">
+            @Model.SalePrice.ToString("N0") @L["Common.Currency"]
+            <small>@L["PartDetail.Available"]</small>
+        </span>
+        <button type="button" class="public-btn public-btn--ghost public-part-buybar__quick" onclick="document.getElementById('quickorder-form').scrollIntoView({ behavior: 'smooth' }); setTimeout(function() { document.getElementById('qo-name').focus(); }, 400);">⚡ @L["PartDetail.QuickOrder"]</button>
+        <button type="submit" class="public-btn public-btn--primary public-part-buybar__addcart">🛒 @L["PartDetail.AddToCart"]</button>
+    </form>
+}
+
+@section Scripts {
+<script>
+(function () {
+    function ready(fn){ if (document.readyState !== "loading") { fn(); } else { document.addEventListener("DOMContentLoaded", fn); } }
+    ready(function () {
+        var S = (window.PUBLIC && window.PUBLIC.strings) || {};
+        var numberLocale = (window.PUBLIC && window.PUBLIC.isRtl) ? 'ar-DZ' : ((window.PUBLIC && window.PUBLIC.culture === 'en') ? 'en-US' : 'fr-FR');
+        var currency = S.currency || "";
+
+        function fmt(n) { return n.toLocaleString(numberLocale, { maximumFractionDigits: 2 }) + " " + currency; }
+
+        // Stepper (shared with existing one in mobile buybar)
+        document.querySelectorAll("[data-stepper]").forEach(function (stepper) {
+            var input = stepper.querySelector("input");
+            var minus = stepper.querySelector("[data-stepper-minus]");
+            var plus  = stepper.querySelector("[data-stepper-plus]");
+            var min = parseInt(stepper.getAttribute("data-min") || "1", 10);
+            var max = parseInt(stepper.getAttribute("data-max") || "9999", 10);
+            function clamp() {
+                var v = parseInt(input.value, 10);
+                if (isNaN(v) || v < min) { v = min; }
+                if (v > max) { v = max; }
+                input.value = v;
+                if (minus) minus.disabled = (v <= min);
+                if (plus)  plus.disabled  = (v >= max);
+                if (input.name === "Quantity" && typeof refreshQuickOrderTotals === "function") {
+                    refreshQuickOrderTotals();
+                }
+            }
+            if (minus) minus.addEventListener("click", function () { input.value = (parseInt(input.value,10) || min) - 1; clamp(); });
+            if (plus)  plus.addEventListener("click",  function () { input.value = (parseInt(input.value,10) || min) + 1; clamp(); });
+            input.addEventListener("change", clamp);
+            input.addEventListener("input", clamp);
+            clamp();
+        });
+
+        // Quick-order wilaya/commune + totals
+        var qoForm = document.getElementById("quickorder-form");
+        if (!qoForm) { return; }
+        var wilayaSel = document.getElementById("qo-wilaya");
+        var communeSel = document.getElementById("qo-commune");
+        var subtotalEl = document.getElementById("qo-subtotal");
+        var feeEl = document.getElementById("qo-fee");
+        var totalEl = document.getElementById("qo-total");
+        var unitPrice = @Model.SalePrice.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+        function refreshQuickOrderTotals() {
+            var qtyInput = qoForm.querySelector('input[name="Quantity"]');
+            var qty = parseInt(qtyInput ? qtyInput.value : "1", 10);
+            if (isNaN(qty) || qty < 1) { qty = 1; }
+            var fee = 0;
+            var selected = wilayaSel.selectedOptions[0];
+            if (selected && selected.dataset && selected.dataset.fee) {
+                fee = parseFloat(selected.dataset.fee) || 0;
+            }
+            var subtotal = unitPrice * qty;
+            subtotalEl.textContent = fmt(subtotal);
+            feeEl.textContent = fee > 0 ? fmt(fee) : "— " + (S.chooseWilaya || "");
+            totalEl.textContent = fmt(subtotal + fee);
+        }
+
+        function loadCommunes(wilayaId) {
+            if (!wilayaId) {
+                communeSel.innerHTML = '<option value="">' + (S.chooseWilayaFirst || "") + '</option>';
+                communeSel.disabled = true;
+                return;
+            }
+            communeSel.disabled = true;
+            communeSel.classList.add("select-loading");
+            var url = '@Url.Action("GetCommunes", "Checkout", new { area = "Public" })/' + wilayaId;
+            fetch(url, { headers: { 'Accept': 'application/json' } })
+                .then(function (r) { return r.ok ? r.json() : []; })
+                .then(function (list) {
+                    communeSel.classList.remove("select-loading");
+                    var html = '<option value="">' + (S.chooseCommune || "") + '</option>';
+                    list.forEach(function (c) {
+                        html += '<option value="' + c.id + '">' + (c.localizedName || c.nameAr) + '</option>';
+                    });
+                    communeSel.innerHTML = html;
+                    communeSel.disabled = false;
+                })
+                .catch(function () {
+                    communeSel.classList.remove("select-loading");
+                    communeSel.innerHTML = '<option value="">' + (S.communesLoadError || "") + '</option>';
+                    communeSel.disabled = false;
+                });
+        }
+
+        wilayaSel.addEventListener("change", function () {
+            var id = parseInt(wilayaSel.value, 10) || 0;
+            loadCommunes(id);
+            refreshQuickOrderTotals();
+        });
+        refreshQuickOrderTotals();
+
+        // Client-side error mapping
+        qoForm.addEventListener("submit", function (e) {
+            qoForm.querySelectorAll(".public-field__error").forEach(function (el) { el.textContent = ""; });
+            qoForm.querySelectorAll(".public-field--invalid").forEach(function (el) { el.classList.remove("public-field--invalid"); });
+            var ok = true;
+            function flag(input) {
+                if (!input) { return; }
+                var field = input.closest(".public-field");
+                if (field) { field.classList.add("public-field--invalid"); }
+            }
+            var name = qoForm.querySelector('input[name="CustomerName"]');
+            var phone = qoForm.querySelector('input[name="CustomerPhone"]');
+            var qty = qoForm.querySelector('input[name="Quantity"]');
+            var wilaya = qoForm.querySelector('#qo-wilaya');
+            var commune = qoForm.querySelector('#qo-commune');
+            var address = qoForm.querySelector('input[name="Address"]');
+
+            if (!name.value.trim()) { flag(name); var s = qoForm.querySelector('[data-valmsg-for="CustomerName"]'); if (s) s.textContent = S.validationNameRequired || ""; ok = false; }
+            if (!/^[0-9 +\-]{7,40}$/.test(phone.value.trim())) { flag(phone); var s = qoForm.querySelector('[data-valmsg-for="CustomerPhone"]'); if (s) s.textContent = S.validationPhoneInvalid || ""; ok = false; }
+            var qv = parseInt(qty.value, 10); if (isNaN(qv) || qv < 1) { flag(qty); ok = false; }
+            if (!wilaya.value) { flag(wilaya); var s = qoForm.querySelector('[data-valmsg-for="WilayaId"]'); if (s) s.textContent = S.validationChooseWilaya || ""; ok = false; }
+            if (!commune.value) { flag(commune); var s = qoForm.querySelector('[data-valmsg-for="CommuneId"]'); if (s) s.textContent = S.validationChooseCommune || ""; ok = false; }
+            if (!address.value.trim()) { flag(address); var s = qoForm.querySelector('[data-valmsg-for="Address"]'); if (s) s.textContent = S.validationAddressRequired || ""; ok = false; }
+            if (!ok) { e.preventDefault(); }
+        });
+    });
+})();
+</script>
+}

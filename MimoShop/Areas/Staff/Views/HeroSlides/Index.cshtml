@@ -1,0 +1,87 @@
+@model IReadOnlyList<HeroSlide>
+@{
+    ViewData["Title"] = "شرائح الواجهة";
+}
+
+<section class="page-header">
+    <p class="page-header__eyebrow">الإدارة</p>
+    <h1 class="page-header__title">شرائح الواجهة</h1>
+    <p class="page-header__lede">أدِر شريط العرض الدوّار الذي يظهر أعلى الصفحة الرئيسية للمتجر. تظهر الشرائح المفعّلة فقط، بترتيب العرض.</p>
+    <div class="page-header__actions">
+        <a asp-action="Create" class="btn btn-primary">إضافة شريحة</a>
+    </div>
+</section>
+
+@if (TempData["HeroSlidesMessage"] is string okMessage)
+{
+    <div class="alert alert-success">@okMessage</div>
+}
+@if (TempData["HeroSlidesError"] is string errorMessage)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+@if (Model.Count == 0)
+{
+    <div class="empty">
+        <p>لا توجد شرائح بعد. أضف أول شريحة ليظهر شريط العرض في الواجهة.</p>
+        <a asp-action="Create" class="btn btn-primary">إضافة شريحة</a>
+    </div>
+}
+else
+{
+    <div class="dz-table-wrap">
+        <table class="dz-table">
+            <thead>
+                <tr>
+                    <th>الصورة</th>
+                    <th>العنوان</th>
+                    <th>النص الفرعي</th>
+                    <th>الترتيب</th>
+                    <th>الحالة</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (HeroSlide slide in Model)
+                {
+                    <tr class="@(slide.IsActive ? "" : "is-inactive")">
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(slide.ImageUrl))
+                            {
+                                <img src="@Url.Content(slide.ImageUrl)" alt="@slide.Title" class="hs-thumb" asp-append-version="true" />
+                            }
+                            else
+                            {
+                                <span class="hs-thumb hs-thumb--empty">بلا صورة</span>
+                            }
+                        </td>
+                        <td><strong>@slide.Title</strong></td>
+                        <td>@slide.Subtitle</td>
+                        <td>@slide.SortOrder</td>
+                        <td>
+                            <form asp-action="Toggle" asp-route-id="@slide.Id" method="post" class="dz-toggle">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm @(slide.IsActive ? "btn-success" : "btn-outline-secondary")"
+                                        data-confirm-modal data-confirm-title="تأكيد التغيير" data-confirm-body="تأكيد تغيير حالة الشريحة؟">
+                                    @(slide.IsActive ? "مفعّلة" : "معطّلة")
+                                </button>
+                            </form>
+                        </td>
+                        <td class="dz-row__actions">
+                            <a asp-action="Edit" asp-route-id="@slide.Id" class="btn btn-sm btn-outline-primary">تعديل</a>
+                            <form asp-action="Delete" asp-route-id="@slide.Id" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                        data-confirm-modal data-confirm-title="تأكيد الحذف"
+                                        data-confirm-body="سيتم حذف الشريحة نهائياً. هذا الإجراء لا يمكن التراجع عنه.">
+                                    حذف
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

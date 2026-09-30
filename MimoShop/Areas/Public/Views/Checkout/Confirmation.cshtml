@@ -1,0 +1,36 @@
+@model OrderConfirmationViewModel
+@{
+    ViewData["Title"] = L["Checkout.OrderConfirmedTitle", Model.OrderCode].Value;
+}
+
+<section class="public-confirm">
+    <div class="public-confirm__check" aria-hidden="true">✓</div>
+    <h1 class="public-confirm__title">@L["Checkout.OrderReceived"]</h1>
+    <p class="public-confirm__code">@Model.OrderCode</p>
+    <p class="public-confirm__hint">@L["Checkout.ThanksNote", Model.CustomerName, Model.CustomerPhone]</p>
+
+    <a asp-area="Public" asp-controller="Catalog" asp-action="Brands" class="public-btn public-btn--primary">@L["Common.ContinueBrowsing"]</a>
+
+    <div class="public-confirm__summary">
+        <div class="public-summary__line"><span>@L["Checkout.Name"]</span><span>@Model.CustomerName</span></div>
+        <div class="public-summary__line"><span>@L["Checkout.Phone"]</span><span>@Model.CustomerPhone</span></div>
+        <div class="public-summary__line"><span>@L["Checkout.Wilaya"]</span><span>@Model.WilayaName</span></div>
+        <div class="public-summary__line"><span>@L["Checkout.Commune"]</span><span>@Model.CommuneName</span></div>
+        <div class="public-summary__line"><span>@L["Checkout.Address"]</span><span>@Model.Address</span></div>
+
+        @foreach (ShopOrderLine line in Model.Lines)
+        {
+            <div class="public-summary__line">
+                <span>@line.PartDisplayName
+                    <small>@line.Quantity × @line.UnitPrice.ToString("N0") @L["Common.Currency"]</small>
+                </span>
+                <span>@line.LineTotal.ToString("N0") @L["Common.Currency"]</span>
+            </div>
+        }
+
+        <hr class="public-summary__divider" />
+        <div class="public-summary__line"><span>@L["Checkout.Subtotal"]</span><span>@Model.Subtotal.ToString("N0") @L["Common.Currency"]</span></div>
+        <div class="public-summary__line"><span>@L["Checkout.Shipping"]</span><span>@Model.ShippingFee.ToString("N0") @L["Common.Currency"]</span></div>
+        <div class="public-summary__total"><span>@L["Checkout.Total"]</span><span class="value">@Model.TotalAmount.ToString("N0") @L["Common.Currency"]</span></div>
+    </div>
+</section>
