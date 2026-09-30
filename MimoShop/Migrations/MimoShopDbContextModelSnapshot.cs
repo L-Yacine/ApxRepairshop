@@ -166,6 +166,40 @@ namespace MimoShop.Migrations
                         });
                 });
 
+            modelBuilder.Entity("MimoShop.Models.Commune", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NameFr")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("WilayaId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WilayaId", "NameAr")
+                        .IsUnique();
+
+                    b.ToTable("Communes");
+                });
+
             modelBuilder.Entity("MimoShop.Models.Customer", b =>
                 {
                     b.Property<int>("Id")
@@ -198,6 +232,52 @@ namespace MimoShop.Migrations
                         .IsUnique();
 
                     b.ToTable("Customers");
+                });
+
+            modelBuilder.Entity("MimoShop.Models.HeroSlide", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CtaText")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<string>("CtaUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Subtitle")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("HeroSlides");
                 });
 
             modelBuilder.Entity("MimoShop.Models.InventoryPart", b =>
@@ -695,6 +775,182 @@ namespace MimoShop.Migrations
                     b.ToTable("RepairTickets");
                 });
 
+            modelBuilder.Entity("MimoShop.Models.ShopOrder", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CancelledReason")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<int>("CommuneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CommuneName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("CommuneNameFr")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("ConfirmedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("CustomerPhone")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("CustomerWhatsApp")
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<DateTime?>("DeliveredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("OrderCode")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("nvarchar(12)");
+
+                    b.Property<string>("ReturnReason")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime?>("ReturnedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ShipmentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ShippedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("ShippingFee")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasDefaultValue("New");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("WilayaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("WilayaName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommuneId");
+
+                    b.HasIndex("OrderCode")
+                        .IsUnique();
+
+                    b.HasIndex("WilayaId");
+
+                    b.ToTable("ShopOrders");
+                });
+
+            modelBuilder.Entity("MimoShop.Models.ShopOrderLine", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BrandName")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("InventoryPartId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ModelName")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<string>("PartDisplayName")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("PartTypeName")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ShopOrderId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("VariantName")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InventoryPartId");
+
+                    b.HasIndex("ShopOrderId");
+
+                    b.ToTable("ShopOrderLines");
+                });
+
             modelBuilder.Entity("MimoShop.Models.ShopSetting", b =>
                 {
                     b.Property<int>("Id")
@@ -835,6 +1091,589 @@ namespace MimoShop.Migrations
                         });
                 });
 
+            modelBuilder.Entity("MimoShop.Models.Wilaya", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NameFr")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("ShippingFee")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasDefaultValue(0m);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("NameAr")
+                        .IsUnique();
+
+                    b.HasIndex("NameFr")
+                        .IsUnique();
+
+                    b.ToTable("Wilayas");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Code = "01",
+                            IsActive = true,
+                            NameAr = "أدرار",
+                            NameFr = "Adrar",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Code = "02",
+                            IsActive = true,
+                            NameAr = "الشلف",
+                            NameFr = "Chlef",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Code = "03",
+                            IsActive = true,
+                            NameAr = "الأغواط",
+                            NameFr = "Laghouat",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Code = "04",
+                            IsActive = true,
+                            NameAr = "أم البواقي",
+                            NameFr = "Oum El Bouaghi",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Code = "05",
+                            IsActive = true,
+                            NameAr = "باتنة",
+                            NameFr = "Batna",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Code = "06",
+                            IsActive = true,
+                            NameAr = "بجاية",
+                            NameFr = "Béjaïa",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Code = "07",
+                            IsActive = true,
+                            NameAr = "بسكرة",
+                            NameFr = "Biskra",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Code = "08",
+                            IsActive = true,
+                            NameAr = "بشار",
+                            NameFr = "Béchar",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Code = "09",
+                            IsActive = true,
+                            NameAr = "البليدة",
+                            NameFr = "Blida",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Code = "10",
+                            IsActive = true,
+                            NameAr = "البويرة",
+                            NameFr = "Bouira",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Code = "11",
+                            IsActive = true,
+                            NameAr = "تمنراست",
+                            NameFr = "Tamanrasset",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Code = "12",
+                            IsActive = true,
+                            NameAr = "تبسة",
+                            NameFr = "Tébessa",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Code = "13",
+                            IsActive = true,
+                            NameAr = "تلمسان",
+                            NameFr = "Tlemcen",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Code = "14",
+                            IsActive = true,
+                            NameAr = "تيارت",
+                            NameFr = "Tiaret",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Code = "15",
+                            IsActive = true,
+                            NameAr = "تيزي وزو",
+                            NameFr = "Tizi Ouzou",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 16,
+                            Code = "16",
+                            IsActive = true,
+                            NameAr = "الجزائر",
+                            NameFr = "Alger",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 17,
+                            Code = "17",
+                            IsActive = true,
+                            NameAr = "الجلفة",
+                            NameFr = "Djelfa",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 18,
+                            Code = "18",
+                            IsActive = true,
+                            NameAr = "جيجل",
+                            NameFr = "Jijel",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 19,
+                            Code = "19",
+                            IsActive = true,
+                            NameAr = "سطيف",
+                            NameFr = "Sétif",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 20,
+                            Code = "20",
+                            IsActive = true,
+                            NameAr = "سعيدة",
+                            NameFr = "Saïda",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 21,
+                            Code = "21",
+                            IsActive = true,
+                            NameAr = "سكيكدا",
+                            NameFr = "Skikda",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 22,
+                            Code = "22",
+                            IsActive = true,
+                            NameAr = "سيدي بلعباس",
+                            NameFr = "Sidi Bel Abbès",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 23,
+                            Code = "23",
+                            IsActive = true,
+                            NameAr = "عنابة",
+                            NameFr = "Annaba",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 24,
+                            Code = "24",
+                            IsActive = true,
+                            NameAr = "قالمة",
+                            NameFr = "Guelma",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 25,
+                            Code = "25",
+                            IsActive = true,
+                            NameAr = "قسنطينة",
+                            NameFr = "Constantine",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 26,
+                            Code = "26",
+                            IsActive = true,
+                            NameAr = "المدية",
+                            NameFr = "Médéa",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 27,
+                            Code = "27",
+                            IsActive = true,
+                            NameAr = "مستغانم",
+                            NameFr = "Mostaganem",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 28,
+                            Code = "28",
+                            IsActive = true,
+                            NameAr = "المسيلة",
+                            NameFr = "M'Sila",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 29,
+                            Code = "29",
+                            IsActive = true,
+                            NameAr = "معسكر",
+                            NameFr = "Mascara",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 30,
+                            Code = "30",
+                            IsActive = true,
+                            NameAr = "ورقلة",
+                            NameFr = "Ouargla",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 31,
+                            Code = "31",
+                            IsActive = true,
+                            NameAr = "وهران",
+                            NameFr = "Oran",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 32,
+                            Code = "32",
+                            IsActive = true,
+                            NameAr = "البيض",
+                            NameFr = "El Bayadh",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 33,
+                            Code = "33",
+                            IsActive = true,
+                            NameAr = "إليزي",
+                            NameFr = "Illizi",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 34,
+                            Code = "34",
+                            IsActive = true,
+                            NameAr = "برج بوعريريج",
+                            NameFr = "Bordj Bou Arréridj",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 35,
+                            Code = "35",
+                            IsActive = true,
+                            NameAr = "بومرداس",
+                            NameFr = "Boumerdès",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 36,
+                            Code = "36",
+                            IsActive = true,
+                            NameAr = "الطريف",
+                            NameFr = "El Tarf",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 37,
+                            Code = "37",
+                            IsActive = true,
+                            NameAr = "تندوف",
+                            NameFr = "Tindouf",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 38,
+                            Code = "38",
+                            IsActive = true,
+                            NameAr = "تيسمسيلت",
+                            NameFr = "Tissemsilt",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 39,
+                            Code = "39",
+                            IsActive = true,
+                            NameAr = "الوادي",
+                            NameFr = "El Oued",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 40,
+                            Code = "40",
+                            IsActive = true,
+                            NameAr = "خنشلة",
+                            NameFr = "Khenchela",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 41,
+                            Code = "41",
+                            IsActive = true,
+                            NameAr = "سوق أهراس",
+                            NameFr = "Souk Ahras",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 42,
+                            Code = "42",
+                            IsActive = true,
+                            NameAr = "تيبازة",
+                            NameFr = "Tipaza",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 43,
+                            Code = "43",
+                            IsActive = true,
+                            NameAr = "ميلة",
+                            NameFr = "Mila",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 44,
+                            Code = "44",
+                            IsActive = true,
+                            NameAr = "عين الدفلى",
+                            NameFr = "Aïn Defla",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 45,
+                            Code = "45",
+                            IsActive = true,
+                            NameAr = "النعامة",
+                            NameFr = "Naâma",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 46,
+                            Code = "46",
+                            IsActive = true,
+                            NameAr = "عين تموشنت",
+                            NameFr = "Aïn Témouchent",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 47,
+                            Code = "47",
+                            IsActive = true,
+                            NameAr = "غرداية",
+                            NameFr = "Ghardaïa",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 48,
+                            Code = "48",
+                            IsActive = true,
+                            NameAr = "غليزان",
+                            NameFr = "Relizane",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 49,
+                            Code = "49",
+                            IsActive = true,
+                            NameAr = "تيميمون",
+                            NameFr = "Timimoun",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 50,
+                            Code = "50",
+                            IsActive = true,
+                            NameAr = "برج باجي مختار",
+                            NameFr = "Bordj Badji Mokhtar",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 51,
+                            Code = "51",
+                            IsActive = true,
+                            NameAr = "أولاد جلال",
+                            NameFr = "Ouled Djellal",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 52,
+                            Code = "52",
+                            IsActive = true,
+                            NameAr = "بني عباس",
+                            NameFr = "Béni Abbès",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 53,
+                            Code = "53",
+                            IsActive = true,
+                            NameAr = "عين صالح",
+                            NameFr = "In Salah",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 54,
+                            Code = "54",
+                            IsActive = true,
+                            NameAr = "عين قزام",
+                            NameFr = "In Guezzam",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 55,
+                            Code = "55",
+                            IsActive = true,
+                            NameAr = "تقرت",
+                            NameFr = "Touggourt",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 56,
+                            Code = "56",
+                            IsActive = true,
+                            NameAr = "جانت",
+                            NameFr = "Djanet",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 57,
+                            Code = "57",
+                            IsActive = true,
+                            NameAr = "المغير",
+                            NameFr = "El M'Ghair",
+                            ShippingFee = 0m
+                        },
+                        new
+                        {
+                            Id = 58,
+                            Code = "58",
+                            IsActive = true,
+                            NameAr = "المنية",
+                            NameFr = "El Meniaa",
+                            ShippingFee = 0m
+                        });
+                });
+
+            modelBuilder.Entity("MimoShop.Models.Commune", b =>
+                {
+                    b.HasOne("MimoShop.Models.Wilaya", "Wilaya")
+                        .WithMany("Communes")
+                        .HasForeignKey("WilayaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Wilaya");
+                });
+
             modelBuilder.Entity("MimoShop.Models.InventoryPart", b =>
                 {
                     b.HasOne("MimoShop.Models.Brand", "Brand")
@@ -946,6 +1785,43 @@ namespace MimoShop.Migrations
                     b.Navigation("Customer");
                 });
 
+            modelBuilder.Entity("MimoShop.Models.ShopOrder", b =>
+                {
+                    b.HasOne("MimoShop.Models.Commune", "Commune")
+                        .WithMany()
+                        .HasForeignKey("CommuneId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MimoShop.Models.Wilaya", "Wilaya")
+                        .WithMany()
+                        .HasForeignKey("WilayaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Commune");
+
+                    b.Navigation("Wilaya");
+                });
+
+            modelBuilder.Entity("MimoShop.Models.ShopOrderLine", b =>
+                {
+                    b.HasOne("MimoShop.Models.InventoryPart", "InventoryPart")
+                        .WithMany()
+                        .HasForeignKey("InventoryPartId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MimoShop.Models.ShopOrder", "ShopOrder")
+                        .WithMany("Lines")
+                        .HasForeignKey("ShopOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("InventoryPart");
+
+                    b.Navigation("ShopOrder");
+                });
+
             modelBuilder.Entity("MimoShop.Models.Brand", b =>
                 {
                     b.Navigation("PhoneModels");
@@ -966,6 +1842,16 @@ namespace MimoShop.Migrations
                     b.Navigation("PartUsages");
 
                     b.Navigation("StatusHistory");
+                });
+
+            modelBuilder.Entity("MimoShop.Models.ShopOrder", b =>
+                {
+                    b.Navigation("Lines");
+                });
+
+            modelBuilder.Entity("MimoShop.Models.Wilaya", b =>
+                {
+                    b.Navigation("Communes");
                 });
 #pragma warning restore 612, 618
         }

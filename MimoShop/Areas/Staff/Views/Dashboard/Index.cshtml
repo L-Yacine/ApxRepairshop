@@ -1,0 +1,213 @@
+@model MimoShop.Models.OwnerDashboardViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "لوحة المالك";
+    CultureInfo invariant = CultureInfo.InvariantCulture;
+    string generatedAtDisplay = Model.GeneratedAt.ToString("HH:mm", invariant);
+    string outstandingDisplay = $"{Model.OutstandingBalanceTotal.ToString("N0", invariant)} دج";
+    int doneCount = Model.StatusCounts.FirstOrDefault(s => s.Status == MimoShop.Services.RepairJobStatuses.Done)?.Count ?? 0;
+    int waitingCount = Model.StatusCounts.FirstOrDefault(s => s.Status == MimoShop.Services.RepairJobStatuses.WaitingForPart)?.Count ?? 0;
+    int maxStatusCount = Math.Max(1, Model.StatusCounts.Any() ? Model.StatusCounts.Max(s => s.Count) : 0);
+    int outstandingCount = Model.OutstandingPayments.Count;
+}
+
+<section class="page-header">
+    <p class="page-header__eyebrow">نظرة عامة</p>
+    <h1 class="page-header__title">لوحة المالك</h1>
+    <p class="page-header__lede">ملخص نشاط المحل، المدفوعات المعلقة، وحركة المخزون. آخر تحديث: @generatedAtDisplay.</p>
+</section>
+
+<div class="kpi-grid">
+    <a asp-controller="RepairTickets" asp-action="Index" class="kpi kpi--info">
+        <span class="kpi__label">طلبات مفتوحة</span>
+        <span class="kpi__value">@Model.OpenJobsTotal</span>
+        <span class="kpi__hint">@waitingCount بانتظار قطعة</span>
+        <span class="kpi__action btn btn-ghost btn--sm">عرض الحالات ←</span>
+    </a>
+    <a asp-controller="RepairTickets" asp-action="Index" class="kpi kpi--ok">
+        <span class="kpi__label">جاهز للتسليم</span>
+        <span class="kpi__value">@doneCount</span>
+        <span class="kpi__hint">ينتظر العميل</span>
+        <span class="kpi__action btn btn-ghost btn--sm">عرض الجاهزة ←</span>
+    </a>
+    <a asp-controller="RepairTickets" asp-action="Index" class="kpi kpi--warn">
+        <span class="kpi__label">مبالغ مستحقة</span>
+        <span class="kpi__value" style="font-size: 1.8rem;">@outstandingDisplay</span>
+        <span class="kpi__hint">من @outstandingCount عميل</span>
+        <span class="kpi__action btn btn-ghost btn--sm">عرض المستحقات ←</span>
+    </a>
+</div>
+
+<h2 class="card__title" style="margin-top: var(--space-5); margin-bottom: var(--space-2); font-size: 1.1rem;">طلبات المتجر</h2>
+<div class="kpi-grid">
+    <a asp-controller="ShopOrders" asp-action="Index" asp-route-status="New" class="kpi kpi--info">
+        <span class="kpi__label">طلبات جديدة</span>
+        <span class="kpi__value">@Model.NewShopOrdersCount</span>
+        <span class="kpi__hint">بانتظار المراجعة</span>
+        <span class="kpi__action btn btn-ghost btn--sm">عرض الطلبات ←</span>
+    </a>
+    <a asp-controller="ShopOrders" asp-action="Index" asp-route-status="Shipped" class="kpi kpi--ok">
+        <span class="kpi__label">تم شحنها اليوم</span>
+        <span class="kpi__value">@Model.ShippedTodayCount</span>
+        <span class="kpi__hint">قيد التوصيل</span>
+        <span class="kpi__action btn btn-ghost btn--sm">عرض المشحونة ←</span>
+    </a>
+    <a asp-controller="ShopOrders" asp-action="Index" asp-route-status="Delivered" class="kpi kpi--warn">
+        <span class="kpi__label">دخل التسليمات اليوم</span>
+        <span class="kpi__value" style="font-size: 1.8rem;">@Model.DeliveredTodayRevenue.ToString("N0", invariant) دج</span>
+        <span class="kpi__hint">إجمالي COD محصل اليوم</span>
+        <span class="kpi__action btn btn-ghost btn--sm">عرض المسلمة ←</span>
+    </a>
+    <a asp-controller="ShopOrders" asp-action="Index" asp-route-status="Returned" class="kpi kpi--@(Model.ReturnedTodayCount > 0 ? "warn" : "info")">
+        <span class="kpi__label">مرتجعة اليوم</span>
+        <span class="kpi__value">@Model.ReturnedTodayCount</span>
+        <span class="kpi__hint">رفض أو عدم تحصيل</span>
+        <span class="kpi__action btn btn-ghost btn--sm">عرض المرتجعة ←</span>
+    </a>
+</div>
+
+<section class="card" style="margin-top: var(--space-5);">
+    <div class="card__header">
+        <h2 class="card__title">الطلبات حسب الحالة</h2>
+        <span class="card__subtitle">إجمالي @Model.StatusCounts.Sum(s => s.Count) طلب</span>
+    </div>
+    @if (Model.StatusCounts.Count == 0)
+    {
+        <div class="empty" style="border: 0; background: transparent; padding: var(--space-5);">
+            <p class="empty__msg">لا توجد طلبات حالياً.</p>
+        </div>
+    }
+    else
+    {
+        <ol class="status-bars">
+            @foreach (JobStatusCountViewModel item in Model.StatusCounts)
+            {
+                string barClass = item.Status switch
+                {
+                    MimoShop.Services.RepairJobStatuses.New => "status-bar--new",
+                    MimoShop.Services.RepairJobStatuses.InProgress => "status-bar--progress",
+                    MimoShop.Services.RepairJobStatuses.WaitingForPart => "status-bar--waiting",
+                    MimoShop.Services.RepairJobStatuses.Done => "status-bar--done",
+                    MimoShop.Services.RepairJobStatuses.Collected => "status-bar--collected",
+                    _ => ""
+                };
+                int widthPct = (int)Math.Round((double)item.Count / maxStatusCount * 100);
+                <li class="status-bar @barClass">
+                    <span class="status-bar__label">@item.StatusLabel</span>
+                    <span class="status-bar__track">
+                        <span class="status-bar__fill" style="width: @(widthPct)%"></span>
+                    </span>
+                    <span class="status-bar__count">@item.Count</span>
+                </li>
+            }
+        </ol>
+    }
+</section>
+
+<section class="card" style="margin-top: var(--space-5);">
+    <div class="card__header">
+        <h2 class="card__title">مدفوعات معلقة</h2>
+        <span class="card__subtitle">إجمالي @outstandingDisplay من @outstandingCount عميل</span>
+    </div>
+    @if (Model.OutstandingPayments.Count == 0)
+    {
+        <div class="empty" style="border: 0; background: transparent; padding: var(--space-5);">
+            <span class="empty__icon" aria-hidden="true" style="padding: 12px; display: inline-flex; justify-content: center; align-items: center; color: var(--color-brand);">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="m9 12 2 2 4-4"></path>
+                </svg>
+            </span>
+            <h2 class="empty__title">لا توجد مبالغ مستحقة</h2>
+            <p class="empty__msg">كل الطلبات مدفوعة بالكامل. عمل جيد.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap table-wrap--flush">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>رمز الطلب</th>
+                        <th>العميل</th>
+                        <th>الجهاز</th>
+                        <th>الباقي</th>
+                        <th>حالة الدفع</th>
+                        <th>حالة الطلب</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (OutstandingPaymentViewModel item in Model.OutstandingPayments)
+                    {
+                        string payPill = item.PaymentStatusLabel switch
+                        {
+                            "غير مدفوع" => "pill--unpaid",
+                            "مدفوع جزئياً" => "pill--partial",
+                            "مدفوع بالكامل" => "pill--paid",
+                            _ => "pill--unpaid"
+                        };
+                        <tr>
+                            <td><strong class="job-row__code" style="font-size: 0.95rem;">@item.JobCode</strong></td>
+                            <td>
+                                @item.CustomerName
+                                <br /><small style="color: var(--color-text-muted);">@item.CustomerPhone</small>
+                            </td>
+                            <td>@item.DeviceName</td>
+                            <td><span class="pill pill--unpaid">@item.BalanceOwed.ToString("N0", invariant) دج</span></td>
+                            <td><span class="pill @payPill">@item.PaymentStatusLabel</span></td>
+                            <td>@item.StatusLabel</td>
+                            <td>
+                                <a asp-controller="RepairTickets" asp-action="Details" asp-route-jobCode="@item.JobCode" class="btn btn-outline-primary btn--sm">فتح</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+@if (Model.RecentInventoryMovements.Count > 0)
+{
+    <details class="card" style="margin-top: var(--space-5);">
+        <summary class="card__header" style="cursor: pointer; list-style: none;">
+            <h2 class="card__title">حركة المخزون اليوم</h2>
+            <span class="card__subtitle">@Model.TodayMovementsCount حركة اليوم · عرض</span>
+        </summary>
+        <div class="table-wrap table-wrap--flush" style="margin-top: var(--space-3);">
+            <table class="table table--compact">
+                <thead>
+                    <tr>
+                        <th>الوقت</th>
+                        <th>القطعة</th>
+                        <th>التغيير</th>
+                        <th>النوع</th>
+                        <th>بواسطة</th>
+                        <th>بطاقة الصيانة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (RecentInventoryMovementViewModel item in Model.RecentInventoryMovements)
+                    {
+                        string signClass = item.QuantityChange > 0 ? "movement-up" : "movement-down";
+                        string signDisplay = item.QuantityChange.ToString("+0;-0;0", invariant);
+                        <tr>
+                            <td>@item.OccurredAt.ToString("HH:mm", invariant)</td>
+                            <td>@item.PartDisplayName</td>
+                            <td class="@signClass">@signDisplay</td>
+                            <td>@item.MovementTypeLabel</td>
+                            <td>@item.CreatedByUsername</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.RepairJobCode))
+                                {
+                                    <a asp-controller="RepairTickets" asp-action="Details" asp-route-jobCode="@item.RepairJobCode">@item.RepairJobCode</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </details>
+}

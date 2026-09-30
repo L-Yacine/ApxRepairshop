@@ -1,0 +1,104 @@
+@{
+    string controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    string action = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
+    int? id = ViewContext.RouteData.Values["id"] as int?;
+    int brandId = ViewData["BrandId"] as int? ?? 0;
+    int modelId = ViewData["ModelId"] as int? ?? 0;
+    int partTypeId = ViewData["PartTypeId"] as int? ?? 0;
+    string? brandLabel = ViewData["BrandLabel"] as string;
+    string? modelLabel = ViewData["ModelLabel"] as string;
+    string? partTypeLabel = ViewData["PartTypeLabel"] as string;
+
+    List<(string Label, string? Href)> trail = new();
+
+    bool isCatalog = string.Equals(controller, "Catalog", StringComparison.OrdinalIgnoreCase);
+    bool isCart = string.Equals(controller, "Cart", StringComparison.OrdinalIgnoreCase);
+    bool isCheckout = string.Equals(controller, "Checkout", StringComparison.OrdinalIgnoreCase);
+    bool isSearch = string.Equals(controller, "Search", StringComparison.OrdinalIgnoreCase);
+    bool isRepairStatus = string.Equals(controller, "RepairStatus", StringComparison.OrdinalIgnoreCase);
+
+    string homeLabel = L["Breadcrumb.Home"].Value;
+    string brandsLabel = L["Breadcrumb.Brands"].Value;
+    string brandFallback = L["Breadcrumb.Brand"].Value;
+    string modelFallback = L["Breadcrumb.Model"].Value;
+    string partTypeFallback = L["Breadcrumb.PartType"].Value;
+
+    string brandsUrl = Url.Action("Brands", "Catalog", new { area = "Public" })!;
+    string brandModelsUrl(int bid) => Url.Action("Models", "Catalog", new { area = "Public", id = bid })!;
+    string modelPartTypesUrl(int bid, int mid) => Url.Action("PartTypes", "Catalog", new { area = "Public", brandId = bid, modelId = mid })!;
+    string partTypeVariantsUrl(int bid, int mid, int ptid) => Url.Action("Variants", "Catalog", new { area = "Public", brandId = bid, modelId = mid, partTypeId = ptid })!;
+
+    if (isCart || isCheckout)
+    {
+        trail.Add((homeLabel, Url.Action("Index", "Home", new { area = "Public" })));
+        trail.Add((L["Breadcrumb.Cart"].Value, Url.Action("Index", "Cart", new { area = "Public" })));
+        if (isCheckout) { trail.Add((L["Breadcrumb.Checkout"].Value, null)); }
+        else { trail[^1] = (L["Breadcrumb.Cart"].Value, null); }
+    }
+    else if (isCatalog && string.Equals(action, "Brands", StringComparison.OrdinalIgnoreCase))
+    {
+        trail.Add((homeLabel, Url.Action("Index", "Home", new { area = "Public" })));
+        trail.Add((brandsLabel, null));
+    }
+    else if (isCatalog && string.Equals(action, "Models", StringComparison.OrdinalIgnoreCase))
+    {
+        trail.Add((homeLabel, Url.Action("Index", "Home", new { area = "Public" })));
+        trail.Add((brandsLabel, brandsUrl));
+        trail.Add((brandLabel ?? brandFallback, null));
+    }
+    else if (isCatalog && string.Equals(action, "PartTypes", StringComparison.OrdinalIgnoreCase))
+    {
+        trail.Add((homeLabel, Url.Action("Index", "Home", new { area = "Public" })));
+        trail.Add((brandsLabel, brandsUrl));
+        trail.Add((brandLabel ?? brandFallback, brandModelsUrl(brandId)));
+        trail.Add((modelLabel ?? modelFallback, null));
+    }
+    else if (isCatalog && string.Equals(action, "Variants", StringComparison.OrdinalIgnoreCase))
+    {
+        trail.Add((homeLabel, Url.Action("Index", "Home", new { area = "Public" })));
+        trail.Add((brandsLabel, brandsUrl));
+        trail.Add((brandLabel ?? brandFallback, brandModelsUrl(brandId)));
+        trail.Add((modelLabel ?? modelFallback, modelPartTypesUrl(brandId, modelId)));
+        trail.Add((partTypeLabel ?? partTypeFallback, null));
+    }
+    else if (isCatalog && string.Equals(action, "PartDetail", StringComparison.OrdinalIgnoreCase))
+    {
+        trail.Add((homeLabel, Url.Action("Index", "Home", new { area = "Public" })));
+        trail.Add((brandsLabel, brandsUrl));
+        trail.Add((brandLabel ?? brandFallback, brandModelsUrl(brandId)));
+        trail.Add((modelLabel ?? modelFallback, modelPartTypesUrl(brandId, modelId)));
+        trail.Add((partTypeLabel ?? partTypeFallback, partTypeVariantsUrl(brandId, modelId, partTypeId)));
+        trail.Add((L["Breadcrumb.PartDetail"].Value, null));
+    }
+    else if (isSearch)
+    {
+        trail.Add((homeLabel, Url.Action("Index", "Home", new { area = "Public" })));
+        trail.Add((L["Breadcrumb.Search"].Value, null));
+    }
+    else if (isRepairStatus)
+    {
+        trail.Add((homeLabel, Url.Action("Index", "Home", new { area = "Public" })));
+        trail.Add((L["Breadcrumb.RepairStatus"].Value, null));
+    }
+}
+@if (trail.Count > 1)
+{
+    <nav class="public-breadcrumb__nav" aria-label="@L["Breadcrumb.AriaLabel"]">
+        @for (int i = 0; i < trail.Count; i++)
+        {
+            var (label, href) = trail[i];
+            if (i > 0)
+            {
+                <span class="public-breadcrumb__sep" aria-hidden="true">›</span>
+            }
+            if (!string.IsNullOrEmpty(href))
+            {
+                <a class="public-breadcrumb__link" href="@href">@label</a>
+            }
+            else
+            {
+                <span class="public-breadcrumb__current">@label</span>
+            }
+        }
+    </nav>
+}

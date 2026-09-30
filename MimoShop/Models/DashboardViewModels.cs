@@ -17,6 +17,12 @@ public sealed class OwnerDashboardViewModel
     public IReadOnlyList<OutstandingPaymentViewModel> OutstandingPayments { get; set; } = [];
 
     public IReadOnlyList<RecentInventoryMovementViewModel> RecentInventoryMovements { get; set; } = [];
+
+    // Storefront metrics
+    public int NewShopOrdersCount { get; set; }
+    public int ShippedTodayCount { get; set; }
+    public decimal DeliveredTodayRevenue { get; set; }
+    public int ReturnedTodayCount { get; set; }
 }
 
 public sealed class JobStatusCountViewModel

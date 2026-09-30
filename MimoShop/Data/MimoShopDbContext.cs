@@ -35,6 +35,16 @@ public sealed class MimoShopDbContext : DbContext
 
     public DbSet<ShopSetting> ShopSettings => Set<ShopSetting>();
 
+    public DbSet<Wilaya> Wilayas => Set<Wilaya>();
+
+    public DbSet<Commune> Communes => Set<Commune>();
+
+    public DbSet<ShopOrder> ShopOrders => Set<ShopOrder>();
+
+    public DbSet<ShopOrderLine> ShopOrderLines => Set<ShopOrderLine>();
+
+    public DbSet<HeroSlide> HeroSlides => Set<HeroSlide>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -285,5 +295,95 @@ public sealed class MimoShopDbContext : DbContext
         .HasForeignKey(movement => movement.RepairPartUsageId)
         .OnDelete(DeleteBehavior.NoAction);
 });
+
+        modelBuilder.Entity<Wilaya>(entity =>
+        {
+            entity.HasIndex(wilaya => wilaya.Code).IsUnique();
+            entity.HasIndex(wilaya => wilaya.NameAr).IsUnique();
+            entity.HasIndex(wilaya => wilaya.NameFr).IsUnique();
+            entity.Property(wilaya => wilaya.Code).HasMaxLength(2).IsRequired();
+            entity.Property(wilaya => wilaya.NameAr).HasMaxLength(100).IsRequired();
+            entity.Property(wilaya => wilaya.NameFr).HasMaxLength(100).IsRequired();
+            entity.Property(wilaya => wilaya.ShippingFee).HasPrecision(18, 2).HasDefaultValue(0m);
+            entity.Property(wilaya => wilaya.IsActive).HasDefaultValue(true);
+
+            entity.HasData(WilayaCommuneSeed.Wilayas().ToArray());
+        });
+
+        modelBuilder.Entity<Commune>(entity =>
+        {
+            entity.HasIndex(commune => new { commune.WilayaId, commune.NameAr }).IsUnique();
+            entity.Property(commune => commune.NameAr).HasMaxLength(100).IsRequired();
+            entity.Property(commune => commune.NameFr).HasMaxLength(100).IsRequired();
+            entity.Property(commune => commune.IsActive).HasDefaultValue(true);
+
+            entity.HasOne(commune => commune.Wilaya)
+                .WithMany(wilaya => wilaya.Communes)
+                .HasForeignKey(commune => commune.WilayaId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ShopOrder>(entity =>
+        {
+            entity.HasIndex(order => order.OrderCode).IsUnique();
+            entity.Property(order => order.OrderCode).HasMaxLength(12).IsRequired();
+            entity.Property(order => order.CustomerName).HasMaxLength(120).IsRequired();
+            entity.Property(order => order.CustomerPhone).HasMaxLength(40).IsRequired();
+            entity.Property(order => order.CustomerWhatsApp).HasMaxLength(40);
+            entity.Property(order => order.WilayaName).HasMaxLength(100).IsRequired();
+            entity.Property(order => order.CommuneName).HasMaxLength(100).IsRequired();
+            entity.Property(order => order.CommuneNameFr).HasMaxLength(100).IsRequired();
+            entity.Property(order => order.Address).HasMaxLength(300).IsRequired();
+            entity.Property(order => order.Notes).HasMaxLength(500);
+            entity.Property(order => order.Status).HasMaxLength(30).HasDefaultValue(ShopOrderStatuses.New).IsRequired();
+            entity.Property(order => order.Subtotal).HasPrecision(18, 2).IsRequired();
+            entity.Property(order => order.ShippingFee).HasPrecision(18, 2).IsRequired();
+            entity.Property(order => order.TotalAmount).HasPrecision(18, 2).IsRequired();
+            entity.Property(order => order.ReturnReason).HasMaxLength(300);
+            entity.Property(order => order.CancelledReason).HasMaxLength(300);
+
+            // Wilaya/Commune set null on order would be destructive to snapshots;
+            // Restrict prevents accidental data loss if a zone is deleted.
+            // The DeliveryZoneService blocks deletion when orders reference it.
+            entity.HasOne(order => order.Wilaya)
+                .WithMany()
+                .HasForeignKey(order => order.WilayaId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(order => order.Commune)
+                .WithMany()
+                .HasForeignKey(order => order.CommuneId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ShopOrderLine>(entity =>
+        {
+            entity.Property(line => line.BrandName).HasMaxLength(60).IsRequired();
+            entity.Property(line => line.ModelName).HasMaxLength(80).IsRequired();
+            entity.Property(line => line.PartTypeName).HasMaxLength(80).IsRequired();
+            entity.Property(line => line.VariantName).HasMaxLength(80).IsRequired();
+            entity.Property(line => line.PartDisplayName).HasMaxLength(300).IsRequired();
+            entity.Property(line => line.UnitPrice).HasPrecision(18, 2).IsRequired();
+            entity.Property(line => line.ImageUrl).HasMaxLength(500);
+
+            entity.HasOne(line => line.ShopOrder)
+                .WithMany(order => order.Lines)
+                .HasForeignKey(line => line.ShopOrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(line => line.InventoryPart)
+                .WithMany()
+                .HasForeignKey(line => line.InventoryPartId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+        modelBuilder.Entity<HeroSlide>(entity =>
+        {
+            entity.Property(slide => slide.Title).HasMaxLength(160).IsRequired();
+            entity.Property(slide => slide.Subtitle).HasMaxLength(300);
+            entity.Property(slide => slide.ImageUrl).HasMaxLength(500);
+            entity.Property(slide => slide.CtaText).HasMaxLength(80);
+            entity.Property(slide => slide.CtaUrl).HasMaxLength(500);
+            entity.Property(slide => slide.IsActive).HasDefaultValue(true);
+        });
     }
 }

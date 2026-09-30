@@ -1,0 +1,57 @@
+@model IReadOnlyList<PublicPartTypeCard>
+@{
+    string brandLabel = ViewData["BrandLabel"] as string ?? L["Catalog.Brand"].Value;
+    string modelLabel = ViewData["ModelLabel"] as string ?? L["Catalog.Model"].Value;
+}
+
+<section class="public-section">
+    <div class="public-section__head">
+        <h2 class="public-section__title">@L["Catalog.PartTypesOf", brandLabel, modelLabel]</h2>
+        <p class="public-section__hint">@L["Catalog.ChoosePartType"]</p>
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <div class="public-empty">
+            <p class="public-empty__title">@L["Catalog.NoPartTypes"]</p>
+            <a asp-area="Public" asp-controller="Catalog" asp-action="Models"
+               asp-route-id="@ViewData["BrandId"]" class="public-btn public-btn--ghost">@L["Catalog.BackToModels"]</a>
+        </div>
+    }
+    else
+    {
+        <div class="public-grid">
+            @foreach (PublicPartTypeCard type in Model)
+            {
+                <a class="public-card"
+                   asp-area="Public" asp-controller="Catalog" asp-action="Variants"
+                   asp-route-brandId="@ViewData["BrandId"]"
+                   asp-route-modelId="@ViewData["ModelId"]"
+                   asp-route-partTypeId="@type.Id">
+                    <div class="public-card__media">
+                        @if (!string.IsNullOrWhiteSpace(type.ThumbnailUrl))
+                        {
+                            <img src="@Url.Content(type.ThumbnailUrl)" alt="@type.LocalizedName" loading="lazy" asp-append-version="true" />
+                        }
+                        else if (!string.IsNullOrWhiteSpace(type.ImageUrl))
+                        {
+                            <img src="@Url.Content(type.ImageUrl)" alt="@type.LocalizedName" loading="lazy" asp-append-version="true" />
+                        }
+                        else if (!string.IsNullOrWhiteSpace(type.ModelThumbnailUrl))
+                        {
+                            <img src="@Url.Content(type.ModelThumbnailUrl)" alt="@type.LocalizedName" loading="lazy" asp-append-version="true" />
+                        }
+                        else
+                        {
+                            <span class="public-card__placeholder" aria-hidden="true">@type.LocalizedName.FirstOrDefault()</span>
+                        }
+                    </div>
+                    <div class="public-card__body">
+                        <span class="public-card__title">@type.LocalizedName</span>
+                        <span class="public-card__sub">@type.Name</span>
+                    </div>
+                </a>
+            }
+        </div>
+    }
+</section>

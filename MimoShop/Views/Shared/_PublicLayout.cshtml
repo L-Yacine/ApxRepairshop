@@ -1,0 +1,406 @@
+@inject ShopSettingsService ShopSettings
+@inject CartService Cart
+@using MimoShop.Services
+@using MimoShop.Localization
+@{
+    ShopSetting? shop = null;
+    CartSummary? cartSummary = null;
+    try
+    {
+        shop = await ShopSettings.GetSettingsAsync();
+        if (Context?.Session is not null)
+        {
+            cartSummary = await Cart.GetCartSummaryAsync(Context.Session);
+        }
+    }
+    catch
+    {
+        shop = null;
+    }
+
+    bool isRtl = PublicCulture.IsRtl;
+    string culture = PublicCulture.TwoLetter;
+    string ogLocale = culture switch { "ar" => "ar_DZ", "en" => "en_US", _ => "fr_FR" };
+
+    string shopName = shop?.Name ?? "ميمو شوب";
+    string shopLatin = shop?.LatinName ?? "MimoShop";
+    char brandMark = shopLatin.Length > 0 ? shopLatin[0] : 'M';
+    string? shopLogoUrl = string.IsNullOrWhiteSpace(shop?.LogoUrl) ? null : shop!.LogoUrl;
+    int cartCount = cartSummary?.ItemCount ?? 0;
+    string pubController = (string?)ViewContext.RouteData.Values["controller"] ?? string.Empty;
+    bool isPubHome = string.Equals(pubController, "Home", StringComparison.OrdinalIgnoreCase);
+    bool isPubCatalog = string.Equals(pubController, "Catalog", StringComparison.OrdinalIgnoreCase);
+    bool isPubCart = string.Equals(pubController, "Cart", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(pubController, "Checkout", StringComparison.OrdinalIgnoreCase);
+    bool isPubRepairStatus = string.Equals(pubController, "RepairStatus", StringComparison.OrdinalIgnoreCase);
+    string whatsappHref = string.IsNullOrWhiteSpace(shop?.WhatsApp)
+        ? string.Empty
+        : "https://wa.me/" + shop!.WhatsApp.Replace(" ", "").TrimStart('+');
+    string telegramHref = string.IsNullOrWhiteSpace(shop?.TelegramHandle)
+        ? string.Empty
+        : "https://t.me/" + shop!.TelegramHandle.TrimStart('@');
+    bool hasFloatingContacts = !string.IsNullOrWhiteSpace(shop?.Phone)
+        || !string.IsNullOrWhiteSpace(whatsappHref)
+        || !string.IsNullOrWhiteSpace(telegramHref);
+
+    string currentPath = Context?.Request.Path.Value ?? "/";
+    string currentQuery = Context?.Request.QueryString.Value ?? string.Empty;
+    string CultureUrl(string target)
+    {
+        var segments = currentPath.Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
+        if (segments.Count > 0 && PublicCulture.IsSupported(segments[0]))
+        {
+            segments[0] = target;
+        }
+        else
+        {
+            segments.Insert(0, target);
+        }
+
+        string basePath = "/" + string.Join("/", segments);
+        if (currentPath.EndsWith('/') && basePath.Length > 1)
+        {
+            basePath += "/";
+        }
+
+        return basePath + currentQuery;
+    }
+    string frUrl = CultureUrl("fr");
+    string arUrl = CultureUrl("ar");
+    string enUrl = CultureUrl("en");
+}
+<!DOCTYPE html>
+<html lang="@culture" dir="@(isRtl ? "rtl" : "ltr")">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>@ViewData["Title"] - @shopLatin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    @if (isRtl)
+    {
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Tajawal:wght@500;700;800&display=swap">
+        <link rel="stylesheet" href="@Url.Content("~/lib/bootstrap/dist/css/bootstrap.rtl.min.css")" />
+    }
+    else
+    {
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap">
+        <link rel="stylesheet" href="@Url.Content("~/lib/bootstrap/dist/css/bootstrap.min.css")" />
+    }
+    <link rel="stylesheet" href="@Url.Content("~/css/public-site.css")" asp-append-version="true" />
+    <link rel="icon" type="image/png" sizes="192x192" href="@Url.Content("~/icons/icon-192.png")" />
+    <link rel="apple-touch-icon" href="@Url.Content("~/icons/icon-192.png")" />
+    <link rel="alternate" hreflang="fr" href="@frUrl" />
+    <link rel="alternate" hreflang="ar" href="@arUrl" />
+    <link rel="alternate" hreflang="en" href="@enUrl" />
+    <meta name="theme-color" content="#0f766e">
+    <script>try { if (localStorage.getItem("public.sidebarCollapsed") === "1") { document.documentElement.classList.add("sidebar-collapsed"); } } catch (e) {}</script>
+    <meta name="description" content="@(ViewData["SeoDescription"] as string ?? L["Home.HeroSubtitle"].Value)" />
+    <meta property="og:site_name" content="@shopLatin" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="@ogLocale" />
+    <meta property="og:title" content="@ViewData["Title"] — @shopLatin" />
+    <meta property="og:description" content="@(ViewData["SeoDescription"] as string ?? L["Home.HeroSubtitle"].Value)" />
+</head>
+<body class="public-body">
+    <a class="public-skip-link" href="#public-main">@L["A11y.SkipToContent"]</a>
+    <div class="public-shell">
+    <header class="public-header">
+        <div class="public-header__inner">
+            <a class="public-brand" asp-area="Public" asp-controller="Home" asp-action="Index">
+                @if (shopLogoUrl is not null)
+                {
+                    <img src="@Url.Content(shopLogoUrl)" alt="@shopLatin" class="public-brand__logo" asp-append-version="true" />
+                }
+                else
+                {
+                    <span class="public-brand__mark" aria-hidden="true">@brandMark</span>
+                }
+                <span class="public-brand__text">
+                    <span class="public-brand__name">@shopName</span>
+                    <span class="public-brand__sub">@shopLatin</span>
+                </span>
+            </a>
+
+            <form class="public-header-search" asp-area="Public" asp-controller="Search" asp-action="Index" method="get" role="search">
+                <input type="search" name="query" placeholder="@L["Search.Placeholder"]" aria-label="@L["Search.AriaLabel"]" />
+                <button type="submit" aria-label="@L["Search.Button"]">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="7" />
+                        <path d="m21 21-4.3-4.3" />
+                    </svg>
+                </button>
+            </form>
+
+            <button type="button" class="public-sidebar-toggle" aria-label="@L["Nav.ToggleSidebar"]" aria-controls="public-nav" aria-expanded="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <path d="M9 3v18" />
+                </svg>
+            </button>
+
+            <nav class="public-nav" id="public-nav" aria-label="@L["Nav.AriaLabel"]">
+                <a class="public-nav__link @(isPubHome ? "public-nav__link--active" : "")"
+                   asp-area="Public" asp-controller="Home" asp-action="Index"
+                   aria-current="@(isPubHome ? "page" : null)">
+                    <span class="public-nav__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 10.5 12 3l9 7.5" />
+                            <path d="M5 9.5V21h14V9.5" />
+                            <path d="M9 21v-6h6v6" />
+                        </svg>
+                    </span>
+                    <span>@L["Nav.Home"]</span>
+                </a>
+                <a class="public-nav__link @(isPubCatalog ? "public-nav__link--active" : "")"
+                   asp-area="Public" asp-controller="Catalog" asp-action="Brands"
+                   aria-current="@(isPubCatalog ? "page" : null)">
+                    <span class="public-nav__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                            <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                            <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                            <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                        </svg>
+                    </span>
+                    <span>@L["Nav.Browse"]</span>
+                </a>
+                <a class="public-nav__link public-nav__link--cart @(isPubCart ? "public-nav__link--active" : "")"
+                   asp-area="Public" asp-controller="Cart" asp-action="Index"
+                   aria-current="@(isPubCart ? "page" : null)">
+                    <span class="public-nav__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="9" cy="20" r="1.5" />
+                            <circle cx="17" cy="20" r="1.5" />
+                            <path d="M3 3h2l2.4 12.2a1.5 1.5 0 0 0 1.5 1.3h7.7a1.5 1.5 0 0 0 1.5-1.2L20 7H6" />
+                        </svg>
+                    </span>
+                    <span>@L["Nav.Cart"]</span>
+                    <span class="public-cart-badge @(cartCount == 0 ? "public-cart-badge--zero" : "")" data-cart-count="@cartCount">@cartCount</span>
+                </a>
+                <a class="public-nav__link @(isPubRepairStatus ? "public-nav__link--active" : "")"
+                   asp-area="Public" asp-controller="RepairStatus" asp-action="Index"
+                   aria-current="@(isPubRepairStatus ? "page" : null)">
+                    <span class="public-nav__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                            <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                        </svg>
+                    </span>
+                    <span>@L["RepairStatus.Title"]</span>
+                </a>
+                <div class="public-nav__divider" aria-hidden="true"></div>
+                <div class="public-nav__footer">
+                    <div class="public-lang public-lang--nav" role="group" aria-label="@L["Language.Switcher"]">
+                        <a class="public-lang__link @(culture == "fr" ? "is-active" : "")" href="@frUrl" hreflang="fr" lang="fr" title="Français">FR</a>
+                        <a class="public-lang__link @(culture == "ar" ? "is-active" : "")" href="@arUrl" hreflang="ar" lang="ar" title="العربية">ع</a>
+                        <a class="public-lang__link @(culture == "en" ? "is-active" : "")" href="@enUrl" hreflang="en" lang="en" title="English">EN</a>
+                    </div>
+                    <a class="public-nav__link public-nav__link--staff" asp-area="Staff" asp-controller="Account" asp-action="Login" rel="nofollow">
+                        <span class="public-nav__icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                        </span>
+                        <span>@L["Nav.StaffLogin"]</span>
+                    </a>
+                </div>
+            </nav>
+
+            <button type="button" class="public-hamburger" aria-label="@L["Nav.OpenMenu"]" aria-controls="public-nav" aria-expanded="false">
+                <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+            </button>
+        </div>
+    </header>
+
+    <div class="public-shell__body">
+    <nav class="public-breadcrumb" aria-label="@L["Breadcrumb.AriaLabel"]">
+        @await Html.PartialAsync("_PublicBreadcrumb")
+    </nav>
+
+    <main role="main" class="public-main" id="public-main" tabindex="-1">
+        <div class="public-container">
+            @RenderBody()
+        </div>
+    </main>
+
+    <footer class="public-footer">
+        <div class="public-footer__inner">
+            <div class="public-footer__col public-footer__col--brand">
+                @if (shopLogoUrl is not null)
+                {
+                    <img src="@Url.Content(shopLogoUrl)" alt="@shopLatin" class="public-footer__logo" asp-append-version="true" />
+                }
+                else
+                {
+                    <span class="public-footer__mark" aria-hidden="true">@brandMark</span>
+                }
+                <div>
+                    <span class="public-footer__name">@shopName</span>
+                    <span class="public-footer__address">@shop?.Address</span>
+                </div>
+            </div>
+
+            <div class="public-footer__col">
+                <span class="public-footer__title">@L["Footer.Contact"]</span>
+                @if (!string.IsNullOrWhiteSpace(shop?.Phone))
+                {
+                    <a class="public-footer__link" href="tel:@shop!.Phone.Replace(" ", "")">📞 @shop.Phone</a>
+                }
+                @if (!string.IsNullOrWhiteSpace(shop?.WhatsApp))
+                {
+                    <a class="public-footer__link" href="https://wa.me/@shop!.WhatsApp.Replace(" ", "")" target="_blank" rel="noopener">💬 @L["Footer.WhatsApp"]</a>
+                }
+            </div>
+
+            <div class="public-footer__col">
+                <span class="public-footer__title">@L["Footer.Info"]</span>
+                <a class="public-footer__link" asp-area="Public" asp-controller="Catalog" asp-action="Brands">@L["Common.BrowseParts"]</a>
+                <a class="public-footer__link" asp-area="Public" asp-controller="Cart" asp-action="Index">@L["Footer.Cart"]</a>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(shop?.TelegramHandle))
+            {
+                <div class="public-footer__col">
+                    <span class="public-footer__title">@L["Footer.TelegramBot"]</span>
+                    <a class="public-footer__link" href="https://t.me/@shop!.TelegramHandle!.TrimStart('@')" target="_blank" rel="noopener">@shop.TelegramHandle</a>
+                </div>
+            }
+        </div>
+
+        <div class="public-footer__bar">
+            <span>&copy; @DateTime.Now.Year · @shopName · @L["Footer.Rights"]</span>
+            <span>@L["Footer.CodNote"]</span>
+        </div>
+    </footer>
+    </div>
+    </div>
+
+    @if (hasFloatingContacts)
+    {
+        <div class="public-contact-float">
+            <div class="public-contact-float__menu" data-contact-menu hidden>
+                @if (!string.IsNullOrWhiteSpace(shop?.Phone))
+                {
+                    <a class="public-contact-float__item" href="tel:@shop!.Phone.Replace(" ", "")">
+                        <span class="public-contact-float__icon" aria-hidden="true">📞</span>
+                        <span>@L["Contact.Call"]</span>
+                    </a>
+                }
+                @if (!string.IsNullOrWhiteSpace(whatsappHref))
+                {
+                    <a class="public-contact-float__item" href="@whatsappHref" target="_blank" rel="noopener">
+                        <span class="public-contact-float__icon" aria-hidden="true">💬</span>
+                        <span>@L["Contact.WhatsApp"]</span>
+                    </a>
+                }
+                @if (!string.IsNullOrWhiteSpace(telegramHref))
+                {
+                    <a class="public-contact-float__item" href="@telegramHref" target="_blank" rel="noopener">
+                        <span class="public-contact-float__icon" aria-hidden="true">✈️</span>
+                        <span>@L["Contact.Telegram"]</span>
+                    </a>
+                }
+            </div>
+            <button type="button" class="public-contact-float__toggle" data-contact-toggle aria-label="@L["Contact.ToggleAria"]" aria-expanded="false">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M16 8c0 3.866-3.582 7-8 7a9.06 9.06 0 0 1-2.347-.306c-.584.296-1.925.864-4.181 1.234-.2.032-.352-.176-.273-.362.354-.836.674-1.95.77-2.966C.744 11.37 0 9.76 0 8c0-3.866 3.582-7 8-7s8 3.134 8 7" />
+                </svg>
+            </button>
+        </div>
+    }
+
+    <nav class="public-bottom-nav" aria-label="@L["BottomNav.AriaLabel"]">
+        <a class="public-bottom-nav__item @(isPubHome ? "public-bottom-nav__item--active" : "")"
+           asp-area="Public" asp-controller="Home" asp-action="Index" aria-label="@L["Nav.Home"]">
+            <span class="public-bottom-nav__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 10.5 12 3l9 7.5" />
+                    <path d="M5 9.5V21h14V9.5" />
+                    <path d="M9 21v-6h6v6" />
+                </svg>
+            </span>
+            <span class="public-bottom-nav__label">@L["Nav.Home"]</span>
+        </a>
+        <a class="public-bottom-nav__item @(isPubCatalog ? "public-bottom-nav__item--active" : "")"
+           asp-area="Public" asp-controller="Catalog" asp-action="Brands" aria-label="@L["Nav.Browse"]">
+            <span class="public-bottom-nav__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                    <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                    <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                    <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                </svg>
+            </span>
+            <span class="public-bottom-nav__label">@L["Nav.Browse"]</span>
+        </a>
+        <a class="public-bottom-nav__item @(isPubCart ? "public-bottom-nav__item--active" : "")"
+           asp-area="Public" asp-controller="Cart" asp-action="Index"
+           aria-label="@(cartCount > 0 ? L["Nav.CartCount", cartCount].Value : L["Nav.Cart"].Value)">
+            <span class="public-bottom-nav__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="9" cy="20" r="1.5" />
+                    <circle cx="17" cy="20" r="1.5" />
+                    <path d="M3 3h2l2.4 12.2a1.5 1.5 0 0 0 1.5 1.3h7.7a1.5 1.5 0 0 0 1.5-1.2L20 7H6" />
+                </svg>
+                <span class="public-cart-badge public-cart-badge--nav @(cartCount == 0 ? "public-cart-badge--zero" : "")" data-cart-count="@cartCount">@cartCount</span>
+            </span>
+            <span class="public-bottom-nav__label">@L["Nav.Cart"]</span>
+        </a>
+    </nav>
+
+    <div class="public-nav-backdrop" hidden></div>
+    <div class="public-toast-container"></div>
+
+    <script>
+        window.PUBLIC = {
+            culture: "@culture",
+            isRtl: @(isRtl ? "true" : "false"),
+            strings: @Json.Serialize(new {
+                currency = L["Common.Currency"].Value,
+                browseParts = L["Common.BrowseParts"].Value,
+                networkError = L["Common.NetworkError"].Value,
+                connectionError = L["Common.ConnectionError"].Value,
+                unexpectedError = L["Common.UnexpectedError"].Value,
+                cartTitle = L["Cart.Title"].Value,
+                cartItems = L["Cart.Items"].Value,
+                cartEmptyTitle = L["Cart.EmptyTitle"].Value,
+                cartEmptyHint = L["Cart.EmptyHint"].Value,
+                cartUpdateFailed = L["Cart.UpdateFailed"].Value,
+                cartRemoveFailed = L["Cart.RemoveFailed"].Value,
+                cartAdding = L["Cart.Adding"].Value,
+                cartAddedShort = L["Cart.AddedShort"].Value,
+                cartAddFailed = L["Cart.AddFailed"].Value,
+                cartAdded = L["Cart.Added"].Value,
+                repairSearching = L["RepairStatus.Searching"].Value,
+                repairSearchingStatus = L["RepairStatus.SearchingStatus"].Value,
+                chooseWilaya = L["Form.ChooseWilaya"].Value,
+                chooseWilayaFirst = L["Form.ChooseWilayaFirst"].Value,
+                chooseCommune = L["Form.ChooseCommune"].Value,
+                communesLoadError = L["Form.CommunesLoadError"].Value,
+                free = L["Checkout.Free"].Value,
+                validationNameRequired = L["Validation.NameRequired"].Value,
+                validationPhoneInvalid = L["Validation.PhoneInvalid"].Value,
+                validationChooseWilaya = L["Validation.ChooseWilaya"].Value,
+                validationChooseCommune = L["Validation.ChooseCommune"].Value,
+                validationAddressRequired = L["Validation.AddressRequired"].Value,
+                searchAll = L["Search.All"].Value,
+                searchNoModels = L["Search.NoModels"].Value,
+                searchNoTypes = L["Search.NoTypes"].Value,
+                searchLoadError = L["Search.LoadError"].Value
+            }),
+            urls: @Json.Serialize(new {
+                cartUpdate = Url.Action("UpdateQuantity", "Cart", new { area = "Public" }),
+                cartRemove = Url.Action("Remove", "Cart", new { area = "Public" }),
+                catalogBrands = Url.Action("Brands", "Catalog", new { area = "Public" })
+            })
+        };
+    </script>
+
+    <script src="@Url.Content("~/lib/jquery/dist/jquery.min.js")"></script>
+    <script src="@Url.Content("~/lib/bootstrap/dist/js/bootstrap.bundle.min.js")"></script>
+    <script src="@Url.Content("~/js/public-site.js")" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

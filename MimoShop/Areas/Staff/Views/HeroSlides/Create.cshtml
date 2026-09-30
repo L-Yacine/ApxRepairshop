@@ -1,0 +1,21 @@
+@model HeroSlideFormInput
+@{
+    ViewData["Title"] = "إضافة شريحة";
+}
+
+<section class="page-header">
+    <p class="page-header__eyebrow">شرائح الواجهة</p>
+    <h1 class="page-header__title">إضافة شريحة</h1>
+</section>
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+<form asp-action="Create" method="post" enctype="multipart/form-data" class="dz-form">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("_SlideFields", Model)
+
+    <div class="dz-form__actions">
+        <button type="submit" class="btn btn-primary">حفظ</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">إلغاء</a>
+    </div>
+</form>

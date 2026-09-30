@@ -1,10 +1,12 @@
 @inject RepairWorkflowService RepairWorkflow
 @inject ShopSettingsService ShopSettings
+@inject ShopOrderService ShopOrders
 @using MimoShop.Models
 @using MimoShop.Services
 @{
     RepairTicketListViewModel? layoutList = null;
     ShopSetting? shopSettings = null;
+    int newShopOrderCount = 0;
     try
     {
         layoutList = await RepairWorkflow.GetTicketListAsync();
@@ -13,6 +15,15 @@
     catch
     {
         layoutList = null;
+    }
+    try
+    {
+        newShopOrderCount = await ShopOrders.CountNewOrdersAsync();
+    }
+    catch
+    {
+        // ShopOrders table may not exist until the storefront migration is applied.
+        newShopOrderCount = 0;
     }
     string shopName = shopSettings?.Name ?? "ميمو شوب";
     string shopLatin = shopSettings?.LatinName ?? "MimoShop";
@@ -40,6 +51,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Tajawal:wght@500;700;800&display=swap">
     <link rel="stylesheet" href="@Url.Content("~/lib/bootstrap/dist/css/bootstrap.rtl.min.css")" />
     <link rel="stylesheet" href="@Url.Content("~/lib/tom-select/tom-select.default.min.css")" />
+    <link rel="stylesheet" href="@Url.Content("~/lib/driver/driver.min.css")" />
     <link rel="stylesheet" href="@Url.Content("~/css/site.css")" asp-append-version="true" />
     <link rel="manifest" href="@Url.Content("~/manifest.json")" />
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -60,12 +72,17 @@
 
     <nav class="app-bottom-nav" aria-label="التنقل السريع">
         <a class="bottom-nav-item @(isRepairArea ? "bottom-nav-item--active" : "")"
-           asp-controller="RepairTickets" asp-action="Index" aria-label="الحالات" title="الحالات">
+           asp-controller="RepairTickets" asp-action="Index"
+           aria-label="@(waitingCount > 0 ? $"الحالات ({waitingCount} بانتظار قطعة)" : "الحالات")" title="الحالات">
             <span class="bottom-nav-item__icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="4" y="4" width="16" height="16" rx="2" />
                     <path d="M9 4v3M15 4v3M9 17h6M9 13h6M9 9h2" />
                 </svg>
+                @if (waitingCount > 0)
+                {
+                    <span class="bottom-nav-item__badge">@waitingCount</span>
+                }
             </span>
             <span class="bottom-nav-item__label">الحالات</span>
         </a>
@@ -90,6 +107,12 @@
             <span class="bottom-nav-item__label">التصنيفات</span>
         </a>
     </nav>
+
+    <button type="button" class="app-fab" data-open-modal="repairCreate" aria-label="استقبال صيانة" title="استقبال صيانة">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" />
+        </svg>
+    </button>
 
     <div class="app-shell">
         <aside id="app-sidebar" class="app-sidebar" aria-label="القائمة الرئيسية">
@@ -166,7 +189,46 @@
                             </a>
                         </li>
                         <li>
-                            <button type="button" class="nav-item" data-open-modal="shopSettings">
+                            <a class="nav-item @(isActive("DeliveryZones") ? "nav-item--active" : "")"
+                               asp-controller="DeliveryZones" asp-action="Index">
+                                <span class="nav-item__icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                                        <circle cx="12" cy="10" r="3" />
+                                    </svg>
+                                </span>
+                                <span class="nav-item__label">مناطق التوصيل</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-item @(isActive("ShopOrders") ? "nav-item--active" : "")"
+                               asp-controller="ShopOrders" asp-action="Index">
+                                <span class="nav-item__icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                                        <path d="M3 6h18M16 10a4 4 0 0 1-8 0" />
+                                    </svg>
+                                </span>
+                                <span class="nav-item__label">الطلبات</span>
+                                <span class="nav-badge @(newShopOrderCount == 0 ? "nav-badge--zero" : "")" title="طلبات جديدة">@newShopOrderCount</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-item @(isActive("HeroSlides") ? "nav-item--active" : "")"
+                               asp-controller="HeroSlides" asp-action="Index">
+                                <span class="nav-item__icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="4" width="18" height="12" rx="2" />
+                                        <path d="M7 20h10" />
+                                        <path d="M12 16v4" />
+                                    </svg>
+                                </span>
+                                <span class="nav-item__label">شرائح الواجهة</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-item @(isActive("ShopSettings") ? "nav-item--active" : "")"
+                               asp-controller="ShopSettings" asp-action="Index">
                                 <span class="nav-item__icon" aria-hidden="true">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
@@ -177,7 +239,7 @@
                                     </svg>
                                 </span>
                                 <span class="nav-item__label">الإعدادات</span>
-                            </button>
+                            </a>
                         </li>
                         @if (User.IsInRole("Owner") || User.IsInRole("SuperAdmin"))
                         {
@@ -222,18 +284,18 @@
                     @(string.IsNullOrEmpty(User.Identity?.Name) ? "?" : User.Identity!.Name![0].ToString().ToUpperInvariant())
                 </div>
                 <div class="sidebar-user__meta">
-                    <button type="button" class="sidebar-user__name" data-open-modal="shopSettings">@User.Identity?.Name</button>
+                    <a class="sidebar-user__name" asp-controller="ShopSettings" asp-action="Index">@User.Identity?.Name</a>
                     <span class="sidebar-user__role">
                         @(User.IsInRole("SuperAdmin") ? "مدير النظام" : User.IsInRole("Owner") ? "مالك" : "عامل")
                     </span>
                 </div>
                 <div class="sidebar-user__actions">
-                    <button type="button" class="sidebar-user__btn" aria-label="إعدادات المتجر" title="إعدادات المتجر" data-open-modal="shopSettings">
+                    <a class="sidebar-user__btn" aria-label="إعدادات المتجر" title="إعدادات المتجر" asp-controller="ShopSettings" asp-action="Index">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <circle cx="12" cy="12" r="3" />
                             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
                         </svg>
-                    </button>
+                    </a>
                     <form asp-controller="Account" asp-action="Logout" method="post" class="sidebar-user__logout"
                           data-confirm-modal data-confirm-title="تأكيد الخروج"
                           data-confirm-body="هل تريد تسجيل الخروج من النظام؟">
@@ -318,7 +380,7 @@
                     <div class="app-footer__col app-footer__col--links">
                         <span class="app-footer__section-title">QUICK ACCESS</span>
                         <div class="app-footer__links-row">
-                            <a class="app-footer__link" asp-controller="Home" asp-action="Index">دليل الاستخدام</a>
+                            <button type="button" class="app-footer__link app-footer__link--btn" data-tutorial-start hidden>دليل الاستخدام</button>
                             <a class="app-footer__link" asp-controller="ShopSettings" asp-action="Index">الدعم الفني</a>
                         </div>
                         <span class="app-footer__copy">&copy; @DateTime.Now.Year · @shopLatin · ALL RIGHTS RESERVED</span>
@@ -332,6 +394,12 @@
     <script src="@Url.Content("~/lib/bootstrap/dist/js/bootstrap.bundle.min.js")"></script>
     <script src="@Url.Content("~/lib/tom-select/tom-select.complete.min.js")"></script>
     <script src="@Url.Content("~/js/site.js")" asp-append-version="true"></script>
+    <script src="@Url.Content("~/lib/driver/driver.min.js")" asp-append-version="true"></script>
+    <script src="@Url.Content("~/js/tutorials.js")" asp-append-version="true"></script>
+    @if (!string.IsNullOrEmpty((string?)ViewData["TutorialKey"]))
+    {
+        <script>if (window.MimoShop && window.MimoShop.tutorials) { window.MimoShop.tutorials.currentKey = @Json.Serialize(ViewData["TutorialKey"]); }</script>
+    }
 
     <div class="modal fade" id="mimo-confirm-modal" tabindex="-1" role="dialog" aria-hidden="true" aria-modal="true">
         <div class="modal-dialog modal-dialog-centered modal-sm">

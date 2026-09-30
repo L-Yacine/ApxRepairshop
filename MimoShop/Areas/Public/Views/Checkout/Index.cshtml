@@ -1,0 +1,164 @@
+@model CheckoutPageViewModel
+@{
+    ViewData["Title"] = L["Checkout.Title"].Value;
+}
+
+<section class="public-section">
+    <h1 class="public-section__title public-section__title--lead">@L["Checkout.Title"]</h1>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="public-alert public-alert--error">
+            @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <div>@err.ErrorMessage</div>
+            }
+        </div>
+    }
+
+    <form asp-area="Public" asp-controller="Checkout" asp-action="PlaceOrder" method="post" id="checkout-form" novalidate>
+        @Html.AntiForgeryToken()
+
+        <div class="public-checkout">
+            <div class="public-checkout__col">
+                <div class="public-checkout__card">
+                    <h2>@L["Checkout.DeliveryInfo"]</h2>
+                    <div class="public-form-grid">
+                        <div class="public-field full">
+                            <label asp-for="Form.CustomerName">@L["Form.FullName"]</label>
+                            <input asp-for="Form.CustomerName" autocomplete="name" required />
+                            <span asp-validation-for="Form.CustomerName" class="public-field__error"></span>
+                        </div>
+                        <div class="public-field">
+                            <label asp-for="Form.CustomerPhone">@L["Form.Phone"]</label>
+                            <input asp-for="Form.CustomerPhone" inputmode="tel" dir="ltr" autocomplete="tel" required />
+                            <span asp-validation-for="Form.CustomerPhone" class="public-field__error"></span>
+                        </div>
+                        <div class="public-field">
+                            <label asp-for="Form.CustomerWhatsApp">@L["Form.WhatsApp"]</label>
+                            <input asp-for="Form.CustomerWhatsApp" inputmode="tel" dir="ltr" />
+                        </div>
+                        <div class="public-field">
+                            <label asp-for="Form.WilayaId">@L["Form.Wilaya"]</label>
+                            <select asp-for="Form.WilayaId" id="wilaya-select" required>
+                                <option value="">@L["Form.ChooseWilaya"]</option>
+                                @foreach (WilayaOption w in Model.Wilayas)
+                                {
+                                    <option value="@w.Id" data-fee="@w.ShippingFee">@w.Code — @w.LocalizedName</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Form.WilayaId" class="public-field__error"></span>
+                        </div>
+                        <div class="public-field">
+                            <label asp-for="Form.CommuneId">@L["Form.Commune"]</label>
+                            <select asp-for="Form.CommuneId" id="commune-select" required disabled>
+                                <option value="">@L["Form.ChooseWilayaFirst"]</option>
+                            </select>
+                            <span asp-validation-for="Form.CommuneId" class="public-field__error"></span>
+                        </div>
+                        <div class="public-field full">
+                            <label asp-for="Form.Address">@L["Form.Address"]</label>
+                            <input asp-for="Form.Address" autocomplete="street-address" required placeholder="@L["Form.AddressPlaceholder"]" />
+                            <span asp-validation-for="Form.Address" class="public-field__error"></span>
+                        </div>
+                        <div class="public-field full">
+                            <label asp-for="Form.Notes">@L["Form.Notes"]</label>
+                            <textarea asp-for="Form.Notes" rows="3" placeholder="@L["Form.NotesPlaceholder"]"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="public-summary">
+                <h2>@L["Checkout.OrderSummary"]</h2>
+                @foreach (CartItem item in Model.Items)
+                {
+                    <div class="public-summary__line">
+                        <span>@item.PartDisplayName
+                            <small>@item.Quantity × @item.UnitPrice.ToString("N0") @L["Common.Currency"]</small>
+                        </span>
+                        <span>@((item.UnitPrice * item.Quantity).ToString("N0")) @L["Common.Currency"]</span>
+                    </div>
+                }
+                <hr class="public-summary__divider" />
+                <div class="public-summary__line">
+                    <span>@L["Checkout.Subtotal"]</span>
+                    <span>@Model.Subtotal.ToString("N0") @L["Common.Currency"]</span>
+                </div>
+                <div class="public-summary__line">
+                    <span>@L["Checkout.Shipping"]</span>
+                    <span id="shipping-fee-cell">— @L["Form.ChooseWilaya"]</span>
+                </div>
+                <input type="hidden" id="subtotal-value" value="@Model.Subtotal" />
+                <hr class="public-summary__divider" />
+                <div class="public-summary__total">
+                    <span>@L["Checkout.Total"]</span>
+                    <span class="value" id="total-cell">@Model.Subtotal.ToString("N0") @L["Common.Currency"]</span>
+                </div>
+
+                <button type="submit" class="public-btn public-btn--primary public-btn--block public-summary__submit">@L["Checkout.Confirm"]</button>
+                <p class="public-summary__note">@L["Checkout.ConfirmNote"]</p>
+            </aside>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+<script>
+    (function () {
+        var S = (window.PUBLIC && window.PUBLIC.strings) || {};
+        var numberLocale = (window.PUBLIC && window.PUBLIC.isRtl) ? 'ar-DZ' : ((window.PUBLIC && window.PUBLIC.culture === 'en') ? 'en-US' : 'fr-FR');
+        var currency = S.currency || "";
+
+        var wilayaSelect = document.getElementById("wilaya-select");
+        var communeSelect = document.getElementById("commune-select");
+        var shippingCell = document.getElementById("shipping-fee-cell");
+        var totalCell = document.getElementById("total-cell");
+        var subtotalInput = document.getElementById("subtotal-value");
+
+        function formatDZD(v) { return v.toLocaleString(numberLocale, { maximumFractionDigits: 2 }) + " " + currency; }
+
+        function refreshTotal() {
+            var fee = parseFloat(wilayaSelect.selectedOptions[0]?.dataset.fee) || 0;
+            var subtotal = parseFloat(subtotalInput.value) || 0;
+            shippingCell.textContent = fee > 0 ? formatDZD(fee) : (S.free || "");
+            totalCell.textContent = formatDZD(subtotal + fee);
+        }
+
+        function loadCommunes(wilayaId) {
+            if (!wilayaId) {
+                communeSelect.innerHTML = '<option value="">' + (S.chooseWilayaFirst || "") + '</option>';
+                communeSelect.disabled = true;
+                return;
+            }
+            communeSelect.disabled = true;
+            communeSelect.classList.add("select-loading");
+            var url = '@Url.Action("GetCommunes", "Checkout", new { area = "Public" })/' + wilayaId;
+            fetch(url, { headers: { 'Accept': 'application/json' } })
+                .then(function (r) { return r.ok ? r.json() : []; })
+                .then(function (list) {
+                    communeSelect.classList.remove("select-loading");
+                    var html = '<option value="">' + (S.chooseCommune || "") + '</option>';
+                    list.forEach(function (c) {
+                        html += '<option value="' + c.id + '">' + (c.localizedName || c.nameAr) + '</option>';
+                    });
+                    communeSelect.innerHTML = html;
+                    communeSelect.disabled = false;
+                })
+                .catch(function () {
+                    communeSelect.classList.remove("select-loading");
+                    communeSelect.innerHTML = '<option value="">' + (S.communesLoadError || "") + '</option>';
+                    communeSelect.disabled = false;
+                });
+        }
+
+        wilayaSelect.addEventListener("change", function () {
+            var id = parseInt(wilayaSelect.value, 10);
+            refreshTotal();
+            loadCommunes(id);
+        });
+
+        refreshTotal();
+    })();
+</script>
+}

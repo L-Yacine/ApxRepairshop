@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Common.Currency" xml:space="preserve"><value>DA</value></data>
+  <data name="Common.AddToCart" xml:space="preserve"><value>Ajouter au panier</value></data>
+  <data name="Common.InStock" xml:space="preserve"><value>En stock</value></data>
+  <data name="Common.OutOfStock" xml:space="preserve"><value>Indisponible actuellement</value></data>
+  <data name="Common.InStockCount" xml:space="preserve"><value>En stock ({0})</value></data>
+  <data name="Common.BrowseParts" xml:space="preserve"><value>Parcourir les pièces</value></data>
+  <data name="Common.ViewCart" xml:space="preserve"><value>Voir le panier</value></data>
+  <data name="Common.Close" xml:space="preserve"><value>Fermer</value></data>
+  <data name="Common.ContinueBrowsing" xml:space="preserve"><value>Continuer mes achats</value></data>
+  <data name="Common.NetworkError" xml:space="preserve"><value>Erreur réseau. Vérifiez votre connexion.</value></data>
+  <data name="Common.ConnectionError" xml:space="preserve"><value>Impossible de joindre le serveur. Vérifiez votre connexion.</value></data>
+  <data name="Common.UnexpectedError" xml:space="preserve"><value>Une erreur inattendue est survenue.</value></data>
+  <data name="Nav.Home" xml:space="preserve"><value>Accueil</value></data>
+  <data name="Nav.Browse" xml:space="preserve"><value>Catalogue</value></data>
+  <data name="Nav.Cart" xml:space="preserve"><value>Panier</value></data>
+  <data name="Nav.CartAria" xml:space="preserve"><value>Panier</value></data>
+
+  <data name="Nav.StaffLogin" xml:space="preserve"><value>Espace staff</value></data>
+  <data name="Nav.OpenMenu" xml:space="preserve"><value>Ouvrir le menu</value></data>
+  <data name="Nav.ToggleSidebar" xml:space="preserve"><value>Basculer le menu latéral</value></data>
+  <data name="Nav.AriaLabel" xml:space="preserve"><value>Navigation du magasin</value></data>
+  <data name="Nav.CartCount" xml:space="preserve"><value>Panier ({0} articles)</value></data>
+  <data name="BottomNav.AriaLabel" xml:space="preserve"><value>Navigation inférieure</value></data>
+  <data name="Search.Placeholder" xml:space="preserve"><value>Rechercher un modèle ou une pièce...</value></data>
+  <data name="Search.AriaLabel" xml:space="preserve"><value>Rechercher dans le magasin</value></data>
+  <data name="Search.Button" xml:space="preserve"><value>Rechercher</value></data>
+  <data name="Footer.Contact" xml:space="preserve"><value>Contactez-nous</value></data>
+  <data name="Footer.WhatsApp" xml:space="preserve"><value>WhatsApp</value></data>
+  <data name="Footer.Info" xml:space="preserve"><value>Informations</value></data>
+  <data name="Footer.Cart" xml:space="preserve"><value>Panier</value></data>
+  <data name="Footer.TelegramBot" xml:space="preserve"><value>Bot Telegram</value></data>
+  <data name="Footer.Rights" xml:space="preserve"><value>Tous droits réservés</value></data>
+  <data name="Footer.CodNote" xml:space="preserve"><value>Paiement à la livraison · Livraison dans toutes les wilayas</value></data>
+  <data name="Contact.Call" xml:space="preserve"><value>Appel téléphonique</value></data>
+  <data name="Contact.WhatsApp" xml:space="preserve"><value>WhatsApp</value></data>
+  <data name="Contact.Telegram" xml:space="preserve"><value>Telegram</value></data>
+  <data name="Contact.ToggleAria" xml:space="preserve"><value>Contactez-nous</value></data>
+  <data name="Language.Switcher" xml:space="preserve"><value>Langue</value></data>
+  <data name="Breadcrumb.AriaLabel" xml:space="preserve"><value>Fil d'Ariane</value></data>
+  <data name="Breadcrumb.Home" xml:space="preserve"><value>Accueil</value></data>
+  <data name="Breadcrumb.Cart" xml:space="preserve"><value>Panier</value></data>
+  <data name="Breadcrumb.Checkout" xml:space="preserve"><value>Commande</value></data>
+  <data name="Breadcrumb.Brands" xml:space="preserve"><value>Marques</value></data>
+  <data name="Breadcrumb.Brand" xml:space="preserve"><value>Marque</value></data>
+  <data name="Breadcrumb.Model" xml:space="preserve"><value>Modèle</value></data>
+  <data name="Breadcrumb.PartType" xml:space="preserve"><value>Type de pièce</value></data>
+  <data name="Breadcrumb.PartDetail" xml:space="preserve"><value>Détail de la pièce</value></data>
+  <data name="Breadcrumb.Search" xml:space="preserve"><value>Recherche</value></data>
+  <data name="Breadcrumb.RepairStatus" xml:space="preserve"><value>Suivi de réparation</value></data>
+  <data name="Title.Home" xml:space="preserve"><value>Accueil</value></data>
+  <data name="Home.RequestMessage" xml:space="preserve"><value>Bonjour, je recherche une pièce qui n'est pas disponible en boutique.</value></data>
+  <data name="Home.HeroSubtitle" xml:space="preserve"><value>Pièces détachées originales et compatibles · Livraison dans toutes les wilayas · Paiement à la livraison</value></data>
+  <data name="Home.Telegram" xml:space="preserve"><value>Contacter sur Telegram</value></data>
+  <data name="Home.Slides" xml:space="preserve"><value>Diapositives</value></data>
+  <data name="Home.Slide" xml:space="preserve"><value>Diapositive {0}</value></data>
+  <data name="Home.PreviousSlide" xml:space="preserve"><value>Diapositive précédente</value></data>
+  <data name="Home.NextSlide" xml:space="preserve"><value>Diapositive suivante</value></data>
+  <data name="Home.TrackRepair" xml:space="preserve"><value>Suivez votre réparation</value></data>
+  <data name="Home.RepairHint" xml:space="preserve"><value>Entrez votre code de réparation REP-XXXX</value></data>
+  <data name="Home.ShowStatus" xml:space="preserve"><value>Voir le statut</value></data>
+  <data name="Home.DidntFind" xml:space="preserve"><value>Vous ne trouvez pas la pièce ?</value></data>
+  <data name="Home.DidntFindHint" xml:space="preserve"><value>Contactez-nous et nous commanderons toute pièce manquante auprès de nos fournisseurs.</value></data>
+  <data name="Home.OrderWhatsApp" xml:space="preserve"><value>Commander via WhatsApp</value></data>
+  <data name="Home.TelegramShort" xml:space="preserve"><value>Telegram</value></data>
+  <data name="Home.NewestParts" xml:space="preserve"><value>Nouveautés</value></data>
+  <data name="Home.NewestHint" xml:space="preserve"><value>Les derniers produits ajoutés</value></data>
+
+  <data name="Home.Categories" xml:space="preserve"><value>Nos catégories</value></data>
+
+  <data name="Home.CategoriesHint" xml:space="preserve"><value>Trouvez rapidement le type de pièce qu'il vous faut</value></data>
+  <data name="Home.BrandsTitle" xml:space="preserve"><value>Marques disponibles</value></data>
+  <data name="Home.BrandsHint" xml:space="preserve"><value>Choisissez votre marque et commencez à parcourir</value></data>
+  <data name="Home.NoParts" xml:space="preserve"><value>Aucune pièce disponible pour le moment. Revenez plus tard.</value></data>
+  <data name="Home.Feature1.Title" xml:space="preserve"><value>Livraison dans toutes les wilayas</value></data>
+  <data name="Home.Feature1.Sub" xml:space="preserve"><value>Nous couvrons les 58 wilayas</value></data>
+  <data name="Home.Feature2.Title" xml:space="preserve"><value>Paiement à la livraison</value></data>
+  <data name="Home.Feature2.Sub" xml:space="preserve"><value>Payez uniquement à la réception</value></data>
+  <data name="Home.Feature3.Title" xml:space="preserve"><value>Pièces originales et compatibles</value></data>
+  <data name="Home.Feature3.Sub" xml:space="preserve"><value>Qualité fiable, contrôlée avant expédition</value></data>
+  <data name="Home.Feature4.Title" xml:space="preserve"><value>Prix de gros pour réparateurs</value></data>
+  <data name="Home.Feature4.Sub" xml:space="preserve"><value>Offres spéciales pour les ateliers de réparation</value></data>
+  <data name="Catalog.BrowseBrands" xml:space="preserve"><value>Parcourir les marques</value></data>
+  <data name="Catalog.ChooseBrand" xml:space="preserve"><value>Choisissez la marque de votre téléphone</value></data>
+  <data name="Catalog.ChooseBrandHint" xml:space="preserve"><value>Parcourez les modèles puis les types de pièces disponibles</value></data>
+  <data name="Catalog.NoPartsTitle" xml:space="preserve"><value>Aucune pièce disponible pour le moment</value></data>
+  <data name="Catalog.NoPartsHint" xml:space="preserve"><value>Revenez plus tard ou contactez-nous sur Telegram.</value></data>
+  <data name="Catalog.Brand" xml:space="preserve"><value>Marque</value></data>
+  <data name="Catalog.ModelsOf" xml:space="preserve"><value>Modèles {0}</value></data>
+  <data name="Catalog.ChooseModel" xml:space="preserve"><value>Choisissez le modèle pour voir les pièces disponibles</value></data>
+  <data name="Catalog.NoModels" xml:space="preserve"><value>Aucun modèle disponible pour cette marque</value></data>
+  <data name="Catalog.BackToBrands" xml:space="preserve"><value>Retour aux marques</value></data>
+  <data name="Catalog.Model" xml:space="preserve"><value>Modèle</value></data>
+  <data name="Catalog.PartTypesOf" xml:space="preserve"><value>Types de pièces — {0} {1}</value></data>
+  <data name="Catalog.ChoosePartType" xml:space="preserve"><value>Choisissez le type de pièce pour voir les variantes</value></data>
+  <data name="Catalog.NoPartTypes" xml:space="preserve"><value>Aucune pièce disponible pour ce modèle</value></data>
+  <data name="Catalog.BackToModels" xml:space="preserve"><value>Retour aux modèles</value></data>
+  <data name="Catalog.ChooseVariant" xml:space="preserve"><value>Choisissez la variante et ajoutez-la au panier</value></data>
+  <data name="Catalog.NoVariants" xml:space="preserve"><value>Aucune variante disponible pour ce type actuellement</value></data>
+  <data name="Catalog.BackToPartTypes" xml:space="preserve"><value>Retour aux types</value></data>
+  <data name="PartDetail.Benefits" xml:space="preserve"><value>Avantages de la commande</value></data>
+  <data name="PartDetail.Delivery" xml:space="preserve"><value>Livraison dans toutes les wilayas</value></data>
+  <data name="PartDetail.Cod" xml:space="preserve"><value>Paiement à la livraison</value></data>
+  <data name="PartDetail.Genuine" xml:space="preserve"><value>Pièces originales et compatibles</value></data>
+  <data name="PartDetail.QuickOrderAria" xml:space="preserve"><value>Commander directement</value></data>
+  <data name="PartDetail.QuickOrderTitle" xml:space="preserve"><value>Commandez cette pièce directement</value></data>
+  <data name="PartDetail.QuickOrderHint" xml:space="preserve"><value>Renseignez vos coordonnées et nous vous appellerons pour confirmer avant expédition. Pas besoin de passer par le panier.</value></data>
+  <data name="PartDetail.OrderNow" xml:space="preserve"><value>Commander maintenant</value></data>
+  <data name="PartDetail.ContinueOrder" xml:space="preserve"><value>Suivre la commande</value></data>
+  <data name="PartDetail.BackToVariants" xml:space="preserve"><value>Retour à la liste des variantes</value></data>
+  <data name="PartDetail.BuyBarAria" xml:space="preserve"><value>Barre d'achat rapide</value></data>
+  <data name="PartDetail.Available" xml:space="preserve"><value>Disponible</value></data>
+  <data name="PartDetail.QuickOrder" xml:space="preserve"><value>Commande rapide</value></data>
+  <data name="PartDetail.AddToCart" xml:space="preserve"><value>Ajouter au panier</value></data>
+  <data name="Form.FullName" xml:space="preserve"><value>Nom complet *</value></data>
+  <data name="Form.Phone" xml:space="preserve"><value>Numéro de téléphone *</value></data>
+  <data name="Form.WhatsApp" xml:space="preserve"><value>WhatsApp (facultatif)</value></data>
+  <data name="Form.Quantity" xml:space="preserve"><value>Quantité</value></data>
+  <data name="Form.Decrease" xml:space="preserve"><value>Diminuer</value></data>
+  <data name="Form.Increase" xml:space="preserve"><value>Augmenter</value></data>
+  <data name="Form.Wilaya" xml:space="preserve"><value>Wilaya *</value></data>
+  <data name="Form.Commune" xml:space="preserve"><value>Commune *</value></data>
+  <data name="Form.ChooseWilaya" xml:space="preserve"><value>— Choisissez la wilaya —</value></data>
+  <data name="Form.ChooseWilayaFirst" xml:space="preserve"><value>— Choisissez d'abord la wilaya —</value></data>
+  <data name="Form.ChooseCommune" xml:space="preserve"><value>— Choisissez la commune —</value></data>
+  <data name="Form.CommunesLoadError" xml:space="preserve"><value>— Impossible de charger les communes —</value></data>
+  <data name="Form.Address" xml:space="preserve"><value>Adresse détaillée *</value></data>
+  <data name="Form.AddressPlaceholder" xml:space="preserve"><value>Quartier — rue — point de repère</value></data>
+  <data name="Form.Notes" xml:space="preserve"><value>Remarques (facultatif)</value></data>
+  <data name="Form.NotesPlaceholder" xml:space="preserve"><value>Tout détail supplémentaire concernant la livraison</value></data>
+  <data name="Checkout.Title" xml:space="preserve"><value>Finaliser la commande</value></data>
+  <data name="Checkout.DeliveryInfo" xml:space="preserve"><value>Informations de livraison</value></data>
+  <data name="Checkout.OrderSummary" xml:space="preserve"><value>Résumé de la commande</value></data>
+  <data name="Checkout.Subtotal" xml:space="preserve"><value>Sous-total</value></data>
+  <data name="Checkout.Shipping" xml:space="preserve"><value>Livraison</value></data>
+  <data name="Checkout.Total" xml:space="preserve"><value>Total</value></data>
+  <data name="Checkout.Confirm" xml:space="preserve"><value>Confirmer la commande</value></data>
+  <data name="Checkout.ConfirmNote" xml:space="preserve"><value>Nous vous appellerons pour confirmer la commande avant expédition.</value></data>
+  <data name="Checkout.Free" xml:space="preserve"><value>Gratuit</value></data>
+  <data name="Checkout.FillRequired" xml:space="preserve"><value>Veuillez remplir tous les champs obligatoires.</value></data>
+  <data name="Checkout.OrderFailed" xml:space="preserve"><value>Impossible de créer la commande.</value></data>
+  <data name="Checkout.OrderConfirmedTitle" xml:space="preserve"><value>Confirmation de commande {0}</value></data>
+  <data name="Checkout.OrderReceived" xml:space="preserve"><value>Votre commande a été reçue</value></data>
+  <data name="Checkout.ThanksNote" xml:space="preserve"><value>Merci {0}. Nous vous appellerons au {1} pour confirmer la commande avant expédition.</value></data>
+  <data name="Checkout.Name" xml:space="preserve"><value>Nom</value></data>
+  <data name="Checkout.Phone" xml:space="preserve"><value>Téléphone</value></data>
+  <data name="Checkout.Wilaya" xml:space="preserve"><value>Wilaya</value></data>
+  <data name="Checkout.Commune" xml:space="preserve"><value>Commune</value></data>
+  <data name="Checkout.Address" xml:space="preserve"><value>Adresse</value></data>
+  <data name="Cart.Title" xml:space="preserve"><value>Panier</value></data>
+  <data name="Cart.ItemCount" xml:space="preserve"><value>{0} article(s)</value></data>
+  <data name="Cart.EmptyTitle" xml:space="preserve"><value>Votre panier est vide</value></data>
+  <data name="Cart.EmptyHint" xml:space="preserve"><value>Parcourez les pièces disponibles et ajoutez ce qu'il vous faut.</value></data>
+  <data name="Cart.PerUnit" xml:space="preserve"><value>par unité</value></data>
+  <data name="Cart.Remove" xml:space="preserve"><value>Supprimer</value></data>
+  <data name="Cart.ShippingNote" xml:space="preserve"><value>Calculée à la commande</value></data>
+  <data name="Cart.TentativeTotal" xml:space="preserve"><value>Total provisoire</value></data>
+  <data name="Cart.Checkout" xml:space="preserve"><value>Finaliser la commande</value></data>
+  <data name="Cart.Continue" xml:space="preserve"><value>Continuer les achats</value></data>
+  <data name="Cart.OutOfStockError" xml:space="preserve"><value>Cette pièce n'est plus disponible en stock.</value></data>
+  <data name="Cart.Added" xml:space="preserve"><value>Pièce ajoutée au panier avec succès !</value></data>
+  <data name="Cart.UpdateFailed" xml:space="preserve"><value>Impossible de mettre à jour la quantité.</value></data>
+  <data name="Cart.RemoveFailed" xml:space="preserve"><value>Impossible de supprimer la pièce du panier.</value></data>
+  <data name="Cart.Adding" xml:space="preserve"><value>Ajout en cours...</value></data>
+  <data name="Cart.AddedShort" xml:space="preserve"><value>Ajouté</value></data>
+  <data name="Cart.AddFailed" xml:space="preserve"><value>Échec de l'ajout.</value></data>
+  <data name="Cart.Items" xml:space="preserve"><value>articles</value></data>
+  <data name="Search.Title" xml:space="preserve"><value>Recherche</value></data>
+  <data name="Search.TitleQuery" xml:space="preserve"><value>Recherche : {0}</value></data>
+  <data name="Search.Heading" xml:space="preserve"><value>Rechercher une pièce</value></data>
+  <data name="Search.Hint" xml:space="preserve"><value>Recherchez par nom latin ou arabe, ou filtrez par marque, modèle et type de pièce.</value></data>
+  <data name="Search.Query" xml:space="preserve"><value>Mot-clé</value></data>
+  <data name="Search.QueryPlaceholder" xml:space="preserve"><value>Ex. : iPhone 13 ou batterie Samsung</value></data>
+  <data name="Search.Brand" xml:space="preserve"><value>Marque</value></data>
+  <data name="Search.All" xml:space="preserve"><value>— Tous —</value></data>
+  <data name="Search.Model" xml:space="preserve"><value>Modèle</value></data>
+  <data name="Search.PartType" xml:space="preserve"><value>Type de pièce</value></data>
+  <data name="Search.Submit" xml:space="preserve"><value>Rechercher</value></data>
+  <data name="Search.Results" xml:space="preserve"><value>Résultats</value></data>
+  <data name="Search.ResultCount" xml:space="preserve"><value>{0} pièce(s) trouvée(s)</value></data>
+  <data name="Search.NoResults" xml:space="preserve"><value>Aucune pièce correspondante</value></data>
+  <data name="Search.NoResultsHint" xml:space="preserve"><value>Essayez un autre mot-clé ou élargissez les filtres.</value></data>
+  <data name="Search.BrowseBrands" xml:space="preserve"><value>Parcourir les marques</value></data>
+  <data name="Search.ViewPart" xml:space="preserve"><value>Voir la pièce</value></data>
+  <data name="Search.NoModels" xml:space="preserve"><value>— Aucun modèle —</value></data>
+  <data name="Search.NoTypes" xml:space="preserve"><value>— Aucun type —</value></data>
+  <data name="Search.LoadError" xml:space="preserve"><value>— Échec du chargement —</value></data>
+  <data name="RepairStatus.Title" xml:space="preserve"><value>Suivi de réparation</value></data>
+  <data name="RepairStatus.TitleFor" xml:space="preserve"><value>Suivi de réparation — {0}</value></data>
+  <data name="RepairStatus.Heading" xml:space="preserve"><value>Suivez l'état de votre réparation</value></data>
+  <data name="RepairStatus.Hint" xml:space="preserve"><value>Entrez le code (REP-XXXX) reçu lors du dépôt de votre téléphone.</value></data>
+  <data name="RepairStatus.Code" xml:space="preserve"><value>Code de la demande</value></data>
+  <data name="RepairStatus.Show" xml:space="preserve"><value>Voir le statut</value></data>
+  <data name="RepairStatus.InvalidFormat" xml:space="preserve"><value>Format de code invalide. Il doit être au format REP-XXXX (ex. : REP-0042).</value></data>
+  <data name="RepairStatus.NotFound" xml:space="preserve"><value>Aucune réparation trouvée avec ce numéro. Vérifiez le code ou contactez-nous.</value></data>
+  <data name="RepairStatus.Unassigned" xml:space="preserve"><value>Non attribué</value></data>
+  <data name="RepairStatus.Device" xml:space="preserve"><value>Appareil</value></data>
+  <data name="RepairStatus.Worker" xml:space="preserve"><value>Technicien responsable</value></data>
+  <data name="RepairStatus.Problem" xml:space="preserve"><value>Problème signalé</value></data>
+  <data name="RepairStatus.TimelineTitle" xml:space="preserve"><value>Étapes de suivi de la réparation</value></data>
+  <data name="RepairStatus.TimelineAria" xml:space="preserve"><value>Schéma de l'état de la demande</value></data>
+  <data name="RepairStatus.StepReceived" xml:space="preserve"><value>Réception de l'appareil et vérification initiale</value></data>
+  <data name="RepairStatus.ReceivedAt" xml:space="preserve"><value>Date de réception : {0}</value></data>
+  <data name="RepairStatus.InProgress" xml:space="preserve"><value>Réparation en cours</value></data>
+  <data name="RepairStatus.InProgressWaitingPart" xml:space="preserve"><value>En cours (en attente de pièce)</value></data>
+  <data name="RepairStatus.LastUpdate" xml:space="preserve"><value>Dernière mise à jour : {0}</value></data>
+  <data name="RepairStatus.StepDone" xml:space="preserve"><value>Appareil prêt à être récupéré 🎉</value></data>
+  <data name="RepairStatus.ReadyAt" xml:space="preserve"><value>Prêt le : {0}</value></data>
+  <data name="RepairStatus.StepCollected" xml:space="preserve"><value>Livré et paiement effectué</value></data>
+  <data name="RepairStatus.DeliveredAt" xml:space="preserve"><value>Date de livraison : {0}</value></data>
+  <data name="RepairStatus.Searching" xml:space="preserve"><value>Recherche...</value></data>
+  <data name="RepairStatus.SearchingStatus" xml:space="preserve"><value>Recherche de la demande...</value></data>
+  <data name="Status.New" xml:space="preserve"><value>Nouveau</value></data>
+  <data name="Status.InProgress" xml:space="preserve"><value>En cours</value></data>
+  <data name="Status.WaitingForPart" xml:space="preserve"><value>En attente de pièce</value></data>
+  <data name="Status.Done" xml:space="preserve"><value>Prêt</value></data>
+  <data name="Status.Collected" xml:space="preserve"><value>Livré</value></data>
+  <data name="QuickOrder.QuantityLimit" xml:space="preserve"><value>La quantité disponible pour cette pièce est de {0} seulement.</value></data>
+  <data name="QuickOrder.WilayaUnavailable" xml:space="preserve"><value>La wilaya sélectionnée n'est pas disponible.</value></data>
+  <data name="QuickOrder.CommuneUnavailable" xml:space="preserve"><value>La commune sélectionnée n'est pas disponible.</value></data>
+  <data name="QuickOrder.FixErrors" xml:space="preserve"><value>Veuillez corriger les erreurs du formulaire avant d'envoyer.</value></data>
+  <data name="Validation.NameRequired" xml:space="preserve"><value>Le nom complet est requis</value></data>
+  <data name="Validation.PhoneInvalid" xml:space="preserve"><value>Numéro de téléphone invalide</value></data>
+  <data name="Validation.ChooseWilaya" xml:space="preserve"><value>Veuillez choisir la wilaya</value></data>
+  <data name="Validation.ChooseCommune" xml:space="preserve"><value>Veuillez choisir la commune</value></data>
+  <data name="Validation.AddressRequired" xml:space="preserve"><value>L'adresse est requise</value></data>
+  <data name="ShopOrder.CartEmpty" xml:space="preserve"><value>Votre panier est vide. Ajoutez des pièces avant de commander.</value></data>
+  <data name="ShopOrder.PartUnavailable" xml:space="preserve"><value>La pièce « {0} » n'est plus disponible en quantité suffisante.</value></data>
+  <data name="A11y.SkipToContent" xml:space="preserve"><value>Aller au contenu</value></data>
+</root>

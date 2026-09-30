@@ -1,0 +1,74 @@
+@model IReadOnlyList<PublicVariantCard>
+@{
+    string brandLabel = ViewData["BrandLabel"] as string ?? "";
+    string modelLabel = ViewData["ModelLabel"] as string ?? "";
+    string partTypeLabel = ViewData["PartTypeLabel"] as string ?? "";
+}
+
+<section class="public-section">
+    <div class="public-section__head">
+        <h2 class="public-section__title">@partTypeLabel — @brandLabel @modelLabel</h2>
+        <p class="public-section__hint">@L["Catalog.ChooseVariant"]</p>
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <div class="public-empty">
+            <p class="public-empty__title">@L["Catalog.NoVariants"]</p>
+            <a asp-area="Public" asp-controller="Catalog" asp-action="PartTypes"
+               asp-route-brandId="@ViewData["BrandId"]" asp-route-modelId="@ViewData["ModelId"]"
+               class="public-btn public-btn--ghost">@L["Catalog.BackToPartTypes"]</a>
+        </div>
+    }
+    else
+    {
+        <div class="public-grid">
+            @foreach (PublicVariantCard variant in Model)
+            {
+                <div class="public-card public-card--part">
+                    @{
+                        string partTitle = $"{variant.LocalizedBrandName} {variant.LocalizedModelName}";
+                        string partSubtitle = $"{variant.LocalizedPartTypeName} — {variant.LocalizedVariantName}";
+                    }
+                    <a asp-area="Public" asp-controller="Catalog" asp-action="PartDetail"
+                       asp-route-id="@variant.InventoryPartId" class="public-card__media">
+                        @if (!string.IsNullOrWhiteSpace(variant.ThumbnailUrl))
+                        {
+                            <img src="@Url.Content(variant.ThumbnailUrl)" alt="@partTitle" loading="lazy" asp-append-version="true" />
+                        }
+                        else if (!string.IsNullOrWhiteSpace(variant.ImageUrl))
+                        {
+                            <img src="@Url.Content(variant.ImageUrl)" alt="@partTitle" loading="lazy" asp-append-version="true" />
+                        }
+                        else
+                        {
+                            <span class="public-card__placeholder" aria-hidden="true">@partTitle.FirstOrDefault()</span>
+                        }
+                    </a>
+                    <div class="public-card__body">
+                        <a asp-area="Public" asp-controller="Catalog" asp-action="PartDetail"
+                           asp-route-id="@variant.InventoryPartId" class="public-card__link">
+                            <span class="public-card__title">@partTitle</span>
+                            <span class="public-card__sub">@partSubtitle</span>
+                        </a>
+                        <span class="public-card__price">@variant.SalePrice.ToString("N0") @L["Common.Currency"]</span>
+                        @if (variant.Quantity > 0)
+                        {
+                            <span class="public-card__availability is-in">@L["Common.InStockCount", variant.Quantity]</span>
+                            <form asp-area="Public" asp-controller="Cart" asp-action="Add" asp-route-id="@variant.InventoryPartId"
+                                  method="post" data-cart-add class="public-card__form">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="quantity" value="1" />
+                                <button type="submit" class="public-btn public-btn--primary public-btn--block">@L["Common.AddToCart"]</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="public-card__availability is-out">@L["Common.OutOfStock"]</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</section>

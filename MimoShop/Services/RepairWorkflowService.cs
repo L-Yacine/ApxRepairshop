@@ -477,4 +477,9 @@ public static class InventoryMovementTypes
 {
     public const string ConsumedForRepair = "Consumed for repair";
     public const string ReceivedOnDemand = "Received on demand";
+
+    // Shop order confirmation decrements stock, return/cancel restore it.
+    public const string ShopOrder = "ShopOrder";
+    public const string ShopOrderReturn = "ShopOrderReturn";
+    public const string ShopOrderCancel = "ShopOrderCancel";
 }

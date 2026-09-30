@@ -1213,6 +1213,112 @@ html[dir="ltr"] .app-drawer-edge {
 }
 
 /* ============================================================
+   Bottom nav — waiting badge, filled active icon, intake FAB
+   (uxpeak bottom-navigation guidance: badge with outline ring,
+   active state = color + fill + weight; primary action floats
+   centered above the bar)
+   ============================================================ */
+
+/* Base: FAB and badge only exist on mobile */
+.app-fab {
+  display: none;
+}
+
+.bottom-nav-item__badge {
+  display: none;
+}
+
+@media (max-width: 767.98px) {
+  /* Anchor for the badge */
+  .bottom-nav-item__icon {
+    position: relative;
+  }
+
+  /* Amber waiting-parts badge, top-end of the icon, with the
+     outline ring so it pops against the translucent bar */
+  .bottom-nav-item__badge {
+    align-items: center;
+    background: var(--sidebar-amber);
+    border-radius: var(--radius-pill);
+    box-shadow: 0 0 0 2px #111a2e;
+    color: #111a2e;
+    display: inline-flex;
+    font-size: 0.625rem;
+    font-weight: 700;
+    height: 18px;
+    inset-inline-end: -10px;
+    justify-content: center;
+    line-height: 1;
+    min-width: 18px;
+    padding: 0 5px;
+    position: absolute;
+    top: -7px;
+  }
+
+  /* Active state: soft fill inside the outline + heavier stroke
+     + bolder label = three cues instead of color alone */
+  .bottom-nav-item__icon svg {
+    transition: fill-opacity var(--t-fast);
+  }
+
+  .bottom-nav-item--active .bottom-nav-item__icon svg {
+    fill: currentColor;
+    fill-opacity: 0.22;
+    stroke-width: 2;
+  }
+
+  .bottom-nav-item--active .bottom-nav-item__label {
+    font-weight: 700;
+  }
+
+  /* Centered intake FAB floating just above the bar */
+  .app-fab {
+    align-items: center;
+    background: var(--sidebar-accent);
+    border: none;
+    border-radius: 50%;
+    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 6px 20px rgba(45, 212, 191, 0.45);
+    color: #111a2e;
+    cursor: pointer;
+    display: inline-flex;
+    height: 56px;
+    justify-content: center;
+    left: 50%;
+    padding: 0;
+    position: fixed;
+    transform: translateX(-50%);
+    transition: transform var(--t-fast), box-shadow var(--t-fast), opacity var(--t-drawer);
+    width: 56px;
+    z-index: 51;
+  }
+
+  .app-fab:hover {
+    box-shadow: 0 8px 26px rgba(45, 212, 191, 0.55);
+  }
+
+  .app-fab:active {
+    transform: translateX(-50%) scale(0.94);
+  }
+
+  .app-fab:focus-visible {
+    outline: 2px solid var(--sidebar-accent);
+    outline-offset: 3px;
+  }
+
+  .app-fab svg {
+    display: block;
+    height: 26px;
+    width: 26px;
+  }
+
+  body.is-drawer-open .app-fab {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+/* ============================================================
    Page header
    ============================================================ */
 .page-header {
@@ -3967,6 +4073,7 @@ a.kpi:active {
   .app-hamburger,
   .app-drawer-backdrop,
   .app-bottom-nav,
+  .app-fab,
   .app-footer,
   .receipt-toolbar {
     display: none !important;
@@ -5581,4 +5688,316 @@ a, button, select, input, textarea, .inv-card, .job-row, .quick-tag, .cat-tab-bt
 
 .part-variant-card.is-selected .part-variant-card__price {
   color: var(--color-brand-dark);
+}
+
+/* ============================================================
+   Delivery Zones (staff admin)
+   ============================================================ */
+.dz-layout {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: var(--space-4);
+  align-items: start;
+}
+.dz-section__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 var(--space-2);
+  color: var(--color-ink);
+}
+.dz-table-wrap {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  overflow: auto;
+}
+.dz-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .9rem;
+}
+.dz-table thead th {
+  background: var(--color-background);
+  color: var(--color-text-soft);
+  font-weight: 600;
+  padding: var(--space-2) var(--space-3);
+  text-align: start;
+  border-bottom: 1px solid var(--color-line);
+  white-space: nowrap;
+}
+.dz-table tbody td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-line);
+  vertical-align: middle;
+}
+.dz-table tbody tr.is-selected {
+  background: rgba(15, 118, 110, .08);
+}
+.dz-table tbody tr.is-inactive td {
+  opacity: .55;
+}
+.dz-wilaya-link {
+  font-weight: 600;
+  color: var(--color-brand-dark);
+}
+.dz-row__actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.dz-toggle { display: inline; }
+.dz-communes {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  position: sticky;
+  top: 84px;
+}
+.dz-communes__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+  flex-wrap: wrap;
+}
+.dz-communes__hint {
+  color: var(--color-text-muted);
+  font-size: .85rem;
+  margin: 0;
+}
+
+.dz-form {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  max-width: 720px;
+}
+.dz-form .form-grid {
+  display: grid;
+  gap: var(--space-3);
+}
+.dz-form .form-grid--3 { grid-template-columns: repeat(3, 1fr); }
+.dz-form .form-grid--2 { grid-template-columns: repeat(2, 1fr); }
+.dz-form .form-field { display: flex; flex-direction: column; gap: 6px; }
+.dz-form .form-field label { font-weight: 600; font-size: .85rem; color: var(--color-text-soft); }
+.dz-form .form-field--check label { display: inline-flex; align-items: center; gap: 8px; }
+.dz-form__actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+.dz-form__hint { color: var(--color-text-muted); font-size: .8rem; margin-top: var(--space-2); }
+
+@media (max-width: 991px) {
+  .dz-layout { grid-template-columns: 1fr; }
+  .dz-communes { position: static; }
+}
+@media (max-width: 575px) {
+  .dz-form .form-grid--3, .dz-form .form-grid--2 { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   Shop Orders (staff admin)
+   ============================================================ */
+.so-layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.so-filter-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.so-tab {
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  color: var(--color-text-soft);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: .85rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.so-tab:hover { text-decoration: none; color: var(--color-brand-dark); border-color: var(--color-brand); }
+.so-tab.is-active {
+  background: var(--color-brand);
+  color: #fff;
+  border-color: var(--color-brand);
+}
+.so-tab__count {
+  display: inline-block;
+  min-width: 18px;
+  padding: 0 6px;
+  margin-inline-start: 6px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, .12);
+  font-size: .75rem;
+}
+.so-tab.is-active .so-tab__count { background: rgba(255, 255, 255, .25); }
+
+.so-list { display: flex; flex-direction: column; gap: var(--space-3); }
+.so-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: var(--space-3);
+  align-items: center;
+}
+.so-card__head { display: flex; flex-direction: column; }
+.so-card__code { font-weight: 700; color: var(--color-brand-dark); font-size: 1.05rem; }
+.so-card__name { color: var(--color-soft); }
+.so-card__date { color: var(--color-text-muted); font-size: .8rem; }
+.so-card__total { font-weight: 700; }
+.so-pill { padding: 4px 12px; border-radius: 999px; font-size: .8rem; font-weight: 600; }
+.so-pill--New { background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; }
+.so-pill--Confirmed { background: #f0fdf4; color: var(--color-success); border: 1px solid #bbf7d0; }
+.so-pill--Shipped { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.so-pill--Delivered { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.so-pill--Returned { background: #fef2f2; color: var(--color-danger); border: 1px solid #fecaca; }
+.so-pill--Cancelled { background: #f3f4f6; color: #475569; border: 1px solid #e2e8f0; }
+
+@media (max-width: 767px) {
+  .so-card { grid-template-columns: 1fr; }
+}
+
+.so-detail { padding: var(--space-2) 0 var(--space-4); }
+.so-detail__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  align-items: start;
+}
+.so-detail__card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+.so-detail__card h2 { font-size: 1rem; margin: 0 0 var(--space-2); font-weight: 700; }
+.so-detail__dl { display: grid; gap: 6px; margin: 0; }
+.so-detail__dl dt { font-size: .8rem; color: var(--color-text-muted); margin: 0; }
+.so-detail__dl dd { margin: 0 0 var(--space-2); font-weight: 500; }
+.so-detail__lines { display: flex; flex-direction: column; gap: 8px; }
+.so-line {
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-2);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+}
+.so-line__media {
+  width: 60px; height: 60px;
+  background: var(--color-background);
+  border-radius: var(--radius-sm);
+  display: grid; place-items: center;
+  overflow: hidden;
+}
+.so-line__media img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.so-line__media .ph { color: var(--color-brand); opacity: .35; }
+.so-line__name { font-weight: 600; }
+.so-line__unit { color: var(--color-text-muted); font-size: .8rem; }
+.so-line__total { font-weight: 700; }
+.so-detail__timeline {
+  display: flex; flex-direction: column; gap: 6px;
+  font-size: .85rem;
+}
+.so-detail__timeline-item {
+  display: flex; justify-content: space-between;
+  padding: 6px 10px; border: 1px dashed var(--color-line); border-radius: 8px;
+}
+.so-detail__actions {
+  display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-3);
+}
+.so-detail__form { display: inline; }
+@media (max-width: 767px) {
+  .so-detail__grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   Interactive tutorials (driver.js)
+   ============================================================ */
+.app-footer__link--btn {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  display: inline;
+}
+.mimo-tutorial-popover {
+  direction: rtl;
+  font-family: "Cairo", "Tajawal", system-ui, sans-serif;
+  max-width: 360px;
+}
+.mimo-tutorial-popover .driver-popover-title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--color-ink);
+}
+.mimo-tutorial-popover .driver-popover-progress-text {
+  font-size: .75rem;
+  color: var(--color-text-muted);
+}
+.mimo-tutorial-popover .driver-popover-close-btn {
+  inset-inline-start: 8px;
+  inset-inline-end: auto;
+}
+.mimo-tutorial-popover .driver-popover-footer-btn {
+  font-weight: 600;
+}
+
+/* ============================================================
+   Hero slides (staff admin)
+   ============================================================ */
+.hs-thumb {
+  width: 140px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--color-line);
+  display: block;
+}
+.hs-thumb--empty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 140px;
+  color: var(--color-text-muted);
+  background: var(--color-background);
+  font-size: .78rem;
+}
+.hs-thumb--large {
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  aspect-ratio: 16 / 5;
+}
+.hs-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+.hs-form-grid .form-field { display: flex; flex-direction: column; gap: 6px; }
+.hs-form-grid .form-field label { font-weight: 600; font-size: .85rem; color: var(--color-text-soft); }
+.hs-form-grid .form-field--check label { display: inline-flex; align-items: center; gap: 8px; }
+.hs-form__hint { color: var(--color-text-muted); font-size: .78rem; }
+.hs-remove-check {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+  font-size: .85rem;
+  color: var(--color-danger);
+}
+@media (max-width: 575px) {
+  .hs-form-grid { grid-template-columns: 1fr; }
 }

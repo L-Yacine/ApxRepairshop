@@ -1,0 +1,288 @@
+@model PublicLandingViewModel
+@{
+    ViewData["Title"] = L["Title.Home"].Value;
+    string whatsappLink = !string.IsNullOrWhiteSpace(Model.ShopWhatsApp)
+        ? "https://wa.me/" + Model.ShopWhatsApp!.Replace(" ", "").TrimStart('+')
+        : string.Empty;
+    string telegramLink = !string.IsNullOrWhiteSpace(Model.ShopTelegramHandle)
+        ? "https://t.me/" + Model.ShopTelegramHandle!.TrimStart('@')
+        : string.Empty;
+    string requestMessage = Uri.EscapeDataString(L["Home.RequestMessage"].Value);
+}
+
+@if (Model.HeroSlides.Count == 0)
+{
+    <section class="public-hero">
+        <div class="public-hero__inner">
+            @if (Model.ShopLogoUrl is not null)
+            {
+                <img src="@Url.Content(Model.ShopLogoUrl)" alt="@Model.ShopLatinName" class="public-hero__logo" asp-append-version="true" />
+            }
+            <h1 class="public-hero__title">@Model.ShopName</h1>
+            <p class="public-hero__subtitle">@L["Home.HeroSubtitle"]</p>
+            <div class="public-hero__actions">
+                <a class="public-btn public-btn--primary" asp-area="Public" asp-controller="Catalog" asp-action="Brands">@L["Common.BrowseParts"]</a>
+                @if (!string.IsNullOrWhiteSpace(telegramLink))
+                {
+                    <a class="public-btn public-btn--ghost" href="@telegramLink" target="_blank" rel="noopener">@L["Home.Telegram"]</a>
+                }
+            </div>
+        </div>
+    </section>
+}
+else
+{
+    <section class="public-hero public-hero--slider" data-hero-slider>
+        <div class="public-hero__slides">
+            @for (int i = 0; i < Model.HeroSlides.Count; i++)
+            {
+                HeroSlide slide = Model.HeroSlides[i];
+                string ctaUrl = string.IsNullOrWhiteSpace(slide.CtaUrl)
+                    ? Url.Action("Brands", "Catalog", new { area = "Public" }) ?? "/Catalog/Brands"
+                    : slide.CtaUrl;
+                <div class="public-hero-slide @(i == 0 ? "is-active" : "")">
+                    @if (!string.IsNullOrWhiteSpace(slide.ImageUrl))
+                    {
+                        <img src="@Url.Content(slide.ImageUrl)" alt="@slide.Title" class="public-hero-slide__img" asp-append-version="true" draggable="false" />
+                    }
+                    @if (!string.IsNullOrWhiteSpace(slide.CtaText))
+                    {
+                        <div class="public-hero-slide__actions">
+                            <a class="public-btn public-btn--primary" href="@ctaUrl">@slide.CtaText</a>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+        @if (Model.HeroSlides.Count > 1)
+        {
+            <button type="button" class="public-hero__arrow public-hero__arrow--prev" data-hero-prev aria-label="@L["Home.PreviousSlide"]">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+            <button type="button" class="public-hero__arrow public-hero__arrow--next" data-hero-next aria-label="@L["Home.NextSlide"]">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+            <div class="public-hero__dots" role="tablist" aria-label="@L["Home.Slides"]">
+                @for (int i = 0; i < Model.HeroSlides.Count; i++)
+                {
+                    <button type="button" class="public-hero__dot @(i == 0 ? "is-active" : "")"
+                            data-hero-dot data-index="@i" role="tab" aria-label="@L["Home.Slide", i + 1]"></button>
+                }
+            </div>
+        }
+    </section>
+}
+
+<section class="public-section public-section--tools">
+    <div class="public-tools">
+        <form asp-area="Public" asp-controller="RepairStatus" asp-action="Index" method="get" class="public-tool public-tool--repair"
+              data-repair-status-lookup
+              data-lookup-url="@Url.Action("Lookup", "RepairStatus", new { area = "Public" })">
+            <h2>@L["Home.TrackRepair"]</h2>
+            <p class="public-tool__hint">@L["Home.RepairHint"]</p>
+            <div class="public-tool__row">
+                <input type="text" name="jobCode" placeholder="REP-0042" dir="ltr" maxlength="20" required />
+                <button type="submit" class="public-btn public-btn--ghost">@L["Home.ShowStatus"]</button>
+            </div>
+        </form>
+
+        <div class="public-tool public-tool--request">
+            <h2>@L["Home.DidntFind"]</h2>
+            <p class="public-tool__hint">@L["Home.DidntFindHint"]</p>
+            <div class="public-tool__row">
+                @if (!string.IsNullOrWhiteSpace(whatsappLink))
+                {
+                    <a class="public-btn public-btn--primary" href="@($"{whatsappLink}?text={requestMessage}")" target="_blank" rel="noopener">💬 @L["Home.OrderWhatsApp"]</a>
+                }
+                @if (!string.IsNullOrWhiteSpace(telegramLink))
+                {
+                    <a class="public-btn public-btn--ghost" href="@telegramLink" target="_blank" rel="noopener">@L["Home.TelegramShort"]</a>
+                }
+                @if (string.IsNullOrWhiteSpace(whatsappLink) && string.IsNullOrWhiteSpace(telegramLink) && !string.IsNullOrWhiteSpace(Model.ShopPhone))
+                {
+                    <a class="public-btn public-btn--primary" href="tel:@Model.ShopPhone.Replace(" ", "")">📞 @Model.ShopPhone</a>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@if (Model.Categories.Count > 0)
+{
+    <section class="public-section">
+        <div class="public-section__head">
+            <h2 class="public-section__title">@L["Home.Categories"]</h2>
+            <p class="public-section__hint">@L["Home.CategoriesHint"]</p>
+        </div>
+
+        <div class="public-carousel public-carousel--categories">
+            @foreach (PublicPartTypeCard category in Model.Categories)
+            {
+                <a class="public-category-chip public-carousel__item public-carousel__item--category"
+                   asp-area="Public" asp-controller="Search" asp-action="Index" asp-route-partTypeId="@category.Id">
+                    <span class="public-category-chip__media">
+                        @if (!string.IsNullOrWhiteSpace(category.ThumbnailUrl))
+                        {
+                            <img src="@Url.Content(category.ThumbnailUrl)" alt="@category.LocalizedName" loading="lazy" asp-append-version="true" />
+                        }
+                        else if (!string.IsNullOrWhiteSpace(category.ImageUrl))
+                        {
+                            <img src="@Url.Content(category.ImageUrl)" alt="@category.LocalizedName" loading="lazy" asp-append-version="true" />
+                        }
+                        else
+                        {
+                            <span class="public-card__placeholder" aria-hidden="true">@category.LocalizedName.FirstOrDefault()</span>
+                        }
+                    </span>
+                    <span class="public-category-chip__label">@category.LocalizedName</span>
+                </a>
+            }
+        </div>
+    </section>
+}
+
+@if (Model.NewestParts.Count > 0)
+{
+    <section class="public-section">
+        <div class="public-section__head">
+            <h2 class="public-section__title">@L["Home.NewestParts"]</h2>
+            <p class="public-section__hint">@L["Home.NewestHint"]</p>
+        </div>
+
+        <div class="public-carousel">
+            @foreach (PublicVariantCard variant in Model.NewestParts)
+            {
+                <div class="public-card public-card--part public-carousel__item">
+                    @{
+                        string partTitle = $"{variant.LocalizedBrandName} {variant.LocalizedModelName}";
+                        string partSubtitle = $"{variant.LocalizedPartTypeName} — {variant.LocalizedVariantName}";
+                    }
+                    <a asp-area="Public" asp-controller="Catalog" asp-action="PartDetail"
+                       asp-route-id="@variant.InventoryPartId" class="public-card__media">
+                        @if (!string.IsNullOrWhiteSpace(variant.ThumbnailUrl))
+                        {
+                            <img src="@Url.Content(variant.ThumbnailUrl)" alt="@partTitle" loading="lazy" asp-append-version="true" />
+                        }
+                        else if (!string.IsNullOrWhiteSpace(variant.ImageUrl))
+                        {
+                            <img src="@Url.Content(variant.ImageUrl)" alt="@partTitle" loading="lazy" asp-append-version="true" />
+                        }
+                        else
+                        {
+                            <span class="public-card__placeholder" aria-hidden="true">@partTitle.FirstOrDefault()</span>
+                        }
+                    </a>
+                    <div class="public-card__body">
+                        <a asp-area="Public" asp-controller="Catalog" asp-action="PartDetail"
+                           asp-route-id="@variant.InventoryPartId" class="public-card__link">
+                            <span class="public-card__title">@partTitle</span>
+                            <span class="public-card__sub">@partSubtitle</span>
+                        </a>
+                        <span class="public-card__price">@variant.SalePrice.ToString("N0") @L["Common.Currency"]</span>
+                        @if (variant.Quantity > 0)
+                        {
+                            <span class="public-card__availability is-in">@L["Common.InStockCount", variant.Quantity]</span>
+                            <form asp-area="Public" asp-controller="Cart" asp-action="Add" asp-route-id="@variant.InventoryPartId"
+                                  method="post" data-cart-add class="public-card__form">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="quantity" value="1" />
+                                <button type="submit" class="public-btn public-btn--primary public-btn--block">@L["Common.AddToCart"]</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="public-card__availability is-out">@L["Common.OutOfStock"]</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+<section class="public-section">
+    <div class="public-section__head">
+        <h2 class="public-section__title">@L["Home.BrandsTitle"]</h2>
+        <p class="public-section__hint">@L["Home.BrandsHint"]</p>
+    </div>
+
+    @if (Model.Brands.Count == 0)
+    {
+        <div class="public-empty">
+            <p>@L["Home.NoParts"]</p>
+        </div>
+    }
+    else
+    {
+        <div class="public-grid public-grid--brands">
+            @foreach (PublicBrandCard brand in Model.Brands)
+            {
+                <a class="public-card public-card--brand"
+                   asp-area="Public" asp-controller="Catalog" asp-action="Models" asp-route-id="@brand.Id">
+                    <div class="public-card__media">
+                        @if (!string.IsNullOrWhiteSpace(brand.ThumbnailUrl))
+                        {
+                            <img src="@Url.Content(brand.ThumbnailUrl)" alt="@brand.LocalizedName" loading="lazy" asp-append-version="true" />
+                        }
+                        else if (!string.IsNullOrWhiteSpace(brand.ImageUrl))
+                        {
+                            <img src="@Url.Content(brand.ImageUrl)" alt="@brand.LocalizedName" loading="lazy" asp-append-version="true" />
+                        }
+                        else
+                        {
+                            <span class="public-card__placeholder" aria-hidden="true">@brand.LocalizedName.FirstOrDefault()</span>
+                        }
+                    </div>
+                    <div class="public-card__body">
+                        <span class="public-card__title">@brand.LocalizedName</span>
+                        <span class="public-card__sub">@brand.Name</span>
+                    </div>
+                </a>
+            }
+        </div>
+    }
+</section>
+
+<section class="public-section public-features">
+    <div class="public-feature">
+        <span class="public-feature__icon" aria-hidden="true">🚚</span>
+        <div class="public-feature__text">
+            <span class="public-feature__title">@L["Home.Feature1.Title"]</span>
+            <span class="public-feature__sub">@L["Home.Feature1.Sub"]</span>
+        </div>
+    </div>
+    <div class="public-feature">
+        <span class="public-feature__icon" aria-hidden="true">💵</span>
+        <div class="public-feature__text">
+            <span class="public-feature__title">@L["Home.Feature2.Title"]</span>
+            <span class="public-feature__sub">@L["Home.Feature2.Sub"]</span>
+        </div>
+    </div>
+    <div class="public-feature">
+        <span class="public-feature__icon" aria-hidden="true">🛡️</span>
+        <div class="public-feature__text">
+            <span class="public-feature__title">@L["Home.Feature3.Title"]</span>
+            <span class="public-feature__sub">@L["Home.Feature3.Sub"]</span>
+        </div>
+    </div>
+    <div class="public-feature">
+        <span class="public-feature__icon" aria-hidden="true">🏷️</span>
+        <div class="public-feature__text">
+            <span class="public-feature__title">@L["Home.Feature4.Title"]</span>
+            <span class="public-feature__sub">@L["Home.Feature4.Sub"]</span>
+        </div>
+    </div>
+</section>
+
+@* Repair status lookup result modal (filled via AJAX by public-site.js) *@
+<div class="modal fade" id="repairStatusModal" tabindex="-1" aria-labelledby="repairStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="repairStatusModalLabel">@L["RepairStatus.Title"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@L["Common.Close"]"></button>
+            </div>
+            <div class="modal-body" data-repair-status-body></div>
+        </div>
+    </div>
+</div>

@@ -2,7 +2,7 @@
   "name": "ميمو شوب - MimoShop",
   "short_name": "MimoShop",
   "description": "نظام إدارة صيانة الهواتف",
-  "start_url": "/",
+  "start_url": "/Staff/Home",
   "display": "standalone",
   "background_color": "#f8fafc",
   "theme_color": "#0f766e",

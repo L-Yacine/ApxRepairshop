@@ -19,9 +19,12 @@ Thumbs.db
 *.tmp
 *.temp
 
-# Runtime catalog uploads
-MimoShop/wwwroot/uploads/catalog/
+# Runtime uploads (catalog images, hero slides - environment data, not source)
+MimoShop/wwwroot/uploads/
 
 # Sensitive config files
 MimoShop/appsettings.json
 Credentials.txt
+
+# Markdown docs / workflow files - local only, never committed
+*.md

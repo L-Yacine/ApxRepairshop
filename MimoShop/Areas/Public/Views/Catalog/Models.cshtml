@@ -1,0 +1,57 @@
+@model IReadOnlyList<PublicModelCard>
+@{
+    string brandLabel = ViewData["BrandLabel"] as string ?? L["Catalog.Brand"].Value;
+}
+
+<section class="public-section">
+    <div class="public-section__head">
+        <h2 class="public-section__title">@L["Catalog.ModelsOf", brandLabel]</h2>
+        <p class="public-section__hint">@L["Catalog.ChooseModel"]</p>
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <div class="public-empty">
+            <p class="public-empty__title">@L["Catalog.NoModels"]</p>
+            <a asp-area="Public" asp-controller="Catalog" asp-action="Brands" class="public-btn public-btn--ghost">@L["Catalog.BackToBrands"]</a>
+        </div>
+    }
+    else
+    {
+        <div class="public-grid">
+            @foreach (PublicModelCard m in Model)
+            {
+                <a class="public-card"
+                   asp-area="Public" asp-controller="Catalog" asp-action="PartTypes"
+                   asp-route-brandId="@ViewData["BrandId"]" asp-route-modelId="@m.Id">
+                    <div class="public-card__media">
+                        @if (!string.IsNullOrWhiteSpace(m.ThumbnailUrl))
+                        {
+                            <img src="@Url.Content(m.ThumbnailUrl)" alt="@m.LocalizedName" loading="lazy" asp-append-version="true" />
+                        }
+                        else if (!string.IsNullOrWhiteSpace(m.ImageUrl))
+                        {
+                            <img src="@Url.Content(m.ImageUrl)" alt="@m.LocalizedName" loading="lazy" asp-append-version="true" />
+                        }
+                        else if (!string.IsNullOrWhiteSpace(m.BrandThumbnailUrl))
+                        {
+                            <img src="@Url.Content(m.BrandThumbnailUrl)" alt="@m.LocalizedName" loading="lazy" asp-append-version="true" />
+                        }
+                        else if (!string.IsNullOrWhiteSpace(m.BrandImageUrl))
+                        {
+                            <img src="@Url.Content(m.BrandImageUrl)" alt="@m.LocalizedName" loading="lazy" asp-append-version="true" />
+                        }
+                        else
+                        {
+                            <span class="public-card__placeholder" aria-hidden="true">@m.LocalizedName.FirstOrDefault()</span>
+                        }
+                    </div>
+                    <div class="public-card__body">
+                        <span class="public-card__title">@m.LocalizedName</span>
+                        <span class="public-card__sub">@m.Name</span>
+                    </div>
+                </a>
+            }
+        </div>
+    }
+</section>

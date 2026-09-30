@@ -92,6 +92,33 @@ public sealed class DashboardService
             })
             .ToList();
 
+        // Storefront metrics
+        int newShopOrdersCount = await dbContext.ShopOrders
+            .AsNoTracking()
+            .CountAsync(order => order.Status == ShopOrderStatuses.New);
+
+        int shippedTodayCount = await dbContext.ShopOrders
+            .AsNoTracking()
+            .CountAsync(order => order.Status == ShopOrderStatuses.Shipped
+                && order.ShippedAt.HasValue
+                && order.ShippedAt.Value >= todayStart
+                && order.ShippedAt.Value < tomorrowStart);
+
+        decimal deliveredTodayRevenue = await dbContext.ShopOrders
+            .AsNoTracking()
+            .Where(order => order.Status == ShopOrderStatuses.Delivered
+                && order.DeliveredAt.HasValue
+                && order.DeliveredAt.Value >= todayStart
+                && order.DeliveredAt.Value < tomorrowStart)
+            .SumAsync(order => (decimal?)order.TotalAmount) ?? 0m;
+
+        int returnedTodayCount = await dbContext.ShopOrders
+            .AsNoTracking()
+            .CountAsync(order => order.Status == ShopOrderStatuses.Returned
+                && order.ReturnedAt.HasValue
+                && order.ReturnedAt.Value >= todayStart
+                && order.ReturnedAt.Value < tomorrowStart);
+
         return new OwnerDashboardViewModel
         {
             GeneratedAt = generatedAt,
@@ -101,7 +128,11 @@ public sealed class DashboardService
             TodayMovementsCount = todayMovements.Count,
             StatusCounts = statusCounts,
             OutstandingPayments = outstandingPayments,
-            RecentInventoryMovements = recentMovements
+            RecentInventoryMovements = recentMovements,
+            NewShopOrdersCount = newShopOrdersCount,
+            ShippedTodayCount = shippedTodayCount,
+            DeliveredTodayRevenue = deliveredTodayRevenue,
+            ReturnedTodayCount = returnedTodayCount
         };
     }
 
@@ -116,6 +147,9 @@ public sealed class DashboardService
         {
             InventoryMovementTypes.ConsumedForRepair => "استهلاك في صيانة",
             InventoryMovementTypes.ReceivedOnDemand => "استلام عند الطلب",
+            InventoryMovementTypes.ShopOrder => "تأكيد طلب متجر",
+            InventoryMovementTypes.ShopOrderReturn => "إرجاع طلب متجر",
+            InventoryMovementTypes.ShopOrderCancel => "إلغاء طلب متجر",
             _ => movementType
         };
     }

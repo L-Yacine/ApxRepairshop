@@ -1,0 +1,86 @@
+@model CartPageViewModel
+@{
+    ViewData["Title"] = L["Cart.Title"].Value;
+}
+
+<section class="public-section">
+    <div class="public-cart">
+        <div class="public-cart__head">
+            <h2 class="public-cart__title">@L["Cart.Title"]</h2>
+            <span class="public-cart__count">@L["Cart.ItemCount", Model.ItemCount]</span>
+        </div>
+
+        @if (!string.IsNullOrEmpty(TempData["CartError"] as string))
+        {
+            <div class="public-alert public-alert--error">@TempData["CartError"]</div>
+        }
+
+        @if (Model.Items.Count == 0)
+        {
+            <div class="public-empty">
+                <p class="public-empty__title">@L["Cart.EmptyTitle"]</p>
+                <p>@L["Cart.EmptyHint"]</p>
+                <div class="public-empty__actions">
+                    <a asp-area="Public" asp-controller="Catalog" asp-action="Brands" class="public-btn public-btn--primary">@L["Common.BrowseParts"]</a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="public-cart__list">
+                @foreach (CartItem item in Model.Items)
+                {
+                    <div class="public-cart-item">
+                        <div class="public-cart-item__media">
+                            @if (!string.IsNullOrWhiteSpace(item.ThumbnailUrl))
+                            {
+                                <img src="@Url.Content(item.ThumbnailUrl)" alt="@item.PartDisplayName" asp-append-version="true" />
+                            }
+                            else
+                            {
+                                <span class="placeholder" aria-hidden="true">📦</span>
+                            }
+                        </div>
+                        <div class="public-cart-item__info">
+                            <p class="public-cart-item__name">@item.PartDisplayName</p>
+                            <span class="public-cart-item__unit">@item.UnitPrice.ToString("N0") @L["Common.Currency"] @L["Cart.PerUnit"]</span>
+                        </div>
+                        <form asp-area="Public" asp-controller="Cart" asp-action="UpdateQuantity" method="post" class="public-cart-item__qty">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="inventoryPartId" value="@item.InventoryPartId" />
+                            <button type="submit" name="quantity" value="@(item.Quantity - 1)" aria-label="@L["Form.Decrease"]" formnovalidate>−</button>
+                            <input type="number" name="quantityDisplay" value="@item.Quantity" min="1" readonly />
+                            <button type="submit" name="quantity" value="@(item.Quantity + 1)" aria-label="@L["Form.Increase"]" formnovalidate>+</button>
+                        </form>
+                        <div class="public-cart-item__total">@((item.UnitPrice * item.Quantity).ToString("N0")) @L["Common.Currency"]</div>
+                        <form asp-area="Public" asp-controller="Cart" asp-action="Remove" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="inventoryPartId" value="@item.InventoryPartId" />
+                            <button type="submit" class="public-cart-item__remove">@L["Cart.Remove"]</button>
+                        </form>
+                    </div>
+                }
+            </div>
+
+            <div class="public-cart__totals">
+                <div class="public-cart__totals-row">
+                    <span>@L["Checkout.Subtotal"]</span>
+                    <span>@Model.Subtotal.ToString("N0") @L["Common.Currency"]</span>
+                </div>
+                <div class="public-cart__totals-row">
+                    <span>@L["Checkout.Shipping"]</span>
+                    <span>@L["Cart.ShippingNote"]</span>
+                </div>
+                <div class="public-cart__totals-row public-cart__totals-row--total">
+                    <span>@L["Cart.TentativeTotal"]</span>
+                    <span class="value">@Model.Subtotal.ToString("N0") @L["Common.Currency"]</span>
+                </div>
+            </div>
+
+            <div class="public-cart__actions">
+                <a asp-area="Public" asp-controller="Checkout" asp-action="Index" class="public-btn public-btn--primary public-btn--lg">@L["Cart.Checkout"]</a>
+                <a asp-area="Public" asp-controller="Catalog" asp-action="Brands" class="public-btn public-btn--ghost">@L["Cart.Continue"]</a>
+            </div>
+        }
+    </div>
+</section>

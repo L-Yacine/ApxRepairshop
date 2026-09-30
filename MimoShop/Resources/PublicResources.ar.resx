@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Common.Currency" xml:space="preserve"><value>دج</value></data>
+  <data name="Common.AddToCart" xml:space="preserve"><value>أضف إلى السلة</value></data>
+  <data name="Common.InStock" xml:space="preserve"><value>متوفر في المخزون</value></data>
+  <data name="Common.OutOfStock" xml:space="preserve"><value>غير متوفر حالياً</value></data>
+  <data name="Common.InStockCount" xml:space="preserve"><value>متوفر في المخزون ({0})</value></data>
+  <data name="Common.BrowseParts" xml:space="preserve"><value>تصفح القطع</value></data>
+  <data name="Common.ViewCart" xml:space="preserve"><value>عرض السلة</value></data>
+  <data name="Common.Close" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="Common.ContinueBrowsing" xml:space="preserve"><value>متابعة التصفح</value></data>
+  <data name="Common.NetworkError" xml:space="preserve"><value>حدث خطأ في الاتصال بالشبكة.</value></data>
+  <data name="Common.ConnectionError" xml:space="preserve"><value>تعذر الاتصال بالخادم. تحقق من اتصالك.</value></data>
+  <data name="Common.UnexpectedError" xml:space="preserve"><value>حدث خطأ غير متوقع.</value></data>
+  <data name="Nav.Home" xml:space="preserve"><value>الرئيسية</value></data>
+  <data name="Nav.Browse" xml:space="preserve"><value>تصفح القطع</value></data>
+  <data name="Nav.Cart" xml:space="preserve"><value>السلة</value></data>
+  <data name="Nav.CartAria" xml:space="preserve"><value>سلة المشتريات</value></data>
+
+  <data name="Nav.StaffLogin" xml:space="preserve"><value>دخول الموظفين</value></data>
+  <data name="Nav.OpenMenu" xml:space="preserve"><value>فتح القائمة</value></data>
+  <data name="Nav.ToggleSidebar" xml:space="preserve"><value>تبديل القائمة الجانبية</value></data>
+  <data name="Nav.AriaLabel" xml:space="preserve"><value>تنقل المتجر</value></data>
+  <data name="Nav.CartCount" xml:space="preserve"><value>السلة ({0} قطعة)</value></data>
+  <data name="BottomNav.AriaLabel" xml:space="preserve"><value>التنقل السفلي</value></data>
+  <data name="Search.Placeholder" xml:space="preserve"><value>ابحث عن موديل أو قطعة...</value></data>
+  <data name="Search.AriaLabel" xml:space="preserve"><value>بحث في المتجر</value></data>
+  <data name="Search.Button" xml:space="preserve"><value>بحث</value></data>
+  <data name="Footer.Contact" xml:space="preserve"><value>تواصل معنا</value></data>
+  <data name="Footer.WhatsApp" xml:space="preserve"><value>واتساب</value></data>
+  <data name="Footer.Info" xml:space="preserve"><value>معلومات</value></data>
+  <data name="Footer.Cart" xml:space="preserve"><value>سلة المشتريات</value></data>
+  <data name="Footer.TelegramBot" xml:space="preserve"><value>بوت تيليجرام</value></data>
+  <data name="Footer.Rights" xml:space="preserve"><value>جميع الحقوق محفوظة</value></data>
+  <data name="Footer.CodNote" xml:space="preserve"><value>الدفع عند الاستلام · توصيل لكامل الولايات</value></data>
+  <data name="Contact.Call" xml:space="preserve"><value>اتصال هاتفي</value></data>
+  <data name="Contact.WhatsApp" xml:space="preserve"><value>واتساب</value></data>
+  <data name="Contact.Telegram" xml:space="preserve"><value>تيليجرام</value></data>
+  <data name="Contact.ToggleAria" xml:space="preserve"><value>تواصل معنا</value></data>
+  <data name="Language.Switcher" xml:space="preserve"><value>اللغة</value></data>
+  <data name="Breadcrumb.AriaLabel" xml:space="preserve"><value>مسار التنقل</value></data>
+  <data name="Breadcrumb.Home" xml:space="preserve"><value>الرئيسية</value></data>
+  <data name="Breadcrumb.Cart" xml:space="preserve"><value>السلة</value></data>
+  <data name="Breadcrumb.Checkout" xml:space="preserve"><value>إتمام الطلب</value></data>
+  <data name="Breadcrumb.Brands" xml:space="preserve"><value>العلامات</value></data>
+  <data name="Breadcrumb.Brand" xml:space="preserve"><value>العلامة</value></data>
+  <data name="Breadcrumb.Model" xml:space="preserve"><value>الموديل</value></data>
+  <data name="Breadcrumb.PartType" xml:space="preserve"><value>نوع القطعة</value></data>
+  <data name="Breadcrumb.PartDetail" xml:space="preserve"><value>تفاصيل القطعة</value></data>
+  <data name="Breadcrumb.Search" xml:space="preserve"><value>بحث</value></data>
+  <data name="Breadcrumb.RepairStatus" xml:space="preserve"><value>حالة الصيانة</value></data>
+  <data name="Title.Home" xml:space="preserve"><value>الرئيسية</value></data>
+  <data name="Home.RequestMessage" xml:space="preserve"><value>السلام عليكم، أبحث عن قطعة غير متوفرة في المتجر.</value></data>
+  <data name="Home.HeroSubtitle" xml:space="preserve"><value>قطع غيار الهواتف الأصلية والمتوافقة · التوصيل لكل الولايات · الدفع عند الاستلام</value></data>
+  <data name="Home.Telegram" xml:space="preserve"><value>تواصل عبر تيليجرام</value></data>
+  <data name="Home.Slides" xml:space="preserve"><value>شرائح العرض</value></data>
+  <data name="Home.Slide" xml:space="preserve"><value>الشريحة {0}</value></data>
+  <data name="Home.PreviousSlide" xml:space="preserve"><value>الشريحة السابقة</value></data>
+  <data name="Home.NextSlide" xml:space="preserve"><value>الشريحة التالية</value></data>
+  <data name="Home.TrackRepair" xml:space="preserve"><value>تابع حالة صيانتك</value></data>
+  <data name="Home.RepairHint" xml:space="preserve"><value>أدخل رمز طلب الصيانة REP-XXXX</value></data>
+  <data name="Home.ShowStatus" xml:space="preserve"><value>عرض الحالة</value></data>
+  <data name="Home.DidntFind" xml:space="preserve"><value>لم تجد القطعة؟</value></data>
+  <data name="Home.DidntFindHint" xml:space="preserve"><value>تواصل معنا وسنجهّز لك أي قطعة ناقصة من الموردين.</value></data>
+  <data name="Home.OrderWhatsApp" xml:space="preserve"><value>اطلبها عبر واتساب</value></data>
+  <data name="Home.TelegramShort" xml:space="preserve"><value>تيليجرام</value></data>
+  <data name="Home.NewestParts" xml:space="preserve"><value>أحدث القطع</value></data>
+  <data name="Home.NewestHint" xml:space="preserve"><value>آخر ما تمت إضافته إلى المتجر</value></data>
+
+  <data name="Home.Categories" xml:space="preserve"><value>تصفح حسب الفئة</value></data>
+
+  <data name="Home.CategoriesHint" xml:space="preserve"><value>اعثر بسرعة على نوع القطعة التي تحتاجها</value></data>
+  <data name="Home.BrandsTitle" xml:space="preserve"><value>العلامات المتوفرة</value></data>
+  <data name="Home.BrandsHint" xml:space="preserve"><value>اختر علامتك وابدأ التصفح</value></data>
+  <data name="Home.NoParts" xml:space="preserve"><value>لا توجد قطع متوفرة حالياً. عُد لاحقاً.</value></data>
+  <data name="Home.Feature1.Title" xml:space="preserve"><value>توصيل لكل الولايات</value></data>
+  <data name="Home.Feature1.Sub" xml:space="preserve"><value>نغطي كامل التراب الوطني 58 ولاية</value></data>
+  <data name="Home.Feature2.Title" xml:space="preserve"><value>الدفع عند الاستلام</value></data>
+  <data name="Home.Feature2.Sub" xml:space="preserve"><value>ادفع فقط عند استلام طلبك</value></data>
+  <data name="Home.Feature3.Title" xml:space="preserve"><value>قطع أصلية ومتوافقة</value></data>
+  <data name="Home.Feature3.Sub" xml:space="preserve"><value>جودة موثوقة ومراقبة قبل الشحن</value></data>
+  <data name="Home.Feature4.Title" xml:space="preserve"><value>أسعار جملة للمصلحين</value></data>
+  <data name="Home.Feature4.Sub" xml:space="preserve"><value>عروض خاصة لأصحاب ورشات الصيانة</value></data>
+  <data name="Catalog.BrowseBrands" xml:space="preserve"><value>تصفح العلامات</value></data>
+  <data name="Catalog.ChooseBrand" xml:space="preserve"><value>اختر علامة هاتفك</value></data>
+  <data name="Catalog.ChooseBrandHint" xml:space="preserve"><value>تصفّح الموديلات ثم أنواع القطع المتوفرة لكل علامة</value></data>
+  <data name="Catalog.NoPartsTitle" xml:space="preserve"><value>لا توجد قطع متوفرة حالياً</value></data>
+  <data name="Catalog.NoPartsHint" xml:space="preserve"><value>عُد لاحقاً أو تواصل معنا عبر تيليجرام.</value></data>
+  <data name="Catalog.Brand" xml:space="preserve"><value>العلامة</value></data>
+  <data name="Catalog.ModelsOf" xml:space="preserve"><value>موديلات {0}</value></data>
+  <data name="Catalog.ChooseModel" xml:space="preserve"><value>اختر الموديل لمشاهدة القطع المتوفرة</value></data>
+  <data name="Catalog.NoModels" xml:space="preserve"><value>لا توجد موديلات متوفرة لهذه العلامة</value></data>
+  <data name="Catalog.BackToBrands" xml:space="preserve"><value>العودة للعلامات</value></data>
+  <data name="Catalog.Model" xml:space="preserve"><value>الموديل</value></data>
+  <data name="Catalog.PartTypesOf" xml:space="preserve"><value>أنواع القطع — {0} {1}</value></data>
+  <data name="Catalog.ChoosePartType" xml:space="preserve"><value>اختر نوع القطعة لعرض الأنواعية المتوفرة</value></data>
+  <data name="Catalog.NoPartTypes" xml:space="preserve"><value>لا توجد قطع متوفرة لهذا الموديل</value></data>
+  <data name="Catalog.BackToModels" xml:space="preserve"><value>العودة للموديلات</value></data>
+  <data name="Catalog.ChooseVariant" xml:space="preserve"><value>اختر النوعية وأضفها إلى السلة</value></data>
+  <data name="Catalog.NoVariants" xml:space="preserve"><value>لا توجد نوعيات متوفرة لهذا النوع حالياً</value></data>
+  <data name="Catalog.BackToPartTypes" xml:space="preserve"><value>العودة للأنواع</value></data>
+  <data name="PartDetail.Benefits" xml:space="preserve"><value>مزايا الطلب</value></data>
+  <data name="PartDetail.Delivery" xml:space="preserve"><value>توصيل لكل الولايات</value></data>
+  <data name="PartDetail.Cod" xml:space="preserve"><value>الدفع عند الاستلام</value></data>
+  <data name="PartDetail.Genuine" xml:space="preserve"><value>قطع أصلية ومتوافقة</value></data>
+  <data name="PartDetail.QuickOrderAria" xml:space="preserve"><value>اطلب مباشرة</value></data>
+  <data name="PartDetail.QuickOrderTitle" xml:space="preserve"><value>اطلب هذه القطعة مباشرة</value></data>
+  <data name="PartDetail.QuickOrderHint" xml:space="preserve"><value>املأ بياناتك وسنتصل بك لتأكيد الطلب قبل الشحن. لا حاجة لإضافة القطعة إلى السلة.</value></data>
+  <data name="PartDetail.OrderNow" xml:space="preserve"><value>اطلب الآن</value></data>
+  <data name="PartDetail.ContinueOrder" xml:space="preserve"><value>تابع الطلب</value></data>
+  <data name="PartDetail.BackToVariants" xml:space="preserve"><value>العودة إلى قائمة النوعيات</value></data>
+  <data name="PartDetail.BuyBarAria" xml:space="preserve"><value>شريط الشراء السريع</value></data>
+  <data name="PartDetail.Available" xml:space="preserve"><value>متوفر</value></data>
+  <data name="PartDetail.QuickOrder" xml:space="preserve"><value>طلب سريع</value></data>
+  <data name="PartDetail.AddToCart" xml:space="preserve"><value>أضف للسلة</value></data>
+  <data name="Form.FullName" xml:space="preserve"><value>الاسم الكامل *</value></data>
+  <data name="Form.Phone" xml:space="preserve"><value>رقم الهاتف *</value></data>
+  <data name="Form.WhatsApp" xml:space="preserve"><value>واتساب (اختياري)</value></data>
+  <data name="Form.Quantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="Form.Decrease" xml:space="preserve"><value>إنقاص</value></data>
+  <data name="Form.Increase" xml:space="preserve"><value>زيادة</value></data>
+  <data name="Form.Wilaya" xml:space="preserve"><value>الولاية *</value></data>
+  <data name="Form.Commune" xml:space="preserve"><value>البلدية *</value></data>
+  <data name="Form.ChooseWilaya" xml:space="preserve"><value>— اختر الولاية —</value></data>
+  <data name="Form.ChooseWilayaFirst" xml:space="preserve"><value>— اختر الولاية أولاً —</value></data>
+  <data name="Form.ChooseCommune" xml:space="preserve"><value>— اختر البلدية —</value></data>
+  <data name="Form.CommunesLoadError" xml:space="preserve"><value>— تعذر تحميل البلديات —</value></data>
+  <data name="Form.Address" xml:space="preserve"><value>العنوان التفصيلي *</value></data>
+  <data name="Form.AddressPlaceholder" xml:space="preserve"><value>الحي — الشارع — نقطة دالة</value></data>
+  <data name="Form.Notes" xml:space="preserve"><value>ملاحظات (اختياري)</value></data>
+  <data name="Form.NotesPlaceholder" xml:space="preserve"><value>أي تفاصيل إضافية تخص التسليم</value></data>
+  <data name="Checkout.Title" xml:space="preserve"><value>إتمام الطلب</value></data>
+  <data name="Checkout.DeliveryInfo" xml:space="preserve"><value>معلومات التسليم</value></data>
+  <data name="Checkout.OrderSummary" xml:space="preserve"><value>ملخص الطلب</value></data>
+  <data name="Checkout.Subtotal" xml:space="preserve"><value>المجموع الفرعي</value></data>
+  <data name="Checkout.Shipping" xml:space="preserve"><value>التوصيل</value></data>
+  <data name="Checkout.Total" xml:space="preserve"><value>الإجمالي</value></data>
+  <data name="Checkout.Confirm" xml:space="preserve"><value>تأكيد الطلب</value></data>
+  <data name="Checkout.ConfirmNote" xml:space="preserve"><value>سيتم الاتصال بك لتأكيد الطلب قبل الشحن.</value></data>
+  <data name="Checkout.Free" xml:space="preserve"><value>مجاني</value></data>
+  <data name="Checkout.FillRequired" xml:space="preserve"><value>يرجى ملء كل الحقول المطلوبة.</value></data>
+  <data name="Checkout.OrderFailed" xml:space="preserve"><value>تعذر إنشاء الطلب.</value></data>
+  <data name="Checkout.OrderConfirmedTitle" xml:space="preserve"><value>تأكيد الطلب {0}</value></data>
+  <data name="Checkout.OrderReceived" xml:space="preserve"><value>تم استلام طلبك</value></data>
+  <data name="Checkout.ThanksNote" xml:space="preserve"><value>شكراً يا {0}. سنتصل بك على {1} لتأكيد الطلب قبل الشحن.</value></data>
+  <data name="Checkout.Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="Checkout.Phone" xml:space="preserve"><value>الهاتف</value></data>
+  <data name="Checkout.Wilaya" xml:space="preserve"><value>الولاية</value></data>
+  <data name="Checkout.Commune" xml:space="preserve"><value>البلدية</value></data>
+  <data name="Checkout.Address" xml:space="preserve"><value>العنوان</value></data>
+  <data name="Cart.Title" xml:space="preserve"><value>سلة المشتريات</value></data>
+  <data name="Cart.ItemCount" xml:space="preserve"><value>{0} قطعة</value></data>
+  <data name="Cart.EmptyTitle" xml:space="preserve"><value>سلتك فارغة</value></data>
+  <data name="Cart.EmptyHint" xml:space="preserve"><value>تصفح القطع المتوفرة وأضف ما تحتاجه.</value></data>
+  <data name="Cart.PerUnit" xml:space="preserve"><value>للوحدة</value></data>
+  <data name="Cart.Remove" xml:space="preserve"><value>حذف</value></data>
+  <data name="Cart.ShippingNote" xml:space="preserve"><value>يحسب عند إتمام الطلب</value></data>
+  <data name="Cart.TentativeTotal" xml:space="preserve"><value>الإجمالي المبدئي</value></data>
+  <data name="Cart.Checkout" xml:space="preserve"><value>إتمام الطلب</value></data>
+  <data name="Cart.Continue" xml:space="preserve"><value>متابعة التصفح</value></data>
+  <data name="Cart.OutOfStockError" xml:space="preserve"><value>هذه القطعة لم تعد متوفرة في المخزون.</value></data>
+  <data name="Cart.Added" xml:space="preserve"><value>تمت إضافة القطعة إلى السلة بنجاح!</value></data>
+  <data name="Cart.UpdateFailed" xml:space="preserve"><value>تعذر تحديث الكمية في السلة.</value></data>
+  <data name="Cart.RemoveFailed" xml:space="preserve"><value>تعذر حذف القطعة من السلة.</value></data>
+  <data name="Cart.Adding" xml:space="preserve"><value>جاري الإضافة...</value></data>
+  <data name="Cart.AddedShort" xml:space="preserve"><value>تمت الإضافة</value></data>
+  <data name="Cart.AddFailed" xml:space="preserve"><value>فشلت الإضافة.</value></data>
+  <data name="Cart.Items" xml:space="preserve"><value>قطعة</value></data>
+  <data name="Search.Title" xml:space="preserve"><value>بحث</value></data>
+  <data name="Search.TitleQuery" xml:space="preserve"><value>بحث: {0}</value></data>
+  <data name="Search.Heading" xml:space="preserve"><value>ابحث عن قطعة</value></data>
+  <data name="Search.Hint" xml:space="preserve"><value>ابحث بالاسم اللاتيني أو العربي، أو فلتر حسب العلامة والموديل ونوع القطعة.</value></data>
+  <data name="Search.Query" xml:space="preserve"><value>كلمة البحث</value></data>
+  <data name="Search.QueryPlaceholder" xml:space="preserve"><value>مثال: iPhone 13 أو بطارية سامسونج</value></data>
+  <data name="Search.Brand" xml:space="preserve"><value>العلامة</value></data>
+  <data name="Search.All" xml:space="preserve"><value>— الكل —</value></data>
+  <data name="Search.Model" xml:space="preserve"><value>الموديل</value></data>
+  <data name="Search.PartType" xml:space="preserve"><value>نوع القطعة</value></data>
+  <data name="Search.Submit" xml:space="preserve"><value>بحث</value></data>
+  <data name="Search.Results" xml:space="preserve"><value>النتائج</value></data>
+  <data name="Search.ResultCount" xml:space="preserve"><value>{0} قطعة متطابقة</value></data>
+  <data name="Search.NoResults" xml:space="preserve"><value>لم نجد قطعاً مطابقة</value></data>
+  <data name="Search.NoResultsHint" xml:space="preserve"><value>جرّب كلمة بحث مختلفة أو وسّع الفلاتر.</value></data>
+  <data name="Search.BrowseBrands" xml:space="preserve"><value>تصفح العلامات</value></data>
+  <data name="Search.ViewPart" xml:space="preserve"><value>عرض القطعة</value></data>
+  <data name="Search.NoModels" xml:space="preserve"><value>— لا توجد موديلات —</value></data>
+  <data name="Search.NoTypes" xml:space="preserve"><value>— لا توجد أنواع —</value></data>
+  <data name="Search.LoadError" xml:space="preserve"><value>— تعذر التحميل —</value></data>
+  <data name="RepairStatus.Title" xml:space="preserve"><value>حالة الصيانة</value></data>
+  <data name="RepairStatus.TitleFor" xml:space="preserve"><value>حالة الصيانة — {0}</value></data>
+  <data name="RepairStatus.Heading" xml:space="preserve"><value>تابع حالة صيانتك</value></data>
+  <data name="RepairStatus.Hint" xml:space="preserve"><value>أدخل رمز الطلب (REP-XXXX) الذي استلمته عند تسليم الهاتف للورشة.</value></data>
+  <data name="RepairStatus.Code" xml:space="preserve"><value>رمز الطلب</value></data>
+  <data name="RepairStatus.Show" xml:space="preserve"><value>عرض الحالة</value></data>
+  <data name="RepairStatus.InvalidFormat" xml:space="preserve"><value>صيغة الرمز غير صحيحة. يجب أن يكون على الشكل REP-XXXX (مثال: REP-0042).</value></data>
+  <data name="RepairStatus.NotFound" xml:space="preserve"><value>لم نعثر على طلب صيانة بهذا الرقم. تأكد من الرمز أو تواصل معنا.</value></data>
+  <data name="RepairStatus.Unassigned" xml:space="preserve"><value>غير محدد</value></data>
+  <data name="RepairStatus.Device" xml:space="preserve"><value>الجهاز</value></data>
+  <data name="RepairStatus.Worker" xml:space="preserve"><value>الفني المسؤول</value></data>
+  <data name="RepairStatus.Problem" xml:space="preserve"><value>المشكل المُبلَّغ عنه</value></data>
+  <data name="RepairStatus.TimelineTitle" xml:space="preserve"><value>مراحل تتبع الصيانة</value></data>
+  <data name="RepairStatus.TimelineAria" xml:space="preserve"><value>مخطط حالة الطلب</value></data>
+  <data name="RepairStatus.StepReceived" xml:space="preserve"><value>استقبال الجهاز والتحقق الأولي</value></data>
+  <data name="RepairStatus.ReceivedAt" xml:space="preserve"><value>تاريخ الاستلام: {0}</value></data>
+  <data name="RepairStatus.InProgress" xml:space="preserve"><value>قيد العمل والتصليح</value></data>
+  <data name="RepairStatus.InProgressWaitingPart" xml:space="preserve"><value>قيد العمل (بانتظار قطعة)</value></data>
+  <data name="RepairStatus.LastUpdate" xml:space="preserve"><value>آخر تحديث: {0}</value></data>
+  <data name="RepairStatus.StepDone" xml:space="preserve"><value>الجهاز جاهز للتسليم 🎉</value></data>
+  <data name="RepairStatus.ReadyAt" xml:space="preserve"><value>تاريخ الجاهزية: {0}</value></data>
+  <data name="RepairStatus.StepCollected" xml:space="preserve"><value>تم التسليم ودفع المستحقات</value></data>
+  <data name="RepairStatus.DeliveredAt" xml:space="preserve"><value>تاريخ التسليم: {0}</value></data>
+  <data name="RepairStatus.Searching" xml:space="preserve"><value>جاري البحث...</value></data>
+  <data name="RepairStatus.SearchingStatus" xml:space="preserve"><value>جاري البحث عن الطلب...</value></data>
+  <data name="Status.New" xml:space="preserve"><value>جديد</value></data>
+  <data name="Status.InProgress" xml:space="preserve"><value>قيد العمل</value></data>
+  <data name="Status.WaitingForPart" xml:space="preserve"><value>بانتظار قطعة</value></data>
+  <data name="Status.Done" xml:space="preserve"><value>جاهز للتسليم</value></data>
+  <data name="Status.Collected" xml:space="preserve"><value>تم التسليم</value></data>
+  <data name="QuickOrder.QuantityLimit" xml:space="preserve"><value>الكمية المتاحة لهذه القطعة هي {0} فقط.</value></data>
+  <data name="QuickOrder.WilayaUnavailable" xml:space="preserve"><value>الولاية المختارة غير متوفرة.</value></data>
+  <data name="QuickOrder.CommuneUnavailable" xml:space="preserve"><value>البلدية المختارة غير متوفرة.</value></data>
+  <data name="QuickOrder.FixErrors" xml:space="preserve"><value>يرجى تصحيح الأخطاء في النموذج قبل إرسال الطلب.</value></data>
+  <data name="Validation.NameRequired" xml:space="preserve"><value>الاسم الكامل مطلوب</value></data>
+  <data name="Validation.PhoneInvalid" xml:space="preserve"><value>رقم الهاتف غير صالح</value></data>
+  <data name="Validation.ChooseWilaya" xml:space="preserve"><value>يرجى اختيار الولاية</value></data>
+  <data name="Validation.ChooseCommune" xml:space="preserve"><value>يرجى اختيار البلدية</value></data>
+  <data name="Validation.AddressRequired" xml:space="preserve"><value>العنوان مطلوب</value></data>
+  <data name="ShopOrder.CartEmpty" xml:space="preserve"><value>سلتك فارغة. أضف قطعاً قبل إتمام الطلب.</value></data>
+  <data name="ShopOrder.PartUnavailable" xml:space="preserve"><value>القطعة «{0}» لم تعد متوفرة بالكمية المطلوبة.</value></data>
+  <data name="A11y.SkipToContent" xml:space="preserve"><value>انتقل إلى المحتوى</value></data>
+</root>

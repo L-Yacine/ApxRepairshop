@@ -525,14 +525,13 @@
   /* ---- Generic inline-modal mechanism ---- */
 
   var MODAL_URLS = {
-    repairCreate:        "/RepairTickets/CreateModal",
-    staffCreate:         "/Staff/CreateModal",
-    staffEdit:           "/Staff/EditModal/{arg}",
-    staffResetPassword:  "/Staff/ResetPasswordModal/{arg}",
-    inventoryForm:       "/Inventory/FormModal/{arg}",
-    changePassword:      "/Account/ChangePasswordModal",
-    shopSettings:        "/ShopSettings/SettingsModal",
-    categoriesImport:    "/Categories/ImportPreviewModal"
+    repairCreate:        "/Staff/RepairTickets/CreateModal",
+    staffCreate:         "/Staff/Staff/CreateModal",
+    staffEdit:           "/Staff/Staff/EditModal/{arg}",
+    staffResetPassword:  "/Staff/Staff/ResetPasswordModal/{arg}",
+    inventoryForm:       "/Staff/Inventory/FormModal/{arg}",
+    changePassword:      "/Staff/Account/ChangePasswordModal",
+    categoriesImport:    "/Staff/Categories/ImportPreviewModal"
   };
 
   function resolveUrl(key, arg) {
@@ -821,6 +820,27 @@
         console.error("openModal failed", err);
       });
     });
+
+    document.addEventListener("click", function (e) {
+      var btn = e.target.closest && e.target.closest("[data-tutorial-start]");
+      if (!btn) return;
+      e.preventDefault();
+      if (window.MimoShop && window.MimoShop.tutorials) {
+        window.MimoShop.tutorials.start();
+      }
+    });
+
+    function revealTutorialButton() {
+      var t = window.MimoShop && window.MimoShop.tutorials;
+      var btn = document.querySelector("[data-tutorial-start]");
+      if (!btn || !t) return;
+      if (t.currentKey) {
+        btn.hidden = false;
+      } else {
+        btn.hidden = true;
+      }
+    }
+    revealTutorialButton();
 
     document.addEventListener("submit", function (e) {
       var form = e.target.closest && e.target.closest("[data-modal-form]");

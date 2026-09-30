@@ -1,0 +1,39 @@
+@model CommuneFormInput
+@{
+    ViewData["Title"] = "إضافة بلدية";
+    int wilayaId = (int)(ViewData["WilayaId"] ?? 0);
+}
+
+<section class="page-header">
+    <p class="page-header__eyebrow">مناطق التوصيل</p>
+    <h1 class="page-header__title">إضافة بلدية — @ViewData["WilayaName"]</h1>
+</section>
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+<form asp-action="CreateCommune" asp-route-wilayaId="@wilayaId" method="post" class="dz-form">
+    @Html.AntiForgeryToken()
+    <div class="form-grid form-grid--2">
+        <div class="form-field">
+            <label asp-for="NameAr"></label>
+            <input asp-for="NameAr" class="form-control" />
+            <span asp-validation-for="NameAr" class="text-danger"></span>
+        </div>
+        <div class="form-field">
+            <label asp-for="NameFr"></label>
+            <input asp-for="NameFr" class="form-control" dir="ltr" />
+            <small class="form-text text-muted">الاسم بالفرنسية مطلوب لمعظم واجهات التوصيل الجزائرية.</small>
+            <span asp-validation-for="NameFr" class="text-danger"></span>
+        </div>
+        <div class="form-field form-field--check">
+            <label asp-for="IsActive">
+                <input asp-for="IsActive" /> @Html.DisplayNameFor(m => m.IsActive)
+            </label>
+        </div>
+    </div>
+
+    <div class="dz-form__actions">
+        <button type="submit" class="btn btn-primary">حفظ</button>
+        <a asp-action="Index" asp-route-selectedWilayaId="@wilayaId" class="btn btn-outline-secondary">إلغاء</a>
+    </div>
+</form>
